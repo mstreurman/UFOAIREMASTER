@@ -65,3 +65,8 @@ Thumbs.db
 /docs/audits/
 /docs/ARTIFACT_STATUS.md
 /PUBLICATION_STATUS.md
+
+# CMake remaster/bootstrap local state
+/CMakeUserPresets.json
+/build-m0-legacy-f44/
+/build-m0-remaster-f44/

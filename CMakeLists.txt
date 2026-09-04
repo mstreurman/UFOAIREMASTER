@@ -24,6 +24,26 @@ project(ufoai LANGUAGES NONE)
 set(CMAKE_CONFIG_DIR "${CMAKE_SOURCE_DIR}/cmake/config")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
+# Remaster bootstrap is opt-in while the legacy path remains the canonical comparison build.
+option(UFOAI_REMASTER "Enable UFO:AI remaster M0 build scaffolding" OFF)
+option(UFOAI_REMASTER_STRICT_DEPENDENCIES "Fail configure when an accepted remaster dependency is unavailable" OFF)
+
+if (UFOAI_REMASTER)
+	# FindVulkan needs host compiler/library architecture discovery on Linux.
+	# Keep this confined to the opt-in remaster path.
+	enable_language(C)
+
+	set(UFOAI_REMASTER_SLANG_ROOT
+		"${CMAKE_SOURCE_DIR}/tools/slang/v2026.17"
+		CACHE PATH "Project-local Slang v2026.17 tool root")
+	set(UFOAI_REMASTER_JOLT_ROOT
+		"${CMAKE_SOURCE_DIR}/third_party/JoltPhysics"
+		CACHE PATH "Vendored Jolt Physics v5.6.0 source root")
+
+	include("${CMAKE_SOURCE_DIR}/cmake/remaster/Dependencies.cmake")
+	ufoai_remaster_probe_dependencies()
+endif()
+
 if (NOT CMAKE_BUILD_TYPE)
 	message(STATUS "CMake build type is not set, defaulting to 'RelWithDebInfo'")
 	set(CMAKE_BUILD_TYPE "RelWithDebInfo")

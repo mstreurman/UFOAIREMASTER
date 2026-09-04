@@ -1,0 +1,73 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "m0-f44-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "DISABLE_TOOLS": "ON",
+        "DISABLE_UFORADIANT": "ON",
+        "DISABLE_I18N": "ON",
+        "DISABLE_MANUAL": "ON",
+        "DISABLE_DOXYGEN_DOCS": "ON",
+        "DISABLE_BASE_PACKAGES": "ON",
+        "DISABLE_MAPS_COMPILE": "ON"
+      }
+    },
+    {
+      "name": "legacy-m0-f44",
+      "inherits": "m0-f44-base",
+      "displayName": "Fedora 44 canonical legacy M0",
+      "description": "Canonical SDL2/OpenGL comparison build; remaster discovery disabled.",
+      "binaryDir": "${sourceDir}/build-m0-legacy-f44",
+      "cacheVariables": {
+        "UFOAI_REMASTER": "OFF"
+      }
+    },
+    {
+      "name": "remaster-m0-f44",
+      "inherits": "m0-f44-base",
+      "displayName": "Fedora 44 remaster M0",
+      "description": "Canonical build plus strict remaster dependency discovery. Does not switch production presentation paths.",
+      "binaryDir": "${sourceDir}/build-m0-remaster-f44",
+      "cacheVariables": {
+        "UFOAI_REMASTER": "ON",
+        "UFOAI_REMASTER_STRICT_DEPENDENCIES": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "legacy-m0-f44",
+      "configurePreset": "legacy-m0-f44",
+      "jobs": 8,
+      "targets": [
+        "game",
+        "ufo",
+        "ufoded"
+      ]
+    },
+    {
+      "name": "remaster-m0-f44",
+      "configurePreset": "remaster-m0-f44",
+      "jobs": 8,
+      "targets": [
+        "game",
+        "ufo",
+        "ufoded"
+      ]
+    }
+  ]
+}
