@@ -1,0 +1,6 @@
+upstream_url=https://github.com/jrouwe/JoltPhysics.git
+release_tag=v5.6.0
+commit_sha=e77f175595e64cb44218cc9d9d56fc365ad0e36a
+license_identifier=MIT
+sorted_file_manifest_blake3_256=ffe175b315e20631eea26419b65ef225b73e37e3788dd93b66407fb3f37a9df2
+local_patch_list=none

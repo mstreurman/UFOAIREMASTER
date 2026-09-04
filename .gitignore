@@ -55,3 +55,13 @@ Thumbs.db
 /.pc/
 /patches/
 .build/
+
+# UFO:AI remaster local development state
+/build-f44/
+/build-jolt-f44/
+/tools/slang/
+
+# Internal design-baseline provenance; retained in release tarballs, not Git
+/docs/audits/
+/docs/ARTIFACT_STATUS.md
+/PUBLICATION_STATUS.md
