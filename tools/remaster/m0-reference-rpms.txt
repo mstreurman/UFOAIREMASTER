@@ -1,0 +1,25 @@
+# M0.3 direct reference RPM scope.
+# Syntax: <required|optional> <rpm package spec>
+#
+# Tool-owner RPMs (gcc, linker, CMake, Ninja, ccache, Git, Python,
+# pkg-config, SPIR-V Tools, b3sum, shaderc/glslang when present) are
+# captured independently from the executable files themselves.
+
+required vulkan-headers.noarch
+required vulkan-loader.x86_64
+required vulkan-loader-devel.x86_64
+required vulkan-tools.x86_64
+required vulkan-validation-layers.x86_64
+
+required SDL3.x86_64
+required SDL3-devel.x86_64
+required openal-soft.x86_64
+required openal-soft-devel.x86_64
+
+required ffmpeg.x86_64
+required ffmpeg-libs.x86_64
+required ffmpeg-devel.x86_64
+required libavdevice.x86_64
+
+required mesa-vulkan-drivers.x86_64
+required mesa-dri-drivers.x86_64

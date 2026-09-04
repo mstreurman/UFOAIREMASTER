@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "canonical_source_revision": "763173ed036ebbee32c2a7bf6aefa19748df89ff",
+  "slang": {
+    "version": "2026.17",
+    "release_commit": "5bcb1c031b7873444f745b757a35e25567bbe043",
+    "artifact": "slang-2026.17-linux-x86_64-glibc-2.28.tar.gz",
+    "artifact_sha256": "a5a48530e7218d79e10b633c216ef04cbe778450b8c0a7579125e630c088ca75",
+    "license": "Apache-2.0 WITH LLVM-exception"
+  },
+  "jolt": {
+    "version": "5.6.0",
+    "release_tag": "v5.6.0",
+    "commit": "e77f175595e64cb44218cc9d9d56fc365ad0e36a",
+    "vendor_blake3_256": "ffe175b315e20631eea26419b65ef225b73e37e3788dd93b66407fb3f37a9df2",
+    "license": "MIT",
+    "local_patch_list": "none"
+  }
+}

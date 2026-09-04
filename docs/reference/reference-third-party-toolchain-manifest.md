@@ -25,10 +25,10 @@ role: build-time/offline shader compiler + reflection
 runtime game dependency: no
 accepted release: v2026.17
 accepted release commit: 5bcb1c031b7873444f745b757a35e25567bbe043
-accepted artifact: slang-2026.17-linux-x86_64-glibc-2.27.tar.gz
-artifact SHA-256: e8162da376858faf7d00dc9a94be52a8ff014d14c35c5f8e49c97688ec57bb7b
+accepted artifact: slang-2026.17-linux-x86_64-glibc-2.28.tar.gz
+artifact SHA-256: a5a48530e7218d79e10b633c216ef04cbe778450b8c0a7579125e630c088ca75
 source/release: https://github.com/shader-slang/slang/releases/tag/v2026.17
-repository-local tool-cache location: tools/slang/v2026.17/ (currently untracked in the checkout; add an ignore rule before committing if the binary tool cache is to remain local-only)
+repository-local tool-cache location: tools/slang/v2026.17/ (local-only; ignored by repository policy and not committed)
 source-build fallback: same v2026.17 source release only
 license: Apache-2.0 WITH LLVM-exception
 patch list: none at Baseline 041
