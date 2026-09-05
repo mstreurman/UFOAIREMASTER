@@ -114,10 +114,10 @@ The first implementation queue is deliberately risk-first:
 
 ### M0 / high-risk qualification
 
-- [ ] Commit repository ownership/ignore rules.
-- [ ] Add CMake presets and explicit remaster build options.
-- [ ] Generate reproducible machine/tool/vendor manifest from a clean checkout.
-- [ ] Add canonical legacy clean-build + launch smoke harness.
+- [x] Commit repository ownership/ignore rules.
+- [x] Add CMake presets and explicit remaster build options.
+- [x] Generate reproducible machine/tool/vendor manifest from a clean checkout.
+- [x] Add canonical legacy clean-build + launch smoke harness.
 - [ ] Add canonical regression/replay/reference harness.
 - [ ] Add migration feature-selection scaffolding.
 - [ ] Execute native B580 `VK_EXT_descriptor_heap` write/bind/read fixture.
