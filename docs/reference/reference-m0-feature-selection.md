@@ -1,6 +1,6 @@
 # M0.6 presentation feature-selection / compatibility scaffold
 
-**Status:** M0.6 implementation mechanism  
+**Status:** M0.6 implementation mechanism
 **Baseline:** landed M0.5 revision `9616ae01839a93e3938121841c1484c0f4be25b8`
 
 ## Purpose
