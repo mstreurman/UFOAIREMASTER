@@ -118,7 +118,7 @@ The first implementation queue is deliberately risk-first:
 - [x] Add CMake presets and explicit remaster build options.
 - [x] Generate reproducible machine/tool/vendor manifest from a clean checkout.
 - [x] Add canonical legacy clean-build + launch smoke harness.
-- [ ] Add canonical regression/replay/reference harness.
+- [x] Add canonical regression/replay/reference harness.
 - [ ] Add migration feature-selection scaffolding.
 - [ ] Execute native B580 `VK_EXT_descriptor_heap` write/bind/read fixture.
 - [ ] Execute acceleration-structure heap fixture with the documented 8-byte AS element representation.
