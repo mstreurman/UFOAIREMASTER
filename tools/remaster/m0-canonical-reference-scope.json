@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "name": "ufoai-remaster-m0-canonical-authority-corpus",
+  "description": "Legacy canonical-authority assertions used as the M0.5 preservation baseline. RMA logic is included. Presentation-only renderer/UI/particle suites and external web integration are outside this authority lane. Production-wide map loading/spawnpoint sweeps are tracked separately because the M0 core preset intentionally does not build the production BSP corpus.",
+  "selected_test_sources": [
+    "src/tests/test_campaign.cpp",
+    "src/tests/test_character.cpp",
+    "src/tests/test_dbuffer.cpp",
+    "src/tests/test_events.cpp",
+    "src/tests/test_game.cpp",
+    "src/tests/test_generic.cpp",
+    "src/tests/test_inventory.cpp",
+    "src/tests/test_mapdef.cpp",
+    "src/tests/test_parser.cpp",
+    "src/tests/test_rma.cpp",
+    "src/tests/test_routing.cpp",
+    "src/tests/test_scripts.cpp"
+  ],
+  "excluded_presentation_test_sources": [
+    "src/tests/test_particles.cpp",
+    "src/tests/test_renderer.cpp",
+    "src/tests/test_ui.cpp",
+    "src/tests/test_ui_level2.cpp"
+  ],
+  "support_test_sources": [
+    "src/tests/test_shared.cpp"
+  ],
+  "fixture_roots": [
+    "unittest"
+  ],
+  "runtime_data_roots": [
+    "base"
+  ],
+  "unit_test_map_sources": [
+    "unittest/maps/test_game.map",
+    "unittest/maps/test_routing.map"
+  ],
+  "deferred_asset_sweep_tests": [
+    {
+      "name": "MapDefTest.MapDefsSingleplayer",
+      "reason": "Loads every production map definition (including RMA assemblies) through SV_Map and therefore requires the compiled production BSP corpus; also uses wall-clock seed selection when no explicit seed property is supplied. Preserve as a separate production-asset completeness lane."
+    },
+    {
+      "name": "MapDefTest.MapDefsMultiplayer",
+      "reason": "Loads production multiplayer map definitions through SV_Map and therefore requires the compiled production BSP corpus; also uses wall-clock seed selection when no explicit seed property is supplied. Preserve as a separate production-asset completeness lane."
+    },
+    {
+      "name": "GameTest.CountSpawnpointsStatic",
+      "reason": "Requires the compiled production static-map BSP corpus; legacy M0 intentionally sets DISABLE_MAPS_COMPILE=ON, while the historical testall dependency only compiles dedicated unittest BSP fixtures. Preserve as a separate production-asset completeness lane rather than silently requiring workstation-prebuilt maps."
+    },
+    {
+      "name": "GameTest.CountSpawnpointsRMA",
+      "reason": "Requires compiled production RMA tile BSPs; legacy M0 intentionally sets DISABLE_MAPS_COMPILE=ON. Preserve as a separate production-asset completeness lane rather than silently requiring workstation-prebuilt maps."
+    }
+  ],
+  "excluded_external_integration_test_sources": [
+    "src/tests/test_webapi.cpp"
+  ],
+  "compile_time_excluded_tests": [
+    {
+      "name": "RandomMapAssemblyTest.NewSeedlists",
+      "reason": "Source macro is inside #if SEED_TEST with SEED_TEST defined as 0 at the canonical revision, so it is not compiled or exposed by GoogleTest."
+    }
+  ]
+}
