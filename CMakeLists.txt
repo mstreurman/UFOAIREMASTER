@@ -28,6 +28,11 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 option(UFOAI_REMASTER "Enable UFO:AI remaster M0 build scaffolding" OFF)
 option(UFOAI_REMASTER_STRICT_DEPENDENCIES "Fail configure when an accepted remaster dependency is unavailable" OFF)
 
+# M0.6 defines migration selectors independently from dependency discovery.
+# Every selector defaults to legacy and unwired remaster values fail closed.
+include("${CMAKE_SOURCE_DIR}/cmake/remaster/PresentationSelection.cmake")
+ufoai_remaster_configure_presentation_selection()
+
 if (UFOAI_REMASTER)
 	# FindVulkan needs host compiler/library architecture discovery on Linux.
 	# Keep this confined to the opt-in remaster path.

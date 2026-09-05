@@ -1,0 +1,12 @@
+ufoai-remaster-presentation-selection-v1
+schema.version=1
+bootstrap.ufoai_remaster=@UFOAI_REMASTER_BOOTSTRAP_ENABLED@
+selection.platform=@UFOAI_PRESENTATION_PLATFORM@
+selection.renderer=@UFOAI_PRESENTATION_RENDERER@
+selection.ui=@UFOAI_PRESENTATION_UI@
+selection.audio=@UFOAI_PRESENTATION_AUDIO@
+selection.vfx=@UFOAI_PRESENTATION_VFX@
+selection.cinematics=@UFOAI_PRESENTATION_CINEMATICS@
+selection.remaster_backends_enabled=0
+production.behavior=legacy
+rollback.legacy_available=true
