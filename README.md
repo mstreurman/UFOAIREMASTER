@@ -121,7 +121,7 @@ The first implementation queue is deliberately risk-first:
 - [x] Add canonical regression/replay/reference harness.
 - [x] Add migration feature-selection scaffolding.
 - [x] Execute native B580 `VK_EXT_descriptor_heap` write/bind/read fixture.
-- [ ] Execute acceleration-structure heap fixture with the documented 8-byte AS element representation.
+- [x] Execute acceleration-structure heap fixture with the documented 8-byte AS element representation.
 - [ ] Run Jolt `>=256` dynamic-body, contact-heavy, sleep/wake stress for `>=10` minutes with finite-transform checks.
 - [ ] Reproduce M0 from a clean checkout without undocumented workstation state.
 
