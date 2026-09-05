@@ -1,0 +1,63 @@
+cmake_minimum_required(VERSION 3.25 FATAL_ERROR)
+project(ufoai_m0_jolt_stress LANGUAGES CXX)
+
+if(NOT DEFINED UFOAI_JOLT_ROOT)
+    message(FATAL_ERROR "UFOAI_JOLT_ROOT must point to third_party/JoltPhysics")
+endif()
+get_filename_component(UFOAI_JOLT_ROOT "${UFOAI_JOLT_ROOT}" ABSOLUTE)
+if(NOT EXISTS "${UFOAI_JOLT_ROOT}/Build/CMakeLists.txt")
+    message(FATAL_ERROR "Jolt Build/CMakeLists.txt not found under ${UFOAI_JOLT_ROOT}")
+endif()
+
+option(UFOAI_JOLT_SANITIZERS "Instrument Jolt and the R5 fixture with ASAN+UBSAN" OFF)
+if(UFOAI_JOLT_SANITIZERS)
+    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        message(FATAL_ERROR "R5 ASAN+UBSAN qualification requires GCC or Clang")
+    endif()
+    add_compile_options(
+        -fsanitize=address,undefined
+        -fno-sanitize-recover=all
+        -fno-omit-frame-pointer)
+    add_link_options(
+        -fsanitize=address,undefined
+        -fno-sanitize-recover=all)
+endif()
+
+set(JPH_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(OVERRIDE_CXX_FLAGS OFF CACHE BOOL "" FORCE)
+set(INTERPROCEDURAL_OPTIMIZATION OFF CACHE BOOL "" FORCE)
+set(ENABLE_ALL_WARNINGS OFF CACHE BOOL "" FORCE)
+set(ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
+set(DOUBLE_PRECISION OFF CACHE BOOL "" FORCE)
+set(CROSS_PLATFORM_DETERMINISTIC OFF CACHE BOOL "" FORCE)
+set(CPP_EXCEPTIONS_ENABLED OFF CACHE BOOL "" FORCE)
+set(CPP_RTTI_ENABLED OFF CACHE BOOL "" FORCE)
+set(OBJECT_LAYER_BITS 16 CACHE STRING "" FORCE)
+set(USE_SSE4_1 ON CACHE BOOL "" FORCE)
+set(USE_SSE4_2 ON CACHE BOOL "" FORCE)
+set(USE_AVX ON CACHE BOOL "" FORCE)
+set(USE_AVX2 ON CACHE BOOL "" FORCE)
+set(USE_AVX512 OFF CACHE BOOL "" FORCE)
+set(USE_LZCNT ON CACHE BOOL "" FORCE)
+set(USE_TZCNT ON CACHE BOOL "" FORCE)
+set(USE_F16C ON CACHE BOOL "" FORCE)
+set(USE_FMADD ON CACHE BOOL "" FORCE)
+set(JPH_USE_DX12 OFF CACHE BOOL "" FORCE)
+set(JPH_USE_VK OFF CACHE BOOL "" FORCE)
+set(JPH_USE_MTL OFF CACHE BOOL "" FORCE)
+set(JPH_USE_CPU_COMPUTE OFF CACHE BOOL "" FORCE)
+set(ENABLE_OBJECT_STREAM OFF CACHE BOOL "" FORCE)
+set(DEBUG_RENDERER_IN_DISTRIBUTION OFF CACHE BOOL "" FORCE)
+set(PROFILER_IN_DEBUG_AND_RELEASE OFF CACHE BOOL "" FORCE)
+set(PROFILER_IN_DISTRIBUTION OFF CACHE BOOL "" FORCE)
+set(USE_ASSERTS ON CACHE BOOL "" FORCE)
+
+add_subdirectory("${UFOAI_JOLT_ROOT}/Build" jolt-v5_6-build EXCLUDE_FROM_ALL)
+
+add_executable(m0_jolt_stress jolt_stress.cpp)
+target_link_libraries(m0_jolt_stress PRIVATE Jolt::Jolt)
+target_compile_features(m0_jolt_stress PRIVATE cxx_std_17)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(m0_jolt_stress PRIVATE
+        -Wall -Wextra -Wpedantic -Werror -fno-exceptions -fno-rtti)
+endif()
