@@ -119,7 +119,7 @@ The first implementation queue is deliberately risk-first:
 - [x] Generate reproducible machine/tool/vendor manifest from a clean checkout.
 - [x] Add canonical legacy clean-build + launch smoke harness.
 - [x] Add canonical regression/replay/reference harness.
-- [ ] Add migration feature-selection scaffolding.
+- [x] Add migration feature-selection scaffolding.
 - [ ] Execute native B580 `VK_EXT_descriptor_heap` write/bind/read fixture.
 - [ ] Execute acceleration-structure heap fixture with the documented 8-byte AS element representation.
 - [ ] Run Jolt `>=256` dynamic-body, contact-heavy, sleep/wake stress for `>=10` minutes with finite-transform checks.
