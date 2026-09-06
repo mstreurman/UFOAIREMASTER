@@ -10,7 +10,7 @@ This repository is based on the upstream UFO:AI source tree at:
 763173ed036ebbee32c2a7bf6aefa19748df89ff
 ```
 
-The remaster architecture and implementation strategy currently live in **Design Baseline 042** under [`docs/`](docs/README.md).
+The remaster architecture and implementation strategy live in the current accepted design baseline under [`docs/`](docs/README.md).
 
 ## Vision
 
@@ -29,6 +29,7 @@ The remaster targets:
 - Jolt v5.6.0 for **presentation-only** physics;
 - FFmpeg for cinematic/video migration;
 - deterministic offline runtime-asset generation;
+- legacy source-content import for supported maps, models, textures and audio without preserving the old mod/UI/renderer ABI;
 - aggressive optimization for the Intel Core i9-9900K + Intel Arc B580 reference workstation;
 - runtime configurability that remains separate from hardware-specific optimization.
 
@@ -42,6 +43,8 @@ The reference performance profile is **1920x1080, 60 Hz, sustained close to 60 F
 4. **Measured evidence beats assumptions.** B580/i9-specific decisions must be supported by validation, benchmarks or captured runtime capability data.
 5. **Builds stay bisectable.** Mergeable implementation units must remain buildable and testable.
 6. **Runtime settings stay runtime settings.** Display, resolution, refresh, HDR, audio device and HRTF are selectable rather than baked into the engine.
+7. **Legacy backends are migration tools, not permanent products.** OpenGL and the old mixer are removed once their modern replacements have been defaulted, soaked and separately decommissioned.
+8. **Legacy source-content import is not legacy mod compatibility.** Supported maps/models/textures/audio may be imported or converted; old gameplay mods, GUI/Lua ABI, renderer internals and source-patch total conversions are not compatibility constraints.
 
 See [`docs/architecture/091-implementation-execution-strategy.md`](docs/architecture/091-implementation-execution-strategy.md) for the execution contract.
 
@@ -51,39 +54,39 @@ The accepted migration roadmap is [`docs/architecture/080-implementation-migrati
 
 | Milestone | Goal |
 | --- | --- |
-| **M0** | Reproducible bootstrap and preservation harness |
+| **M0** | Reproducible bootstrap and preservation harness — **complete** |
 | **M1** | Canonical boundary shims |
 | **M2** | Vulkan device/platform foundation |
-| **M3** | Offline content/runtime asset foundation |
+| **M3** | Offline content/runtime asset foundation + legacy source-content import |
 | **M4** | Presentation World + basic raster scene |
-| **M5** | Tactical presentation parity |
-| **M6** | Strategic/campaign/Geoscape migration |
-| **M7** | Retained UI and input completion |
-| **M8** | OpenAL/EFX production audio |
+| **M5** | Tactical presentation parity + tactical OpenGL retirement |
+| **M6** | Strategic/campaign/Geoscape migration + strategic OpenGL retirement |
+| **M7** | Retained UI/input + complete OpenGL decommission |
+| **M8** | OpenAL/EFX production audio + legacy mixer decommission |
 | **M9** | VFX + Jolt presentation physics |
 | **M10** | Hardware RT lighting and reconstruction |
-| **M11** | Cinematic/video migration |
+| **M11** | Cinematic/video completion |
 | **M12** | Performance specialization |
-| **M13** | Legacy removal and release packaging |
+| **M13** | Release hardening and packaging |
 
 ### Immediate execution order
 
-The first implementation queue is deliberately risk-first:
+M0 is sealed. The active implementation queue now begins at M1:
 
-1. repository ownership and ignore hygiene;
-2. CMake presets/options and dependency discovery;
-3. exact tool/RPM/vendor manifest capture;
-4. clean canonical legacy build + launch smoke;
-5. canonical regression/replay/reference harness;
-6. feature-selection/compatibility scaffolding without behavior replacement;
-7. native `VK_EXT_descriptor_heap` execution fixture;
-8. Slang descriptor-heap ABI/package fixture;
-9. Jolt `>=256` body, `>=10` minute sleep/wake finite-transform stress qualification;
-10. SDL3/Vulkan production bootstrap;
-11. frame contexts, allocator and descriptor-heap runtime;
-12. Frame Graph + swapchain diagnostic frame;
-13. representative `.rshader` / `.r*` asset-pipeline slice;
-14. Presentation World -> first real Vulkan tactical scene.
+1. formalize canonical spatial wrappers and tests;
+2. introduce immutable tactical/strategic publication seams;
+3. introduce typed presentation IDs and intent dispatch;
+4. bring up the SDL3/Vulkan production platform path;
+5. implement frame contexts, allocator and production descriptor-heap runtime;
+6. implement Frame Graph + swapchain/output diagnostic frame;
+7. implement representative `.rshader` / `.r*` asset conversion and loading;
+8. qualify legacy source-content import fixtures for maps/models/textures/audio;
+9. build Presentation World -> first real Vulkan tactical scene;
+10. reach tactical presentation parity, default Vulkan tactical presentation, soak, then retire tactical OpenGL ownership;
+11. migrate strategic/Geoscape presentation, default it, soak, then retire strategic OpenGL ownership;
+12. complete retained UI/text/2D plus Vulkan cinematic frame display, then fully decommission OpenGL in M7;
+13. complete OpenAL/EFX production audio, default/soak it, then remove the old mixer in M8;
+14. continue with VFX/Jolt, RT, full FFmpeg cinematic completion, performance specialization and release hardening.
 
 ## Readiness checklist
 
@@ -96,6 +99,8 @@ The first implementation queue is deliberately risk-first:
 - [x] Runtime display/HDR/audio configurability separated from target-machine optimization.
 - [x] M0-M13 migration roadmap defined.
 - [x] Risk-first implementation execution strategy defined.
+- [x] Progressive OpenGL/legacy-mixer decommission policy defined.
+- [x] Legacy compatibility narrowed to supported source-content import rather than old mod/runtime ABI preservation.
 
 ### Local development environment
 
@@ -125,6 +130,15 @@ The first implementation queue is deliberately risk-first:
 - [x] Run Jolt `>=256` dynamic-body, contact-heavy, sleep/wake stress for `>=10` minutes with finite-transform checks.
 - [x] Reproduce M0 from a clean checkout without undocumented workstation state.
 
+### M1 / canonical boundary shims
+
+- [ ] Formalize canonical spatial-service wrappers and tests.
+- [ ] Introduce typed presentation IDs where required.
+- [ ] Publish immutable tactical snapshots/events without raw canonical pointers.
+- [ ] Publish immutable strategic snapshots/view data without raw canonical pointers.
+- [ ] Introduce typed intent dispatch without changing canonical rules.
+- [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
+
 ### Renderer and presentation
 
 - [ ] SDL3 + Vulkan production window/surface/device bootstrap.
@@ -136,17 +150,18 @@ The first implementation queue is deliberately risk-first:
 - [ ] Diagnostic swapchain frame.
 - [ ] Runtime shader/package pipeline.
 - [ ] Runtime asset family and deterministic content conversion.
+- [ ] Legacy source-content import path for supported maps/models/textures/audio.
 - [ ] Presentation World.
 - [ ] Basic raster tactical scene.
-- [ ] Tactical presentation parity.
-- [ ] Geoscape/campaign presentation migration.
-- [ ] Retained UI/input migration.
-- [ ] OpenAL/EFX production audio migration.
+- [ ] Tactical presentation parity; default Vulkan tactical presentation; retire tactical-only OpenGL ownership.
+- [ ] Geoscape/campaign presentation migration; retire strategic OpenGL ownership.
+- [ ] Retained UI/input + Vulkan cinematic frame display; complete OpenGL decommission in M7.
+- [ ] OpenAL/EFX production audio; remove the legacy mixer in M8 after default/soak evidence.
 - [ ] VFX + Jolt presentation physics integration.
 - [ ] Hardware RT lighting/reconstruction.
-- [ ] FFmpeg cinematic/video migration.
+- [ ] FFmpeg cinematic/video completion on the Vulkan/OpenAL presentation stack.
 - [ ] B580/i9-9900K performance specialization.
-- [ ] Legacy presentation-code removal after parity/default/rollback gates pass.
+- [ ] Release hardening/packaging after legacy renderer/audio decommission has already completed.
 
 ## Current target workstation
 
@@ -222,9 +237,9 @@ Start here:
 
 ## Build status
 
-The original UFO:AI source currently still builds in the existing local `build-f44/` tree. The new remaster runtime is **not implemented yet**; the project is at the start of M0.
+M0 is qualified and sealed: the original UFO:AI source, preservation harness and high-risk dependency fixtures reproduce from a clean checkout. The new remaster presentation runtime is **not implemented yet**; the active production phase is M1.
 
-Do not interpret checked design/provisioning items above as implemented renderer features.
+Do not interpret checked design/provisioning/qualification items above as implemented Vulkan/OpenAL presentation features.
 
 ## Upstream lineage and licensing
 
@@ -236,6 +251,6 @@ The project-local Slang binary cache under `tools/slang/` is a development depen
 
 ## Status
 
-**Current phase: M0 — reproducible bootstrap and preservation harness.**
+**Current phase: M1 — canonical boundary shims.**
 
-The architecture is considered implementation-ready. The next work is code, fixtures, reproducibility and qualification—not another broad design rewrite.
+M0 is complete. The next work is implementation: establish canonical publication/intent seams, then move onto the Vulkan/platform/content critical path defined by Architecture 080/091.

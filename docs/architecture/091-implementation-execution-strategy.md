@@ -1,18 +1,19 @@
 # Implementation Execution Strategy
 
-**Status:** Accepted execution strategy for implementation work beginning after Baseline 041  
+**Status:** Accepted execution strategy — revised after M0 qualification for progressive legacy retirement  
 **Primary target:** Fedora 44 / Intel Core i9-9900K / Intel Arc B580  
 **Canonical source baseline:** `763173ed036ebbee32c2a7bf6aefa19748df89ff`  
+**Qualified remaster planning head:** `b0eb12631c71e90b7c3d1f6d19e618e7656c80be`  
 **Milestone authority:** architecture 080  
-**Purpose:** Define how the M0-M13 roadmap is executed, integrated, tested, measured, rolled back and eventually allowed to delete legacy presentation code.
+**Purpose:** Define how the M0-M13 roadmap is executed, integrated, tested, measured, rolled back and allowed to retire obsolete presentation implementations as soon as their replacements are proven.
 
 ## 1. Why this document exists
 
-Architecture 080 defines **what order the milestones occur in**. It intentionally does not define the day-to-day implementation method inside those milestones.
+Architecture 080 defines **what order the milestones occur in**. This document defines the production method used inside those milestones.
 
-This document supplies that missing execution layer.
+The project does not use a flag-day rewrite. It uses a **risk-first, vertical-slice migration** with canonical gameplay continuously runnable.
 
-The project will not use a flag-day rewrite. It will use a **risk-first, vertical-slice migration** with canonical gameplay continuously runnable and with old presentation paths retained until their explicit removal gates are satisfied.
+The important post-M0 refinement is that legacy presentation implementations are not retained until release by default. A legacy path remains only while it is a useful, tested migration/rollback mechanism for the subsystem currently replacing it.
 
 The execution model is:
 
@@ -25,14 +26,20 @@ preserve canonical behavior
         |
         +--> migrate one observable presentation slice at a time
         |
-        +--> switch defaults only after parity evidence
+        +--> switch that slice to the modern default after parity evidence
         |
-        +--> delete legacy code only in a later change after rollback evidence exists
+        +--> keep a short real rollback window
+        |
+        +--> delete the obsolete implementation in a separate change
+        |
+        +--> continue without carrying dead backends
 ```
+
+For graphics this means complete OpenGL decommission in M7. For sound it means old-mixer decommission in M8. M13 is release hardening, not deferred backend replacement.
 
 ## 2. Non-negotiable implementation invariants
 
-Every implementation change must preserve these project-level rules:
+Every implementation change must preserve:
 
 ```text
 canonical UFO:AI gameplay remains authoritative
@@ -45,6 +52,9 @@ animation/root motion never becomes canonical movement authority
 runtime display/audio configuration remains selectable
 B580/i9-9900K remains the primary optimization and qualification target
 VK_EXT_descriptor_heap is the production renderer binding model from first Vulkan renderer implementation
+OpenGL is a temporary migration backend, not a permanent remaster backend
+legacy gameplay/UI/mod ABI compatibility is not a design constraint
+accepted legacy source content is imported/converted without preserving obsolete runtime ownership
 ```
 
 A change that cannot demonstrate where it sits relative to these invariants is not ready to merge.
@@ -82,7 +92,7 @@ EV_SOUND
     -> no canonical state dependency on source lifetime
 ```
 
-Do not first build every low-level subsystem to theoretical completion and only integrate them near the end. Each major foundation must acquire a real end-to-end consumer as early as practical.
+Do not build every low-level subsystem to theoretical completion before integration. Each major foundation must acquire a real end-to-end consumer as early as practical.
 
 ## 4. Risk-burn-down lane runs ahead of feature migration
 
@@ -98,11 +108,12 @@ R4  8-byte acceleration-structure heap + TraceRay/ray-query conformance fixture
 R5  Jolt v5.6.0 >=256-body >=10-minute finite-transform sleep/wake stress fixture
 R6  SDL3/Wayland resize/fullscreen/display/HDR lifecycle fixture
 R7  representative asset conversion + deterministic load fixture
-R8  shipped-cinematic FFmpeg corpus qualification before decoder retirement
-R9  raster/RT geometry parity fixture before RT lighting migration
+R8  Vulkan cinematic frame upload/display fixture before OpenGL decommission
+R9  shipped-cinematic FFmpeg corpus qualification before legacy decoder retirement
+R10 raster/RT geometry parity fixture before RT lighting migration
 ```
 
-A fixture proving a future subsystem contract does **not** move that subsystem's production milestone earlier. It only burns down a known risk before the project has accumulated dependencies on the assumption.
+M0 has already closed the initial high-risk qualification set needed to start implementation. Later fixtures remain risk-burn-down work and do not by themselves advance a production milestone.
 
 ## 5. Implementation lanes
 
@@ -117,13 +128,14 @@ canonical regression corpus
 protocol/event fixtures
 spatial-service wrappers
 immutable snapshot/publication boundaries
+typed intent seams
 replay hashes
 canonical-state assertions
 ```
 
 This lane starts in M0 and remains active through M13.
 
-### Lane B — Platform and renderer foundation
+### Lane B — Platform, renderer and renderer retirement
 
 Owns:
 
@@ -138,9 +150,11 @@ Frame Graph
 swapchain/output state
 shader/package runtime
 GPU scene
+OpenGL consumer retirement
+OpenGL source/build dependency removal
 ```
 
-This lane is the critical path through M2-M4.
+This lane is the critical path through M2-M7.
 
 ### Lane C — Content and runtime assets
 
@@ -152,10 +166,13 @@ conversion tools
 .r* containers
 shader packaging
 runtime asset registry
-representative conversion corpus
+representative shipped conversion corpus
+legacy source-content import corpus
 ```
 
-It starts early enough that M4 never depends on ad-hoc legacy resource ownership.
+Legacy compatibility in this lane is deliberately limited to supported **source content** such as maps/RMA, models/animations, textures/material inputs and audio source files.
+
+This lane does not preserve a general legacy mod framework, old GUI ABI, old renderer ABI, `fs_gamedir` semantics as a permanent contract, or source-patch compatibility.
 
 ### Lane D — Presentation subsystem migration
 
@@ -165,13 +182,14 @@ Owns incremental migration of:
 tactical presentation
 strategic/Geoscape presentation
 retained UI
+cinematic frame presentation
 OpenAL audio
 VFX
 Jolt presentation physics
-cinematics
+full FFmpeg cinematic runtime
 ```
 
-Each subsystem retains an explicit compatibility/fallback boundary until its exit gate is satisfied.
+Each subsystem retains a compatibility/fallback boundary only until its exit/default/soak/decommission sequence is complete.
 
 ### Lane E — Qualification and optimization
 
@@ -186,9 +204,10 @@ HDR/output qualification
 memory/residency telemetry
 before/after optimization evidence
 release completeness scans
+clean-bootstrap release proof
 ```
 
-This is continuous; M12 is when target specialization becomes the dominant work rather than when measurement first begins.
+This is continuous. M12 is when specialization becomes dominant work rather than when measurement first begins.
 
 ## 6. Gate model for every mergeable implementation unit
 
@@ -224,9 +243,11 @@ no presentation result is consumed as canonical input
 
 ```text
 expected presentation output/command/state captured
-legacy/new comparison performed where the milestone requires parity
+legacy/new comparison performed while the legacy reference still exists
 known intentional differences are documented
 ```
+
+After an owning legacy subsystem has been decommissioned, preserved captures/reference artifacts replace runtime A/B as the historical comparison source.
 
 ### G4 — API/validation gate
 
@@ -238,6 +259,7 @@ SPIR-V validates
 shader ABI/reflection checks pass
 OpenAL device/context errors checked
 container/header/hash validators pass
+SDL3 lifecycle diagnostics clean
 ```
 
 ### G5 — Stress/sanitizer gate
@@ -252,7 +274,7 @@ finite-state/lifetime invariants continuously asserted
 
 ### G6 — Performance gate
 
-Required only when accepting/rejecting an optimization or satisfying a milestone budget.
+Required when accepting/rejecting an optimization or satisfying a milestone budget.
 
 ```text
 reference machine/toolchain recorded
@@ -264,7 +286,7 @@ regression threshold interpreted against architecture 073/055
 
 ### G7 — Clean-bootstrap gate
 
-Required for M0 exit and again before M13 release closure.
+Required for M0 closure and M13 release closure, and may be required for a major decommission gate when build dependencies change materially.
 
 ```text
 clean checkout
@@ -275,30 +297,33 @@ tests
 launch/smoke
 ```
 
-## 7. Legacy/new selection and rollback rule
+## 7. Default, rollback and decommission rule
 
-During migration, legacy and new presentation implementations may coexist behind compatibility adapters or selection mechanisms.
-
-The required sequence is:
+A replacement follows this sequence:
 
 ```text
-1. introduce new seam/path without deleting old path
-2. prove new path through applicable G0-G6 gates
+1. introduce the new seam/path without deleting the old path
+2. prove the new path through applicable G0-G6 gates
 3. make the new path selectable
-4. make the new path the default only after milestone exit evidence exists
-5. retain the old path long enough to provide a real rollback point
-6. remove the old path in a later change only after source-boundary removal scans pass
+4. make the new path the production default only after milestone evidence exists
+5. retain the old path long enough to exercise a real rollback point
+6. run source-boundary/removal scans
+7. delete the old path in a later change
+8. rerun applicable build/regression/validation/bootstrap gates
+9. use version control, not a dead runtime backend, as rollback after deletion
 ```
 
-Do not combine "new implementation becomes default" and "legacy implementation is deleted" into the same risky integration change.
+Do not combine **new default** and **legacy deletion** in the same risky integration change.
 
-Runtime selection mechanisms are migration tools unless their owning architecture explicitly requires them as permanent user-facing settings.
+Runtime selection mechanisms are migration tools unless an owning architecture explicitly requires them as permanent user-facing settings.
+
+A legacy subsystem must not be retained merely for hypothetical compatibility once its replacement has passed this sequence.
 
 ## 8. Canonical-code touch policy
 
 Changes under canonical authority such as `src/game/`, server/common spatial services and canonical campaign state must be minimized.
 
-Permitted implementation motives include:
+Permitted motives include:
 
 ```text
 read-only publication/adaptation seam
@@ -307,23 +332,56 @@ behavior-preserving optimization with canonical regression proof
 bug fix explicitly accepted as a canonical change
 ```
 
-Presentation convenience is not a valid reason to move gameplay decisions into renderer/audio/Jolt/UI code or to weaken a canonical boundary.
+Presentation convenience is not a valid reason to move gameplay decisions into renderer/audio/Jolt/UI code or weaken a canonical boundary.
 
 Where a legacy call mixes canonical and presentation responsibilities, split the interface before replacing the implementation.
 
-## 9. Dependency ownership strategy
+## 9. Legacy content and mod-compatibility production policy
 
-Dependency handling follows the already accepted Baseline-041 state:
+The remaster does **not** promise drop-in compatibility for the historical UFO:AI mod ecosystem.
+
+Not protected as compatibility contracts:
+
+```text
+gameplay/config override mods
+old total conversions
+legacy GUI/HUD definitions
+legacy Lua callback ABI
+OpenGL renderer imports/state
+old mixer/source internals
+private C/C++ structures
+source patches
+undefined behavior
+fs_gamedir behavior as a permanent public ABI
+```
+
+Supported legacy compatibility work is limited to accepted source-content import:
+
+```text
+maps / RMA source content
+models / skeletons / animations where supported
+textures / presentation material inputs
+audio / music / sample files
+```
+
+Importers may translate old source formats into new runtime containers. Runtime ownership and parser architecture are free to change.
+
+For maps, canonical BSP/entity/spatial semantics remain authoritative. Presentation conversion must not replace canonical collision, routing, LOS, trigger, spawn, door, mission or other gameplay-authoritative behavior.
+
+A future remaster mod API may be designed separately as a versioned modern interface. It is not constrained by historical renderer/UI/internal ABI compatibility.
+
+## 10. Dependency ownership strategy
+
+Dependency handling follows the accepted project state:
 
 ```text
 Slang v2026.17
     project-local provisioned tool cache
     exact artifact hash/pin
-    not a source dependency to commit as arbitrary binaries
 
 Jolt v5.6.0
     vendored source under third_party/JoltPhysics/
-    exact commit + vendor manifest BLAKE3-256
+    exact commit + vendor manifest identity
     static project dependency
 
 FFmpeg / SDL3 / OpenAL / Vulkan platform development packages
@@ -333,39 +391,42 @@ FFmpeg / SDL3 / OpenAL / Vulkan platform development packages
 
 Generated build trees and local binary tool caches are not project source.
 
-Vendored dependency modifications must update their patch list/vendor identity rather than becoming unrecorded local edits.
+Vendored dependency modifications must update their patch list/vendor identity rather than become unrecorded local edits.
 
-## 10. M0 execution strategy
+OpenGL development/runtime packages may remain during migration only while the legacy renderer still builds. M7 decommission must prove the remaster configures/builds without the obsolete OpenGL renderer dependency set.
 
-M0 is not "start rewriting the renderer." It creates the safe implementation runway.
+## 11. M0 qualification state
 
-Recommended M0 work order:
+M0 is complete and sealed. It is no longer the current production phase.
+
+The sealed state provides:
 
 ```text
-M0.1 repository ownership/ignore hygiene
-M0.2 CMake presets/options and dependency discovery
-M0.3 exact tool/RPM/vendor manifest capture
-M0.4 clean canonical legacy build + launch smoke
-M0.5 canonical regression/replay/reference harness
-M0.6 feature-selection/compatibility scaffolding without behavior replacement
-M0.7 standalone high-risk conformance fixtures that do not require production integration
-M0.8 clean-checkout reproducibility proof
+reproducible clean checkout/bootstrap
+canonical legacy build + launch reference
+canonical regression/replay/reference corpus
+migration feature-selection scaffolding
+descriptor-heap qualification
+Slang descriptor-heap qualification
+acceleration-structure heap qualification
+Jolt stress qualification
+clean-checkout reproducibility evidence
 ```
 
-M0 exit means another clean checkout can reproduce the known environment and preservation evidence without relying on undocumented workstation state.
+Implementation now begins at M1.
 
-## 11. M1-M4 critical path
+## 12. M1-M4 critical path
 
 The shortest useful path to a real Vulkan tactical scene is:
 
 ```text
-M1 canonical snapshot/event seams
+M1 canonical snapshot/event/intent seams
     |
 M2 SDL3 + Vulkan device + descriptor heap + allocator + frame contexts
     |
 M2 Frame Graph + output/swapchain + debug/validation
     |
-M3 shader package + representative runtime asset path
+M3 shader package + representative runtime asset/content-import path
     |
 M4 Presentation World static geometry + one model/material path
     |
@@ -374,11 +435,85 @@ M4 camera + basic G-buffer/deferred lighting
 M4 animation/skinning path
 ```
 
-The first useful Vulkan target should be deliberately narrow. It should prove the actual production contracts rather than create a throw-away renderer architecture.
+The first useful Vulkan target should be deliberately narrow and should prove production contracts rather than create a throw-away renderer.
 
-A diagnostic clear/triangle is valid for platform bring-up, but production objects should enter through the accepted descriptor-heap/GPU-scene/asset contracts rather than a temporary descriptor-set renderer that will later be rewritten.
+A diagnostic clear/triangle is valid for platform bring-up, but production objects must enter through accepted descriptor-heap/GPU-scene/asset contracts rather than a temporary descriptor-set renderer.
 
-## 12. Jolt strategy
+## 13. OpenGL retirement strategy
+
+OpenGL retirement is progressive, not postponed to M13.
+
+### M5 — tactical retirement
+
+Required sequence:
+
+```text
+complete tactical event/presentation parity
+default Vulkan tactical presentation in a separate change
+soak/validate against canonical and presentation corpus
+remove tactical-only direct R_*/OpenGL ownership in later changes
+```
+
+Shared OpenGL infrastructure may remain if strategic/UI/video consumers still require it.
+
+### M6 — strategic/Geoscape retirement
+
+Required sequence:
+
+```text
+migrate StrategicSnapshot/scene/UI coupling
+default Vulkan strategic/Geoscape presentation
+soak/validate
+remove Geoscape-specific renderer ownership and raw buffers
+```
+
+### M7 — final OpenGL decommission
+
+Before deleting the renderer implementation, all of the following must already be modern-owned:
+
+```text
+tactical world rendering
+strategic/Geoscape rendering
+UI/text/2D drawing
+image/model runtime ownership
+cinematic frame upload/display
+window/surface lifecycle
+```
+
+Then:
+
+```text
+default retained UI/Vulkan video presentation
+soak/validate in earlier changes
+scan all production R_* imports/raw renderer pointers/OpenGL calls
+remove legacy renderer source families
+remove SDL GL context creation
+remove GL state/program/framebuffer machinery
+remove renderer fallback selection
+remove obsolete OpenGL build/link dependencies
+rerun build/canonical/presentation/validation/clean-bootstrap gates as applicable
+```
+
+After M7, OpenGL is not an available runtime rollback backend. Rollback is version control.
+
+M8-M13 must not reintroduce OpenGL assumptions.
+
+## 14. OpenAL and old-mixer retirement strategy
+
+OpenAL follows the same production discipline.
+
+```text
+typed AudioCommand path exists first
+OpenAL runtime becomes selectable
+logical/audible regression evidence passes
+OpenAL becomes production default
+a real rollback window is exercised
+old mixer/source implementation is removed in a later change
+```
+
+M8 exit requires old-mixer decommission. M13 must not carry an old audio backend merely for cleanup.
+
+## 15. Jolt strategy
 
 Jolt has two distinct readiness states:
 
@@ -387,23 +522,21 @@ dependency/build readiness
 production presentation-physics qualification
 ```
 
-Baseline 041 closes the first state.
+M0 closes the initial dependency and stress-qualification state for the accepted pin.
 
-Before broad ragdoll/debris integration depends on Jolt v5.6.0, execute the architecture-082 stress harness:
+Broad ragdoll/debris integration must still preserve:
 
 ```text
->=256 dynamic bodies
-contact-heavy stacking
-ragdoll constraints
-sleep/wake repetition
->=10 minutes
-finite transforms and velocities every tick
-ASAN/UBSAN where practical
+presentation-only authority
+finite transforms/velocities
+bounded lifetime
+canonical replay invariance
+CPU/GPU budget evidence
 ```
 
-If v5.6.0 reproduces the tracked non-finite failure, stop production integration and evaluate the already documented v5.5.0 fallback. Do not work around non-finite state inside presentation consumers.
+If production integration uncovers a pin-specific non-finite regression, stop the affected presentation feature and reopen the documented dependency gate rather than masking invalid state in consumers.
 
-## 13. Descriptor-heap strategy
+## 16. Descriptor-heap strategy
 
 Descriptor heap is not an optional late optimization.
 
@@ -412,20 +545,18 @@ The implementation sequence is:
 ```text
 query and record exact B580 heap properties
 allocate aligned SamplerHeap and ResourceHeap address ranges
-prove write/bind/push-data commands in a native fixture
-prove Slang sampled-image/storage-image/sampler/buffer/CBV cases
-prove mixed resource byte allocation
-prove AS 8-byte heap entries separately
-prove non-uniform access behavior
-freeze ShaderBindingAbiHash256 v2 fixture
-only then make general renderer resources depend on the binding layer
+use the already-qualified native write/bind/push-data behavior
+use the already-qualified Slang resource ABI
+preserve the accepted 8-byte AS heap representation
+freeze/validate ShaderBindingAbiHash256 fixtures
+make general renderer resources depend on the production binding layer
 ```
 
 No production descriptor-set renderer is built as a temporary fallback.
 
-## 14. Performance strategy
+## 17. Performance strategy
 
-Performance work starts with measurement but specialization is accepted only through evidence.
+Performance work starts with measurement, but specialization is accepted only through evidence.
 
 ### From day one
 
@@ -462,9 +593,9 @@ compression/tuning
 
 "Faster on another machine" does not replace evidence on the B580/i9-9900K qualification target.
 
-## 15. Commit/integration discipline
+## 18. Commit/integration discipline
 
-Implementation history should stay bisectable.
+Implementation history must stay bisectable.
 
 Preferred change shape:
 
@@ -474,16 +605,17 @@ buildable at every integration point
 no unrelated cleanup mixed with behavioral migration
 format/mechanical churn separated from semantic changes
 new default separated from legacy deletion
-benchmark-driven optimization includes its measurement artifact/reference
+legacy deletion separated by subsystem instead of one giant final purge
+benchmark-driven optimization includes measurement evidence
 ```
 
 Large generated/vendor content changes should be isolated so source review remains possible.
 
-The exact Git branching workflow is repository-process policy rather than engine architecture; this strategy requires only that integration points remain buildable, reviewable and bisectable.
+The exact Git branching workflow is repository-process policy rather than engine architecture; this strategy requires only buildable, reviewable and bisectable integration points.
 
-## 16. Definition of done for a milestone
+## 19. Definition of done for a milestone
 
-A milestone is complete only when all of the following are true:
+A milestone is complete only when:
 
 ```text
 its architecture-080 work list is implemented
@@ -492,58 +624,67 @@ new source ownership is documented
 legacy fallback/removal state is explicit
 known deviations are documented
 performance evidence exists where required
-rollback path is still valid or the legacy removal gate is explicitly satisfied
+rollback state matches the milestone policy
 clean status/evidence is captured in the documentation baseline
 ```
 
 "The code seems to work" is not a milestone exit condition.
 
-## 17. Definition of done for legacy removal
+## 20. Definition of done for legacy removal
 
 A legacy subsystem may be removed only when:
 
 ```text
-new path has already been defaulted and validated in an earlier integration step
+new path was already defaulted in an earlier integration change
 all production consumers are migrated or intentionally removed
+a real rollback window existed before deletion
 source scans find no unclassified includes/calls/globals from the old subsystem
 canonical regression evidence remains unchanged
 presentation parity/acceptance evidence passes
-rollback is available from version control even though runtime fallback is being removed
+version control provides post-deletion rollback
 build/package/license state remains reproducible
 ```
 
 For renderer and sound specifically, architecture 076 remains the callsite/removal authority.
 
-## 18. Initial implementation sequence after Baseline 042
+Removal is not delayed to M13 once these conditions are met.
 
-The recommended first implementation queue is:
+## 21. Current production sequence after M0
+
+The recommended implementation queue is now:
 
 ```text
-1. repository ownership/ignore hygiene
-2. CMake presets + dependency/vendor verification
-3. canonical clean-build/launch/reference harness
-4. M0 feature-selection scaffolding
-5. native VK_EXT_descriptor_heap execution fixture
-6. Slang descriptor-heap ABI/package fixture
-7. Jolt >=256-body >=10-minute stress qualification
-8. SDL3/Vulkan platform bootstrap under the new presentation selection
-9. frame-context + allocator + descriptor-heap runtime
-10. Frame Graph + swapchain diagnostic frame
-11. representative .rshader/.r* asset pipeline slice
-12. Presentation World -> first real Vulkan tactical scene slice
+1. M1 canonical spatial wrappers/tests
+2. M1 immutable tactical/strategic publication seams
+3. M1 typed presentation IDs and intent dispatch
+4. M2 SDL3/Vulkan production platform bootstrap
+5. M2 frame contexts + allocator + descriptor-heap runtime
+6. M2 Frame Graph + swapchain/output diagnostic frame
+7. M3 representative .rshader/.r* asset pipeline
+8. M3 legacy source-content import fixtures for maps/models/textures/audio
+9. M4 Presentation World -> first real Vulkan tactical scene
+10. M5 complete tactical presentation parity
+11. M5 default Vulkan tactical presentation, soak, then delete tactical GL ownership
+12. M6 migrate strategic/Geoscape presentation, default it, then delete strategic GL ownership
+13. M7 complete retained UI/text/2D + Vulkan cinematic frame display
+14. M7 default/soak those paths, then fully decommission OpenGL
+15. M8 complete OpenAL/EFX production audio, default/soak, then remove old mixer
+16. M9 VFX + Jolt presentation physics
+17. M10 RT lighting/reconstruction
+18. M11 complete FFmpeg cinematic runtime
+19. M12 target specialization
+20. M13 release hardening/packaging
 ```
 
-Items 5-7 intentionally pull high-risk qualification work forward while M0/M1/M2 are still cheap to change.
+This sequence deliberately prevents OpenGL and the old mixer from surviving simply because release cleanup has not started.
 
-## 19. Relationship to the roadmap
+## 22. Relationship to the roadmap
 
 Architecture 080 remains authoritative for milestone ordering and ownership.
 
-This document adds the execution rule:
-
 ```text
-architecture 080 = what milestone comes when
-architecture 091 = how every milestone is implemented safely
+architecture 080 = what milestone comes when and when legacy systems are decommissioned
+architecture 091 = how every milestone/default/rollback/deletion change is implemented safely
 ```
 
-If an implementation plan conflicts with architecture 080's hard ordering constraints, architecture 080 wins. If a milestone plan omits the preservation, gate, rollback or vertical-slice rules defined here, the milestone plan is incomplete.
+If an implementation plan conflicts with architecture 080's hard ordering constraints, architecture 080 wins. If a milestone plan omits the preservation, gate, rollback, progressive-retirement or vertical-slice rules defined here, the milestone plan is incomplete.

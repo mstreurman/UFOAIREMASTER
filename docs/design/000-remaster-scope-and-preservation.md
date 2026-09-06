@@ -177,6 +177,35 @@ A gameplay-affecting bug fix is not automatically in scope merely because it is 
 
 Changes that alter canonical results must be tracked separately from presentation work and approved explicitly.
 
-## 9. Success criterion
+## 9. Legacy source-content and mod compatibility
+
+The remaster does **not** promise drop-in compatibility with the historical UFO:AI mod ecosystem.
+
+The following are not project compatibility constraints:
+
+- gameplay/configuration override mods;
+- legacy `fs_gamedir` behavior as a permanent public mod ABI;
+- legacy HUD/UI definitions;
+- legacy Lua callback behavior as a public ABI;
+- OpenGL renderer APIs/state;
+- old mixer/source internals;
+- private C/C++ implementation structures;
+- source-patch total conversions;
+- behavior that depended on undocumented or undefined engine internals.
+
+The remaster may support **legacy source-content import** for user-authored content that can be cleanly separated from obsolete engine ownership:
+
+- maps and RMA source content;
+- models, skeletons, and animations where supported by accepted import formats;
+- textures and presentation material inputs;
+- audio, music, and sample source files.
+
+Compatibility at the source-content boundary does not require preservation of old runtime loaders, renderer ownership, UI callbacks, mod search-path semantics, or internal ABIs. Supported legacy source content may be deterministically converted into remaster runtime formats.
+
+Maps remain subject to the canonical map-preservation contract. Presentation conversion cannot replace or reinterpret gameplay-authoritative collision, routing, line-of-sight, entity, trigger, spawn, door, mission, or other canonical semantics.
+
+A future remaster-specific mod/extension API may be designed separately. If created, it should be explicit and versioned around the remaster architecture rather than constrained by obsolete legacy presentation internals.
+
+## 10. Success criterion
 
 The project succeeds when UFO: Alien Invasion remains recognizably and behaviorally the same game while its graphics, animation, physical presentation, user-interface presentation, and sound meet the remaster's modern presentation target.
