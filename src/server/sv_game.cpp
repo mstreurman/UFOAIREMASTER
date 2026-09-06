@@ -620,6 +620,43 @@ static void SV_GetInlineModelAABB (const char* name, AABB& aabb)
 	CM_GetInlineModelAABB(&sv->mapTiles, name, aabb);
 }
 
+/**
+ * @brief Bind the gameplay-authoritative spatial service boundary used by game.so.
+ *
+ * M1 keeps the historical game_import_t ABI as the canonical game adapter, but
+ * centralizes every spatial service identified by architecture 075 here so the
+ * authority boundary is explicit and can be audited independently of unrelated
+ * engine imports. The bound functions remain the existing canonical
+ * server/common implementations; this function must not substitute presentation
+ * collision, routing, visibility, physics, or renderer queries.
+ */
+void SV_BindCanonicalSpatialServices (game_import_t& import)
+{
+	import.Trace = SV_Trace;
+	import.LinkEdict = SV_LinkEdict;
+	import.UnlinkEdict = SV_UnlinkEdict;
+	import.TestLine = SV_TestLine;
+	import.TestLineWithEnt = SV_TestLineWithEnt;
+	import.GrenadeTarget = Com_GrenadeTarget;
+	import.GridCalcPathing = SV_GridCalcPathing;
+	import.GridFindPath = SV_GridFindPath;
+	import.MoveStore = Grid_MoveStore;
+	import.MoveLength = Grid_MoveLength;
+	import.MoveNext = Grid_MoveNext;
+	import.GetTUsForDirection = Grid_GetTUsForDirection;
+	import.GridFall = SV_GridFall;
+	import.GridPosToVec = SV_GridPosToVec;
+	import.isOnMap = SV_GridIsOnMap;
+	import.GridRecalcRouting = SV_RecalcRouting;
+	import.CanActorStandHere = SV_CanActorStandHere;
+	import.GridShouldUseAutostand = Grid_ShouldUseAutostand;
+	import.GetVisibility = SV_GetVisibility;
+	import.PointContents = SV_PointContents;
+	import.SetInlineModelOrientation = SV_SetInlineModelOrientation;
+	import.GetInlineModelAABB = SV_GetInlineModelAABB;
+	import.LoadModelAABB = SV_LoadModelAABB;
+}
+
 static void SV_UnloadGame (void)
 {
 #ifndef HARD_LINKED_GAME
@@ -757,42 +794,16 @@ void SV_InitGameProgs (void)
 	import.PlayerPrintf = SV_PlayerPrintf;
 	import.Error = SV_error;
 
-	import.Trace = SV_Trace;
-	import.LinkEdict = SV_LinkEdict;
-	import.UnlinkEdict = SV_UnlinkEdict;
-
-	import.TestLine = SV_TestLine;
-	import.TestLineWithEnt = SV_TestLineWithEnt;
-	import.GrenadeTarget = Com_GrenadeTarget;
-
-	import.GridCalcPathing = SV_GridCalcPathing;
-	import.GridFindPath = SV_GridFindPath;
-	import.MoveStore = Grid_MoveStore;
-	import.MoveLength = Grid_MoveLength;
-	import.MoveNext = Grid_MoveNext;
-	import.GetTUsForDirection = Grid_GetTUsForDirection;
-	import.GridFall = SV_GridFall;
-	import.GridPosToVec = SV_GridPosToVec;
-	import.isOnMap = SV_GridIsOnMap;
-	import.GridRecalcRouting = SV_RecalcRouting;
-	import.CanActorStandHere = SV_CanActorStandHere;
-	import.GridShouldUseAutostand = Grid_ShouldUseAutostand;
-
-	import.GetVisibility = SV_GetVisibility;
+	SV_BindCanonicalSpatialServices(import);
 
 	import.ModelIndex = SV_ModelIndex;
-
-	import.SetInlineModelOrientation = SV_SetInlineModelOrientation;
-	import.GetInlineModelAABB = SV_GetInlineModelAABB;
 
 	import.SetModel = SV_SetModel;
 
 	import.ConfigString = SV_Configstring;
 
-	import.PointContents = SV_PointContents;
 	import.GetFootstepSound = SV_GetFootstepSound;
 	import.GetBounceFraction = SV_GetBounceFraction;
-	import.LoadModelAABB = SV_LoadModelAABB;
 
 	import.FS_Gamedir = FS_Gamedir;
 	import.FS_LoadFile = FS_LoadFile;

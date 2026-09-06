@@ -214,6 +214,7 @@ bool SV_CheckMap(const char* map, const char* assembly);
 /* sv_game.c */
 int SV_RunGameFrameThread(void* data);
 void SV_RunGameFrame(void);
+void SV_BindCanonicalSpatialServices(game_import_t& import);
 void SV_InitGameProgs(void);
 void SV_ShutdownGameProgs(void);
 
