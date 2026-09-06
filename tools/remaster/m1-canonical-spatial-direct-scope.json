@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "name": "ufoai-remaster-m1-canonical-spatial-direct-fixtures",
+  "architecture_contract": "docs/architecture/075-canonical-spatial-service-preservation-map.md",
+  "sentinel_scope": "tools/remaster/m1-canonical-spatial-semantic-scope.json",
+  "sentinel_gate": "tools/remaster/run-m1-canonical-spatial-semantic.py",
+  "sealed_regression_evidence_b3": "b5a6178ef17c3eb9f8957307ef94dc9d367ca2495d970f5c747170fe435b6a7e",
+  "direct_cases": [
+    {
+      "id": "inclusive-map-bounds",
+      "service": "isOnMap",
+      "gate": "tools/remaster/test-m1-canonical-spatial-map-bounds.py",
+      "probe": "tools/remaster/m1-canonical-spatial-map-bounds.cpp",
+      "production_helper": "src/server/sv_spatial.h",
+      "production_consumer": "src/server/sv_game.cpp",
+      "claim": "Directly executes the inclusive canonical map-bounds predicate used by SV_GridIsOnMap at both faces/corners and just-outside points."
+    }
+  ],
+  "remaining_direct_services": [
+    "LinkEdict",
+    "UnlinkEdict",
+    "GrenadeTarget",
+    "GridFindPath",
+    "MoveNext",
+    "GridPosToVec",
+    "CanActorStandHere",
+    "GridShouldUseAutostand",
+    "PointContents",
+    "SetInlineModelOrientation",
+    "GetInlineModelAABB",
+    "LoadModelAABB"
+  ]
+}

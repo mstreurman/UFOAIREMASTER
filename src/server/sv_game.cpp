@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "server.h"
+#include "sv_spatial.h"
 #include "sv_log.h"
 #include "../common/grid.h"
 #include "../common/routing.h"
@@ -592,7 +593,7 @@ static void SV_GridPosToVec (const int actorSize, const pos3_t pos, vec3_t vec)
 
 static bool SV_GridIsOnMap (const vec3_t vec)
 {
-	return sv->mapData.mapBox.contains(vec);
+	return SV_CanonicalPointWithinMapBounds(sv->mapData.mapBox.mins, sv->mapData.mapBox.maxs, vec);
 }
 
 static void SV_GridCalcPathing (actorSizeEnum_t actorSize, pathing_t* path, const pos3_t from, int distance, forbiddenList_t* forbiddenList)
