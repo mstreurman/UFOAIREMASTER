@@ -132,13 +132,11 @@ M0 is sealed. The active implementation queue now begins at M1:
 
 ### M1 / canonical boundary shims
 
-- [ ] Formalize canonical spatial-service wrappers and tests.
-  - [x] M1.1a: isolate and qualify the canonical spatial-service binding seam.
-  - [ ] M1.1b: add canonical spatial semantic preservation fixtures.
-    - [x] M1.1b.1: establish and qualify an M1-owned semantic sentinel lane over the sealed M0 corpus.
-    - [ ] M1.1b.2: add direct fixtures for the remaining Architecture-075 spatial semantic cases.
-      - [x] M1.1b.2a: qualify the direct inclusive map-bounds fixture for `isOnMap`.
-      - [ ] M1.1b.2b: continue direct fixtures for the remaining canonical spatial services.
+- [ ] Canonical spatial-service boundary and preservation tests.
+  - [x] Centralize and qualify all 23 canonical spatial bindings.
+  - [x] Establish M1 semantic sentinels over the sealed M0 corpus.
+  - [x] Add direct executable fixtures for map bounds and core grid/path result semantics (14/23 services represented).
+  - [ ] Complete direct stateful spatial fixtures for the remaining 9 services.
 - [ ] Introduce typed presentation IDs where required.
 - [ ] Publish immutable tactical snapshots/events without raw canonical pointers.
 - [ ] Publish immutable strategic snapshots/view data without raw canonical pointers.
@@ -245,11 +243,9 @@ Start here:
 
 M0 is qualified and sealed: the original UFO:AI source, preservation harness and high-risk dependency fixtures reproduce from a clean checkout. The new remaster presentation runtime is **not implemented yet**; the active production phase is M1.
 
-M1 is in progress. M1.1a qualified the canonical spatial-service binding seam at commit `041cf2297426f259dd38df901927cbd715aed261`: G0 legacy/remaster builds pass, the focused 23-service boundary test passes, and the sealed M0 canonical regression remains unchanged (104/104 tests across both repeatability passes).
+M1 spatial-boundary work is in progress. Commit `041cf2297426f259dd38df901927cbd715aed261` centralized and qualified the 23 canonical spatial bindings; commit `85e3c218eb2e84de8d99ba34b77de48e63479dc4` added an M1-owned semantic sentinel lane over the sealed M0 corpus; and commit `9e52c5fd286273830d6dd7e2bdd735a00ee4a4e0` added the direct inclusive `isOnMap` boundary fixture.
 
-M1.1b.1 adds an M1-owned canonical-spatial semantic sentinel lane without modifying the sealed M0 test sources or test build graph. Six promoted semantic sentinels cover routing, dynamic entities/doors, TU costs, combat trace behavior and tactical visibility; the lane requires the exact 23-service M1.1a binding and verifies those sentinels pass in both sealed M0 repeatability runs. Ten of the 23 Architecture-075 services are represented by promoted sentinels; the remaining services are explicitly tracked across seven direct-fixture areas for M1.1b.2. G0 legacy/remaster builds pass and the sealed M0 regression evidence remains unchanged.
-
-M1.1b.2a adds a direct executable fixture for `isOnMap`. `SV_GridIsOnMap` now delegates to a tiny presentation-independent canonical bounds helper with the same inclusive min/max semantics as the previous `AABB::contains` call. The focused fixture executes interior, face, corner and just-outside cases; aggregate M1 spatial coverage is now 11/23 services. G0 legacy/remaster builds pass and the sealed M0 canonical regression evidence remains unchanged.
+The current grid/path semantic bundle routes `MoveNext`, `GridShouldUseAutostand`, and the arithmetic portion of `GridPosToVec` through small exact-result helpers that are executed by a standalone M1 probe. Together with the sentinel lane and map-bounds fixture, 14 of the 23 Architecture-075 spatial services now have explicit M1 representation. The remaining 9 are the stateful routing/world/model/trajectory services. G0 legacy/remaster builds and the sealed M0 canonical regression remain mandatory qualification gates; the sealed regression evidence identity remains `b5a6178ef17c3eb9f8957307ef94dc9d367ca2495d970f5c747170fe435b6a7e`.
 
 Do not interpret checked design/provisioning/qualification items above as implemented Vulkan/OpenAL presentation features.
 
@@ -265,4 +261,4 @@ The project-local Slang binary cache under `tools/slang/` is a development depen
 
 **Current phase: M1 — canonical boundary shims.**
 
-M0 is complete. M1.1a, M1.1b.1 and M1.1b.2a are qualified. The active work is M1.1b.2b direct coverage for the remaining Architecture-075 spatial semantic cases, followed by typed identity and immutable tactical/strategic publication seams.
+M0 is complete. The active M1 work is to finish direct qualification of the remaining 9 stateful Architecture-075 spatial services, then move to typed identity and immutable tactical/strategic publication seams.

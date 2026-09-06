@@ -145,10 +145,17 @@ def main() -> int:
     root = repo_root()
     direct, cases, sentinel_services, direct_services = validate(root)
 
+    gate_count = 0
     if not args.audit_only:
+        seen_gates: set[str] = set()
         for case in cases:
-            gate = root / case["gate"]
-            run_streaming([sys.executable, str(gate)], root, f"direct fixture {case['id']}")
+            gate_rel = case["gate"]
+            if gate_rel in seen_gates:
+                continue
+            seen_gates.add(gate_rel)
+            gate = root / gate_rel
+            run_streaming([sys.executable, str(gate)], root, f"direct fixture gate {gate_rel}")
+        gate_count = len(seen_gates)
 
         sentinel_gate = root / direct["sentinel_gate"]
         sentinel_text = run_streaming([sys.executable, str(sentinel_gate)], root, "M1 sentinel + sealed regression lane")
@@ -165,10 +172,10 @@ def main() -> int:
     if args.audit_only:
         print("  runtime gates: skipped (--audit-only)")
     else:
-        print("  focused direct fixtures: PASS")
-        print("  M1.1a binding + sealed M0 regression: PASS")
+        print(f"  focused direct fixture gates: PASS ({gate_count} unique gates)")
+        print("  M1 binding + sealed M0 regression: PASS")
         print(f"  sealed evidence: {EXPECTED_M0_EVIDENCE}")
-    print("  M1.1b parent: remains open")
+    print("  spatial workstream: remains open until the remaining stateful services are directly qualified")
     return 0
 
 

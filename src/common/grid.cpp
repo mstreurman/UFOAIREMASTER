@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "common.h"
 #include "grid.h"
+#include "grid_semantics.h"
 #include "tracing.h"
 #include "routing.h"
 #include "pqueue.h"
@@ -719,15 +720,7 @@ pos_t Grid_MoveLength (const pathing_t* path, const pos3_t to, byte crouchingSta
 int Grid_MoveNext (const pathing_t* path, const pos3_t toPos, byte crouchingState)
 {
 	const pos_t moveLen = RT_AREA_POS(path, toPos, crouchingState); /**< Get TUs for this square */
-
-	/* Check to see if the TUs needed to move here are greater than 0 and less then ROUTING_NOT_REACHABLE */
-	if (!moveLen || moveLen == ROUTING_NOT_REACHABLE) {
-		/* ROUTING_UNREACHABLE means, not possible/reachable */
-		return ROUTING_UNREACHABLE;
-	}
-
-	/* Return the information indicating how the actor got to this cell */
-	return RT_AREA_FROM_POS(path, toPos, crouchingState);
+	return Grid_MoveNextSemantic(moveLen, RT_AREA_FROM_POS(path, toPos, crouchingState));
 }
 
 
@@ -819,7 +812,7 @@ bool Grid_ShouldUseAutostand (const pathing_t* path, const pos3_t toPos)
 {
 	const int tusCrouched = RT_AREA_POS(path, toPos, 1);
 	const int tusUpright = RT_AREA_POS(path, toPos, 0);
-	return tusUpright + 2 * TU_CROUCH < tusCrouched;
+	return Grid_ShouldUseAutostandSemantic(tusCrouched, tusUpright);
 }
 
 /**
@@ -831,14 +824,12 @@ bool Grid_ShouldUseAutostand (const pathing_t* path, const pos3_t toPos)
  */
 void Grid_PosToVec (const Routing& routing, const actorSizeEnum_t actorSize, const pos3_t pos, vec3_t vec)
 {
-	SizedPosToVec(pos, actorSize, vec);
+	const int gridFloor = Grid_Floor(routing, actorSize, pos);
+	Grid_PosToVecSemantic(actorSize, pos, gridFloor, vec);
 #ifdef PARANOID
 	if (pos[2] >= PATHFINDING_HEIGHT)
 		Com_Printf("Grid_PosToVec: Warning - z level bigger than 7 (%i - source: %.02f)\n", pos[2], vec[2]);
 #endif
-	/* Clamp the floor value between 0 and UNIT_HEIGHT */
-	const int gridFloor = Grid_Floor(routing, actorSize, pos);
-	vec[2] += std::max(0, std::min(UNIT_HEIGHT, gridFloor));
 }
 
 

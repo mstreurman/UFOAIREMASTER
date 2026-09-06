@@ -14,6 +14,33 @@
       "production_helper": "src/server/sv_spatial.h",
       "production_consumer": "src/server/sv_game.cpp",
       "claim": "Directly executes the inclusive canonical map-bounds predicate used by SV_GridIsOnMap at both faces/corners and just-outside points."
+    },
+    {
+      "id": "move-next-result",
+      "service": "MoveNext",
+      "gate": "tools/remaster/test-m1-canonical-grid-semantics.py",
+      "probe": "tools/remaster/m1-canonical-grid-semantics.cpp",
+      "production_helper": "src/common/grid_semantics.h",
+      "production_consumer": "src/common/grid.cpp",
+      "claim": "Directly executes the exact reachability/result rule used by Grid_MoveNext for zero, unreachable, and reachable path cells."
+    },
+    {
+      "id": "autostand-tu-decision",
+      "service": "GridShouldUseAutostand",
+      "gate": "tools/remaster/test-m1-canonical-grid-semantics.py",
+      "probe": "tools/remaster/m1-canonical-grid-semantics.cpp",
+      "production_helper": "src/common/grid_semantics.h",
+      "production_consumer": "src/common/grid.cpp",
+      "claim": "Directly executes the strict canonical TU-saving comparison used by Grid_ShouldUseAutostand, including equality and unreachable-value behavior."
+    },
+    {
+      "id": "grid-position-world-conversion",
+      "service": "GridPosToVec",
+      "gate": "tools/remaster/test-m1-canonical-grid-semantics.py",
+      "probe": "tools/remaster/m1-canonical-grid-semantics.cpp",
+      "production_helper": "src/common/grid_semantics.h",
+      "production_consumer": "src/common/grid.cpp",
+      "claim": "Directly executes canonical actor centering and floor-clamp arithmetic used by Grid_PosToVec for normal/2x2 actors and representative floor/level cases."
     }
   ],
   "remaining_direct_services": [
@@ -21,10 +48,7 @@
     "UnlinkEdict",
     "GrenadeTarget",
     "GridFindPath",
-    "MoveNext",
-    "GridPosToVec",
     "CanActorStandHere",
-    "GridShouldUseAutostand",
     "PointContents",
     "SetInlineModelOrientation",
     "GetInlineModelAABB",
