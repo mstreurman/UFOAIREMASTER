@@ -133,6 +133,8 @@ M0 is sealed. The active implementation queue now begins at M1:
 ### M1 / canonical boundary shims
 
 - [ ] Formalize canonical spatial-service wrappers and tests.
+  - [x] M1.1a: isolate and qualify the canonical spatial-service binding seam.
+  - [ ] M1.1b: add canonical spatial semantic preservation fixtures.
 - [ ] Introduce typed presentation IDs where required.
 - [ ] Publish immutable tactical snapshots/events without raw canonical pointers.
 - [ ] Publish immutable strategic snapshots/view data without raw canonical pointers.
@@ -239,6 +241,8 @@ Start here:
 
 M0 is qualified and sealed: the original UFO:AI source, preservation harness and high-risk dependency fixtures reproduce from a clean checkout. The new remaster presentation runtime is **not implemented yet**; the active production phase is M1.
 
+M1 is in progress. M1.1a qualified the canonical spatial-service binding seam at commit `041cf2297426f259dd38df901927cbd715aed261`: G0 legacy/remaster builds pass, the focused 23-service boundary test passes, and the sealed M0 canonical regression remains unchanged (104/104 tests across both repeatability passes).
+
 Do not interpret checked design/provisioning/qualification items above as implemented Vulkan/OpenAL presentation features.
 
 ## Upstream lineage and licensing
@@ -253,4 +257,4 @@ The project-local Slang binary cache under `tools/slang/` is a development depen
 
 **Current phase: M1 — canonical boundary shims.**
 
-M0 is complete. The next work is implementation: establish canonical publication/intent seams, then move onto the Vulkan/platform/content critical path defined by Architecture 080/091.
+M0 is complete. M1.1a is qualified and merged. The active work is M1.1b canonical spatial semantic preservation fixtures, followed by typed identity and immutable tactical/strategic publication seams.
