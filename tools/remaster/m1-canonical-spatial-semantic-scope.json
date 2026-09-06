@@ -1,0 +1,127 @@
+{
+  "schema": 1,
+  "name": "ufoai-remaster-m1-canonical-spatial-semantic-lane",
+  "architecture_contract": "docs/architecture/075-canonical-spatial-service-preservation-map.md",
+  "boundary_gate": "tools/remaster/test-m1-canonical-spatial-boundary.py",
+  "sealed_regression_gate": "tools/remaster/run-m0-canonical-regression.py",
+  "sealed_regression_evidence_b3": "b5a6178ef17c3eb9f8957307ef94dc9d367ca2495d970f5c747170fe435b6a7e",
+  "selected_cases": [
+    {
+      "id": "routing-static-movement",
+      "test": "RoutingTest.Move",
+      "source": "src/tests/test_routing.cpp",
+      "services": [
+        "GridCalcPathing",
+        "MoveStore",
+        "MoveLength",
+        "GridFall"
+      ],
+      "claim": "Preserves canonical static routing costs, unreachable geometry, map-border behavior, and level/fall handling on the tracked test_routing BSP."
+    },
+    {
+      "id": "routing-dynamic-entities",
+      "test": "RoutingTest.MoveEntities",
+      "source": "src/tests/test_routing.cpp",
+      "services": [
+        "GridCalcPathing",
+        "MoveStore",
+        "MoveLength",
+        "GridRecalcRouting"
+      ],
+      "claim": "Preserves routing against dynamic canonical entities, including the tracked opened-door and breakable routing cases."
+    },
+    {
+      "id": "routing-tu-direction-cost",
+      "test": "RoutingTest.TUsForDir",
+      "source": "src/tests/test_routing.cpp",
+      "services": [
+        "GetTUsForDirection"
+      ],
+      "claim": "Preserves canonical TU costs for straight, diagonal, crouched, and flying movement directions."
+    },
+    {
+      "id": "dynamic-door-trigger",
+      "test": "GameTest.DoorTrigger",
+      "source": "src/tests/test_game.cpp",
+      "services": [],
+      "claim": "Locks the canonical dynamic-door trigger state sentinel on the tracked test_game BSP. Direct service-specific link/unlink/orientation oracles remain M1.1b.2 work."
+    },
+    {
+      "id": "combat-trace",
+      "test": "GameTest.Shooting",
+      "source": "src/tests/test_game.cpp",
+      "services": [
+        "Trace"
+      ],
+      "claim": "Preserves the canonical combat collision/trace sentinel exercised by the tracked tactical shooting fixture."
+    },
+    {
+      "id": "tactical-visibility",
+      "test": "GameTest.VisFlags",
+      "source": "src/tests/test_game.cpp",
+      "services": [
+        "GetVisibility",
+        "TestLine",
+        "TestLineWithEnt"
+      ],
+      "claim": "Preserves the tracked tactical visibility/line-test sentinel and visibility-flag behavior."
+    }
+  ],
+  "uncovered_required_cases": [
+    {
+      "area": "point-content-boundaries",
+      "services": [
+        "PointContents"
+      ],
+      "reason": "Architecture 075 requires floor/wall/water/special-volume boundary cases; no direct M1 sentinel is promoted by this slice."
+    },
+    {
+      "area": "canonical-grenade-trajectories",
+      "services": [
+        "GrenadeTarget"
+      ],
+      "reason": "Architecture 075 requires reachable/unreachable canonical trajectory cases; add direct fixtures without changing gameplay math."
+    },
+    {
+      "area": "explicit-path-search-and-step",
+      "services": [
+        "GridFindPath",
+        "MoveNext"
+      ],
+      "reason": "The promoted routing tests validate path fields/costs but do not directly lock explicit path-search/next-step outputs."
+    },
+    {
+      "area": "grid-world-conversion-and-bounds",
+      "services": [
+        "GridPosToVec",
+        "isOnMap"
+      ],
+      "reason": "Add direct boundary/conversion fixtures instead of relying on transitive routing behavior."
+    },
+    {
+      "area": "standability-and-autostand",
+      "services": [
+        "CanActorStandHere",
+        "GridShouldUseAutostand"
+      ],
+      "reason": "Architecture 075 explicitly requires actor standability and crouch/autostand transition cases."
+    },
+    {
+      "area": "model-bounds",
+      "services": [
+        "GetInlineModelAABB",
+        "LoadModelAABB"
+      ],
+      "reason": "Add direct canonical bounds fixtures for inline and loaded models."
+    },
+    {
+      "area": "entity-link-and-inline-orientation",
+      "services": [
+        "LinkEdict",
+        "UnlinkEdict",
+        "SetInlineModelOrientation"
+      ],
+      "reason": "The promoted door-state sentinel exercises dynamic door gameplay but does not directly assert entity link/unlink or inline-model orientation outputs."
+    }
+  ]
+}

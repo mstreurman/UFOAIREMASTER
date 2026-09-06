@@ -135,6 +135,8 @@ M0 is sealed. The active implementation queue now begins at M1:
 - [ ] Formalize canonical spatial-service wrappers and tests.
   - [x] M1.1a: isolate and qualify the canonical spatial-service binding seam.
   - [ ] M1.1b: add canonical spatial semantic preservation fixtures.
+    - [x] M1.1b.1: establish and qualify an M1-owned semantic sentinel lane over the sealed M0 corpus.
+    - [ ] M1.1b.2: add direct fixtures for the remaining Architecture-075 spatial semantic cases.
 - [ ] Introduce typed presentation IDs where required.
 - [ ] Publish immutable tactical snapshots/events without raw canonical pointers.
 - [ ] Publish immutable strategic snapshots/view data without raw canonical pointers.
@@ -243,6 +245,8 @@ M0 is qualified and sealed: the original UFO:AI source, preservation harness and
 
 M1 is in progress. M1.1a qualified the canonical spatial-service binding seam at commit `041cf2297426f259dd38df901927cbd715aed261`: G0 legacy/remaster builds pass, the focused 23-service boundary test passes, and the sealed M0 canonical regression remains unchanged (104/104 tests across both repeatability passes).
 
+M1.1b.1 adds an M1-owned canonical-spatial semantic sentinel lane without modifying the sealed M0 test sources or test build graph. Six promoted semantic sentinels cover routing, dynamic entities/doors, TU costs, combat trace behavior and tactical visibility; the lane requires the exact 23-service M1.1a binding and verifies those sentinels pass in both sealed M0 repeatability runs. Ten of the 23 Architecture-075 services are represented by promoted sentinels; the remaining services are explicitly tracked across seven direct-fixture areas for M1.1b.2. G0 legacy/remaster builds pass and the sealed M0 regression evidence remains unchanged.
+
 Do not interpret checked design/provisioning/qualification items above as implemented Vulkan/OpenAL presentation features.
 
 ## Upstream lineage and licensing
@@ -257,4 +261,4 @@ The project-local Slang binary cache under `tools/slang/` is a development depen
 
 **Current phase: M1 — canonical boundary shims.**
 
-M0 is complete. M1.1a is qualified and merged. The active work is M1.1b canonical spatial semantic preservation fixtures, followed by typed identity and immutable tactical/strategic publication seams.
+M0 is complete. M1.1a and M1.1b.1 are qualified. The active work is M1.1b.2 direct coverage for the remaining Architecture-075 spatial semantic cases, followed by typed identity and immutable tactical/strategic publication seams.
