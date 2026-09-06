@@ -27,6 +27,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 # Remaster bootstrap is opt-in while the legacy path remains the canonical comparison build.
 option(UFOAI_REMASTER "Enable UFO:AI remaster M0 build scaffolding" OFF)
 option(UFOAI_REMASTER_STRICT_DEPENDENCIES "Fail configure when an accepted remaster dependency is unavailable" OFF)
+option(UFOAI_M1_SPATIAL_STATEFUL_TESTS "Inject the M1-only canonical spatial stateful fixture into ufotestall" OFF)
 
 # M0.6 defines migration selectors independently from dependency discovery.
 # Every selector defaults to legacy and unwired remaster values fail closed.
@@ -147,8 +148,17 @@ if (NOT DISABLE_UFOMODEL AND NOT DISABLE_TOOLS)
 	add_subdirectory("src/tools/ufomodel")
 endif()
 
+if (UFOAI_M1_SPATIAL_STATEFUL_TESTS AND (DISABLE_TESTS OR DISABLE_GAME))
+	message(FATAL_ERROR "UFOAI_M1_SPATIAL_STATEFUL_TESTS requires tests and the tactical game library")
+endif()
+
 if (NOT DISABLE_TESTS AND NOT DISABLE_GAME) 
 	add_subdirectory("src/tests")
+	if (UFOAI_M1_SPATIAL_STATEFUL_TESTS)
+		target_sources(ufotestall PRIVATE
+			"${CMAKE_SOURCE_DIR}/tools/remaster/m1-canonical-spatial-stateful.cpp"
+			"${CMAKE_SOURCE_DIR}/tools/remaster/m1-canonical-spatial-stateful-server.cpp")
+	endif()
 endif()
 
 if (NOT DISABLE_UFORADIANT)

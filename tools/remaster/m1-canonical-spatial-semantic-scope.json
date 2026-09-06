@@ -44,43 +44,48 @@
       "test": "GameTest.DoorTrigger",
       "source": "src/tests/test_game.cpp",
       "services": [],
-      "claim": "Locks the canonical dynamic-door trigger state sentinel on the tracked test_game BSP. Direct service-specific link/unlink/orientation oracles remain M1.1b.2 work."
+      "claim": "Locks the canonical dynamic-door trigger state sentinel on the tracked test_game BSP. Service-specific link/unlink/orientation behavior belongs to the direct stateful lane."
     },
     {
-      "id": "combat-trace",
+      "id": "combat-trace-placeholder",
       "test": "GameTest.Shooting",
       "source": "src/tests/test_game.cpp",
-      "services": [
-        "Trace"
-      ],
-      "claim": "Preserves the canonical combat collision/trace sentinel exercised by the tracked tactical shooting fixture."
+      "services": [],
+      "claim": "Tracked only as an explicit accounting correction: this test currently loads the map and contains TODOs, but does not execute a shot or Trace. It contributes no spatial service coverage."
     },
     {
       "id": "tactical-visibility",
       "test": "GameTest.VisFlags",
       "source": "src/tests/test_game.cpp",
       "services": [
-        "GetVisibility",
-        "TestLine",
         "TestLineWithEnt"
       ],
-      "claim": "Preserves the tracked tactical visibility/line-test sentinel and visibility-flag behavior."
+      "claim": "Preserves the tracked tactical visibility-flag behavior and the entity-aware canonical line-test path actually called by G_TestLineWithEnts. Plain TestLine and GetVisibility require direct fixtures."
     }
   ],
   "uncovered_required_cases": [
+    {
+      "area": "trace-line-and-visibility-queries",
+      "services": [
+        "Trace",
+        "TestLine",
+        "GetVisibility"
+      ],
+      "reason": "The previous semantic accounting over-promoted GameTest.Shooting and GameTest.VisFlags. These services require direct stateful fixtures."
+    },
     {
       "area": "point-content-boundaries",
       "services": [
         "PointContents"
       ],
-      "reason": "Architecture 075 requires floor/wall/water/special-volume boundary cases; no direct M1 sentinel is promoted by this slice."
+      "reason": "Architecture 075 requires direct canonical point-content behavior on a loaded BSP."
     },
     {
       "area": "canonical-grenade-trajectories",
       "services": [
         "GrenadeTarget"
       ],
-      "reason": "Architecture 075 requires reachable/unreachable canonical trajectory cases; add direct fixtures without changing gameplay math."
+      "reason": "Architecture 075 requires direct canonical trajectory behavior without changing gameplay math."
     },
     {
       "area": "explicit-path-search-and-step",
@@ -96,7 +101,7 @@
         "GridPosToVec",
         "isOnMap"
       ],
-      "reason": "Add direct boundary/conversion fixtures instead of relying on transitive routing behavior."
+      "reason": "Direct boundary/conversion fixtures are required instead of relying on transitive routing behavior."
     },
     {
       "area": "standability-and-autostand",
@@ -112,7 +117,7 @@
         "GetInlineModelAABB",
         "LoadModelAABB"
       ],
-      "reason": "Add direct canonical bounds fixtures for inline and loaded models."
+      "reason": "Direct canonical bounds fixtures are required for inline and loaded models."
     },
     {
       "area": "entity-link-and-inline-orientation",
@@ -121,7 +126,7 @@
         "UnlinkEdict",
         "SetInlineModelOrientation"
       ],
-      "reason": "The promoted door-state sentinel exercises dynamic door gameplay but does not directly assert entity link/unlink or inline-model orientation outputs."
+      "reason": "The door-state sentinel is useful gameplay evidence but does not directly assert the canonical state mutation services."
     }
   ]
 }

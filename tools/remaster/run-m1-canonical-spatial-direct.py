@@ -175,7 +175,12 @@ def main() -> int:
         print(f"  focused direct fixture gates: PASS ({gate_count} unique gates)")
         print("  M1 binding + sealed M0 regression: PASS")
         print(f"  sealed evidence: {EXPECTED_M0_EVIDENCE}")
-    print("  spatial workstream: remains open until the remaining stateful services are directly qualified")
+    if remaining:
+        print("  spatial workstream: remains open until the remaining stateful services are directly qualified")
+    elif args.audit_only:
+        print("  spatial workstream: coverage partition closes at 23/23; runtime qualification skipped")
+    else:
+        print("  spatial workstream: QUALIFIED (23/23 Architecture-075 canonical services represented)")
     return 0
 
 

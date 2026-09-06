@@ -41,17 +41,115 @@
       "production_helper": "src/common/grid_semantics.h",
       "production_consumer": "src/common/grid.cpp",
       "claim": "Directly executes canonical actor centering and floor-clamp arithmetic used by Grid_PosToVec for normal/2x2 actors and representative floor/level cases."
+    },
+    {
+      "id": "trace-loaded-world",
+      "service": "Trace",
+      "gate": "tools/remaster/test-m1-canonical-spatial-stateful.py",
+      "probe": "tools/remaster/m1-canonical-spatial-stateful.cpp",
+      "production_helper": "src/server/sv_world.cpp",
+      "production_consumer": "src/game/g_combat.cpp",
+      "claim": "Executes Trace through game_import_t on a loaded canonical BSP and compares the complete collision result fields used at the server boundary with SV_Trace on the same world state."
+    },
+    {
+      "id": "link-edict-world-membership",
+      "service": "LinkEdict",
+      "gate": "tools/remaster/test-m1-canonical-spatial-stateful.py",
+      "probe": "tools/remaster/m1-canonical-spatial-stateful.cpp",
+      "production_helper": "src/server/sv_world.cpp",
+      "production_consumer": "src/game/g_utils.cpp",
+      "claim": "Directly relinks a live inline-model edict through game_import_t and asserts canonical server-world membership plus the linkcount mutation."
+    },
+    {
+      "id": "unlink-edict-world-membership",
+      "service": "UnlinkEdict",
+      "gate": "tools/remaster/test-m1-canonical-spatial-stateful.py",
+      "probe": "tools/remaster/m1-canonical-spatial-stateful.cpp",
+      "production_helper": "src/server/sv_world.cpp",
+      "production_consumer": "src/game/g_utils.cpp",
+      "claim": "Directly unlinks a live inline-model edict through game_import_t and asserts removal from canonical server-world membership before relinking it."
+    },
+    {
+      "id": "plain-test-line-loaded-world",
+      "service": "TestLine",
+      "gate": "tools/remaster/test-m1-canonical-spatial-stateful.py",
+      "probe": "tools/remaster/m1-canonical-spatial-stateful.cpp",
+      "production_helper": "src/common/tracing.cpp",
+      "production_consumer": "src/server/sv_game.cpp",
+      "claim": "Executes the plain map-only TestLine import on the tracked routing BSP and compares it with TR_TestLine over the same canonical mapTiles state."
+    },
+    {
+      "id": "grenade-target-solver",
+      "service": "GrenadeTarget",
+      "gate": "tools/remaster/test-m1-canonical-spatial-stateful.py",
+      "probe": "tools/remaster/m1-canonical-spatial-stateful.cpp",
+      "production_helper": "src/common/common.cpp",
+      "production_consumer": "src/server/sv_game.cpp",
+      "claim": "Executes representative reachable and low-speed canonical grenade solver inputs through the import seam and compares return/vector results with Com_GrenadeTarget."
+    },
+    {
+      "id": "explicit-grid-find-path",
+      "service": "GridFindPath",
+      "gate": "tools/remaster/test-m1-canonical-spatial-stateful.py",
+      "probe": "tools/remaster/m1-canonical-spatial-stateful.cpp",
+      "production_helper": "src/common/grid.cpp",
+      "production_consumer": "src/server/sv_game.cpp",
+      "claim": "Executes explicit reachable and blocked path searches through the import seam and compares them with Grid_FindPath over the same canonical routing state."
+    },
+    {
+      "id": "actor-standability",
+      "service": "CanActorStandHere",
+      "gate": "tools/remaster/test-m1-canonical-spatial-stateful.py",
+      "probe": "tools/remaster/m1-canonical-spatial-stateful.cpp",
+      "production_helper": "src/common/routing.cpp",
+      "production_consumer": "src/server/sv_game.cpp",
+      "claim": "Executes actor standability through the import seam on the tracked routing BSP and compares it with RT_CanActorStandHere over the same routing state."
+    },
+    {
+      "id": "visibility-query",
+      "service": "GetVisibility",
+      "gate": "tools/remaster/test-m1-canonical-spatial-stateful.py",
+      "probe": "tools/remaster/m1-canonical-spatial-stateful.cpp",
+      "production_helper": "src/common/cmodel.cpp",
+      "production_consumer": "src/server/sv_game.cpp",
+      "claim": "Executes the canonical visibility scalar query through the import seam and compares it with CM_GetVisibility for the same loaded map position."
+    },
+    {
+      "id": "point-contents-query",
+      "service": "PointContents",
+      "gate": "tools/remaster/test-m1-canonical-spatial-stateful.py",
+      "probe": "tools/remaster/m1-canonical-spatial-stateful.cpp",
+      "production_helper": "src/server/sv_world.cpp",
+      "production_consumer": "src/server/sv_game.cpp",
+      "claim": "Executes representative point-content queries through the import seam and compares them with SV_PointContents on the same loaded server world."
+    },
+    {
+      "id": "inline-model-orientation",
+      "service": "SetInlineModelOrientation",
+      "gate": "tools/remaster/test-m1-canonical-spatial-stateful.py",
+      "probe": "tools/remaster/m1-canonical-spatial-stateful.cpp",
+      "production_helper": "src/common/cmodel.cpp",
+      "production_consumer": "src/server/sv_game.cpp",
+      "claim": "Mutates a live inline model orientation through the import seam and validates the resulting canonical inline-model bounds before restoring the original orientation."
+    },
+    {
+      "id": "inline-model-aabb",
+      "service": "GetInlineModelAABB",
+      "gate": "tools/remaster/test-m1-canonical-spatial-stateful.py",
+      "probe": "tools/remaster/m1-canonical-spatial-stateful.cpp",
+      "production_helper": "src/common/cmodel.cpp",
+      "production_consumer": "src/server/sv_game.cpp",
+      "claim": "Queries a live inline model AABB through the import seam and compares it with CM_GetInlineModelAABB on the same mapTiles state."
+    },
+    {
+      "id": "loaded-model-aabb",
+      "service": "LoadModelAABB",
+      "gate": "tools/remaster/test-m1-canonical-spatial-stateful.py",
+      "probe": "tools/remaster/m1-canonical-spatial-stateful.cpp",
+      "production_helper": "src/server/sv_world.cpp",
+      "production_consumer": "src/server/sv_game.cpp",
+      "claim": "Loads a tracked MD2 model AABB through the import seam, verifies non-zero bounds, and confirms the canonical SV_LoadModelAABB cache returns the same bounds."
     }
   ],
-  "remaining_direct_services": [
-    "LinkEdict",
-    "UnlinkEdict",
-    "GrenadeTarget",
-    "GridFindPath",
-    "CanActorStandHere",
-    "PointContents",
-    "SetInlineModelOrientation",
-    "GetInlineModelAABB",
-    "LoadModelAABB"
-  ]
+  "remaining_direct_services": []
 }
