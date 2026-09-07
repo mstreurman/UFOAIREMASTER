@@ -7,7 +7,7 @@
 
 The remaster targets a substantially modernized presentation layer while keeping canonical gameplay unchanged.
 
-The reference Fedora 44 system exposes OpenAL Soft 1.24.2 with EFX 1.0.
+The current Fedora 44 workstation capture exposes OpenAL Soft 1.24.2 with EFX 1.0. That capture is valid local evidence, but it is no longer the accepted implementation-version baseline for the future production audio runtime. The latest stable upstream OpenAL Soft release at this decision update is 1.25.2.
 
 The tested device reports support for:
 
@@ -21,9 +21,9 @@ The tested device reports support for:
 
 ## Decision
 
-OpenAL Soft is the remaster's audio implementation target.
+OpenAL Soft **>=1.25.2** is the remaster's reference audio implementation target for production qualification. The core API contract remains stable **OpenAL 1.1** rather than a fictitious newer OpenAL core version.
 
-EFX is required for environmental-audio presentation.
+`ALC_EXT_EFX` is required for environmental-audio presentation. `ALC_SOFT_HRTF` and at least two auxiliary sends/source are also required reference capabilities. Additional OpenAL Soft extensions remain runtime capability-probed unless explicitly promoted by later architecture.
 
 The audio architecture should support:
 
@@ -63,6 +63,8 @@ HRTF/device controls
 Resolved by later architecture:
 
 - reference-v1 acoustic zone/portal/BVH records and `.rmap` ownership are fixed by architecture 031/085.
+
+The local Fedora package/runtime must be upgraded from the currently observed 1.24.2 to >=1.25.2 and requalified before M8 production-audio closure. This does not invalidate the existing device/EFX/HRTF capability evidence.
 
 Still content/performance-tunable rather than architecture blockers:
 

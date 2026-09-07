@@ -5,6 +5,7 @@
 **Canonical source baseline:** `763173ed036ebbee32c2a7bf6aefa19748df89ff`  
 **Qualified remaster planning head:** `b0eb12631c71e90b7c3d1f6d19e618e7656c80be`  
 **Milestone authority:** architecture 080  
+**Language/toolchain authority:** architecture 092  
 **Purpose:** Define how the M0-M13 roadmap is executed, integrated, tested, measured, rolled back and allowed to retire obsolete presentation implementations as soon as their replacements are proven.
 
 ## 1. Why this document exists
@@ -55,6 +56,11 @@ VK_EXT_descriptor_heap is the production renderer binding model from first Vulka
 OpenGL is a temporary migration backend, not a permanent remaster backend
 legacy gameplay/UI/mod ABI compatibility is not a design constraint
 accepted legacy source content is imported/converted without preserving obsolete runtime ownership
+retained canonical/legacy targets stay C++11 initially; new remaster runtime targets use strict C++26
+shared canonical/remaster bridge headers remain C++11-compatible
+Vulkan runtime requires core >=1.4 without a patch-level 1.4.x minimum
+Slang compiler identity remains exact/pinned and hash-qualified
+OpenAL production qualification uses OpenAL Soft >=1.25.2 with required EFX/HRTF capabilities
 ```
 
 A change that cannot demonstrate where it sits relative to these invariants is not ready to merge.
@@ -111,6 +117,7 @@ R7  representative asset conversion + deterministic load fixture
 R8  Vulkan cinematic frame upload/display fixture before OpenGL decommission
 R9  shipped-cinematic FFmpeg corpus qualification before legacy decoder retirement
 R10 raster/RT geometry parity fixture before RT lighting migration
+R11 strict C++11 bridge + strict C++26 runtime mixed compile/link/run fixture before typed-intent/runtime expansion
 ```
 
 M0 has already closed the initial high-risk qualification set needed to start implementation. Later fixtures remain risk-burn-down work and do not by themselves advance a production milestone.
@@ -217,7 +224,10 @@ Not every change needs every gate, but each change must explicitly identify the 
 
 ```text
 configured supported build succeeds
+retained legacy/bridge targets compile under their explicit C++11 policy where applicable
+new remaster runtime targets compile under strict C++26 with extensions disabled
 warnings/errors introduced by the change are resolved
+no inherited global C++0x flag overrides target language ownership
 new generated outputs are reproducible where applicable
 ```
 
@@ -227,6 +237,7 @@ new generated outputs are reproducible where applicable
 new unit/component tests pass
 failure paths are exercised where practical
 ABI/layout/static assertions pass where applicable
+mixed C++11 producer / C++26 consumer compile-link-run contract passes where the language boundary is touched
 ```
 
 ### G2 — Canonical-preservation gate
@@ -375,16 +386,38 @@ A future remaster mod API may be designed separately as a versioned modern inter
 Dependency handling follows the accepted project state:
 
 ```text
+C++ toolchain
+    GCC 16.2.x primary C++26 compiler family
+    retained canonical/legacy targets C++11 initially
+    new remaster runtime targets strict C++26
+    shared bridge headers C++11-compatible
+    one compatible libstdc++ ABI configuration across in-process targets
+    CMake >=3.25 for CXX_STANDARD 26 awareness
+
+Vulkan
+    runtime core API >=1.4
+    accepted current Vulkan 1.4.x headers/registry/validation tooling
+    no patch-level 1.4.x runtime minimum
+    required extensions/features capability-tested
+
 Slang v2026.17
     project-local provisioned tool cache
     exact artifact hash/pin
+    update only through explicit reprovisioning/qualification
+
+OpenAL / OpenAL Soft
+    stable OpenAL 1.1 API contract
+    OpenAL Soft >=1.25.2 reference implementation for production audio qualification
+    require ALC_EXT_EFX + ALC_SOFT_HRTF + >=2 auxiliary sends/source on the reference target
+    optional SOFT extensions capability-probed
+    current workstation 1.24.2 remains evidence but requires upgrade/requalification before M8 closure
 
 Jolt v5.6.0
     vendored source under third_party/JoltPhysics/
     exact commit + vendor manifest identity
     static project dependency
 
-FFmpeg / SDL3 / OpenAL / Vulkan platform development packages
+FFmpeg / SDL3 platform development packages
     reference Fedora package/toolchain state recorded
     configure-time capability/version checks
 ```
@@ -420,7 +453,7 @@ Implementation now begins at M1.
 The shortest useful path to a real Vulkan tactical scene is:
 
 ```text
-M1 canonical snapshot/event/intent seams
+M1 canonical snapshot/event seams + C++11/C++26 target boundary + typed intent seams
     |
 M2 SDL3 + Vulkan device + descriptor heap + allocator + frame contexts
     |
@@ -504,6 +537,7 @@ OpenAL follows the same production discipline.
 
 ```text
 typed AudioCommand path exists first
+OpenAL Soft >=1.25.2 reference implementation and required EFX/HRTF capabilities are qualified
 OpenAL runtime becomes selectable
 logical/audible regression evidence passes
 OpenAL becomes production default

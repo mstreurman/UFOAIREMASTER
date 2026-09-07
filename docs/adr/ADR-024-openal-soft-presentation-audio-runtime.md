@@ -2,7 +2,7 @@
 
 **Status:** Accepted  
 **Decision type:** Presentation audio architecture  
-**Primary platform:** Fedora 44 / OpenAL Soft  
+**Primary platform:** Fedora 44 / OpenAL Soft >=1.25.2 reference implementation  
 **Reference audio environment:** PipeWire/WirePlumber with runtime-selectable OpenAL playback device  
 **Related:** ADR-001, ADR-007, ADR-023
 
@@ -26,10 +26,11 @@ presentation-only physics/debris
 
 but it has no authority over canonical gameplay.
 
-The reference Fedora 44 system has confirmed:
+The current Fedora 44 workstation has confirmed the required audio capability family while running OpenAL Soft 1.24.2. The accepted reference implementation baseline for the new production audio runtime is now OpenAL Soft >=1.25.2; the local package must be upgraded/requalified before M8 closure.
 
 ```text
-OpenAL Soft 1.24.x
+OpenAL 1.1 API
+OpenAL Soft 1.24.2 currently observed; >=1.25.2 production-qualification baseline
 48 kHz
 ALC_EXT_EFX
 ALC_SOFT_HRTF
@@ -42,7 +43,7 @@ HRTF support exists on the reference OpenAL Soft runtime, but whether it is acti
 
 ## Decision
 
-Use OpenAL Soft as the production audio runtime.
+Use OpenAL Soft >=1.25.2 as the reference production audio runtime implementation. Keep OpenAL 1.1 as the core API contract and capability-probe implementation extensions at runtime.
 
 Use:
 
@@ -171,7 +172,7 @@ If a named device disappears, audio may temporarily fall back to the current sys
 
 ## EFX
 
-Require two auxiliary sends on the reference target.
+Require `ALC_EXT_EFX`, `ALC_SOFT_HRTF` and at least two auxiliary sends on the reference target. EFX remains the standardized environmental-effects interface; HRTF remains user/runtime selectable rather than forced always-on.
 
 Baseline send meaning:
 
@@ -252,4 +253,5 @@ canonical visibility
 - HRTF is configurable without being falsely assumed active;
 - limited EFX sends are used intentionally;
 - tactical camera movement does not create artificial Doppler;
-- audio virtualization prevents source count from becoming content authority.
+- audio virtualization prevents source count from becoming content authority;
+- stable OpenAL 1.1/EFX semantics are separated from the actively maintained OpenAL Soft implementation version, allowing qualified implementation updates without inventing a new core API contract.

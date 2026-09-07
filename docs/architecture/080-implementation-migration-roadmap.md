@@ -4,7 +4,8 @@
 **Primary target:** Fedora 44 / i9-9900K / Arc B580  
 **Canonical source baseline:** `763173ed036ebbee32c2a7bf6aefa19748df89ff`  
 **Qualified remaster planning head:** `b0eb12631c71e90b7c3d1f6d19e618e7656c80be`  
-**Execution strategy:** architecture 091
+**Execution strategy:** architecture 091  
+**Language/toolchain authority:** architecture 092
 
 ## 1. Purpose
 
@@ -59,6 +60,9 @@ legacy fallbacks are temporary migration tools unless a later architecture expli
 legacy code is removed as soon as its owning replacement and decommission gates pass
 M13 is not a holding area for obsolete renderer/audio implementations
 accepted legacy source-content import does not imply preservation of the old runtime/mod ABI
+retained canonical/legacy targets stay C++11 initially; new remaster runtime targets use strict C++26
+shared canonical/remaster bridge headers remain C++11-compatible until the lower side is deliberately migrated
+language standards are assigned per target; no global C++0x flag is the remaster language policy
 ```
 
 Architecture 091 defines the common execution method: risk-first vertical slices, G0-G7 gates, dependency ownership, rollback discipline, progressive legacy retirement and clean-bootstrap evidence.
@@ -99,6 +103,7 @@ Authorities:
 architecture 075
 architecture 077
 architecture 078
+architecture 092
 ```
 
 Work:
@@ -107,6 +112,7 @@ Work:
 formalize canonical spatial service wrappers/tests
 introduce typed presentation IDs where needed
 introduce tactical/strategic immutable publication boundaries
+establish and qualify C++11 legacy/bridge + strict C++26 remaster target ownership
 introduce typed intent dispatch without changing rules
 keep existing consumers behind temporary adapters
 define explicit presentation-facing ownership rather than expose raw canonical pointers
@@ -127,6 +133,7 @@ canonical behavior hashes/reference tests unchanged
 new presentation consumers can read immutable snapshots/events without raw canonical pointers
 new typed intents can reach canonical action owners without changing rules
 legacy consumers still function through adapters
+mixed C++11/C++26 bridge compile/link qualification passes before modern runtime expansion
 ```
 
 Rollback: feature selection routes presentation back to existing legacy consumers.
@@ -145,7 +152,7 @@ Work:
 
 ```text
 SDL3 window/surface/event integration
-Vulkan instance/device/feature chain
+Vulkan instance/device/feature chain with core >=1.4; accepted current 1.4.x tooling/registry tracked without a patch-level runtime pin
 queues/frame contexts
 allocator/descriptor heap
 descriptor-heap Slang/SPIR-V/native production fixtures
@@ -296,7 +303,7 @@ architecture 077–078
 Work:
 
 ```text
-StrategicSnapshot publication
+consume/extend the qualified M1 StrategicSnapshot publication
 strategic typed view models
 StrategicIntent routing
 Geoscape strategic scene extraction
@@ -399,6 +406,8 @@ Work:
 AudioControl thread
 voice virtualization
 streaming/music
+OpenAL Soft >=1.25.2 reference implementation qualification
+OpenAL 1.1 + required EFX/HRTF capability checks and >=2 auxiliary sends/source
 EFX environments/HRTF
 acoustic scene/portals/occlusion
 strategic+tactical command adapters
@@ -413,6 +422,7 @@ Exit:
 logical audio-command regression passes
 no gameplay authority depends on audio state
 CPU/audio budgets pass on i9-9900K
+reference audio runtime satisfies OpenAL Soft >=1.25.2, ALC_EXT_EFX, ALC_SOFT_HRTF and >=2 auxiliary sends/source
 all production sound consumers route through typed audio commands/new ownership
 old mixer/source implementation and permanent fallback are removed
 ```

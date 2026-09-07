@@ -9,13 +9,14 @@ This directory contains the initial design and architecture baseline for the UFO
 - Presentation physics is allowed and encouraged, but it is strictly non-authoritative.
 - Intel Arc B580 / Battlemage / Xe2 is the primary graphics target.
 - The primary **performance qualification profile** is Arc B580 + i9-9900K at RenderExtent 1920×1080, 60 Hz / sustained close to 60 FPS, with DisplayHDR 600-class HDR quality when enabled. Resolution, refresh, display selection and HDR state are runtime-selectable and are not hardcoded to the development workstation.
-- Vulkan 1.4 is the graphics API.
+- Vulkan 1.4 is the graphics API; the runtime contract is core >=1.4, while accepted current 1.4.x headers/registry/validation revisions are tracked as tooling evidence rather than a patch-level engine minimum.
 - `VK_EXT_descriptor_heap` is the production resource-binding model from the first renderer implementation; no descriptor-buffer fallback is required.
 - Hardware ray tracing is a first-class renderer feature.
 - `VK_KHR_ray_tracing_pipeline` is the preferred RT mechanism.
 - `VK_KHR_ray_query` is exceptional and requires benchmark-backed justification.
-- OpenAL Soft is the audio implementation target. Playback device (system default or named endpoint) and HRTF mode/profile are runtime-selectable; the currently connected Bluetooth/AE-7 routes are test fixtures, not hardcoded defaults.
-- EFX is required for environmental audio processing.
+- OpenAL Soft >=1.25.2 is the reference audio implementation baseline for the new production runtime, using the stable OpenAL 1.1 API. Playback device (system default or named endpoint) and HRTF mode/profile are runtime-selectable; the currently connected Bluetooth/AE-7 routes are test fixtures, not hardcoded defaults.
+- `ALC_EXT_EFX`, `ALC_SOFT_HRTF` and at least two auxiliary sends/source are required reference audio capabilities; additional OpenAL Soft extensions are capability-probed.
+- New remaster runtime targets use strict C++26 on the GCC 16.2.x reference compiler family; retained canonical/legacy targets stay C++11 initially and shared bridge headers remain C++11-compatible.
 - Fedora 44 KDE/Wayland is the initial reference development environment.
 - Intel Core i9-9900K / Coffee Lake Refresh is the primary CPU optimization target; CPU-specific SIMD/intrinsics and cache-aware optimizations are permitted when benchmarked.
 - Jolt Physics is the accepted presentation-only physics engine.
@@ -60,6 +61,7 @@ Campaign/cgame coupling            architecture 077
 Strategic/Geoscape separation      architecture 078
 Cinematic/video boundary           architecture 079
 Implementation sequencing          architecture 080
+C++ language/toolchain boundary     architecture 092
 Budget/debug provenance            architecture 055
 Texture/output/audio identity      ADR-029/030/031, architecture 060, 063, 065, 071
 Render/output/UI extents           ADR-032/046, architecture 072/090
@@ -192,6 +194,7 @@ Earlier documents remain useful for rationale/history but must not redefine an A
 - `architecture/089-exact-descriptor-heap-gpu-binding-abi.md`
 - `architecture/090-runtime-display-audio-selection-and-target-profile-contract.md`
 - `architecture/091-implementation-execution-strategy.md`
+- `architecture/092-cpp26-language-toolchain-and-boundary-contract.md`
 
 ### Architecture Decision Records
 
@@ -255,6 +258,7 @@ Earlier documents remain useful for rationale/history but must not redefine an A
 - `reference/reference-arc-b580-vulkan-capabilities.md`
 - `reference/reference-arc-b580-xe2-microarchitecture.md`
 - `reference/reference-third-party-toolchain-manifest.md`
+- `reference/reference-cpp26-toolchain-audio-hardening-2026-09-07.md`
 
 ### Public documentation scope
 

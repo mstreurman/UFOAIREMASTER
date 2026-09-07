@@ -25,7 +25,8 @@ The remaster targets:
 - hybrid deferred rasterization with dedicated hardware ray tracing;
 - HDR output with runtime-selectable display, resolution, refresh rate and HDR mode;
 - SDL3 platform/window/input integration;
-- OpenAL Soft + EFX with runtime-selectable output device and HRTF policy;
+- C++26 for new remaster runtime code, with retained canonical/legacy code kept C++11 initially behind a narrow C++11-compatible value boundary;
+- OpenAL Soft >=1.25.2 as the reference audio implementation, using the stable OpenAL 1.1 API with required EFX/HRTF capability checks, runtime-selectable output device and HRTF policy;
 - Jolt v5.6.0 for **presentation-only** physics;
 - FFmpeg for cinematic/video migration;
 - deterministic offline runtime-asset generation;
@@ -34,6 +35,8 @@ The remaster targets:
 - runtime configurability that remains separate from hardware-specific optimization.
 
 The reference performance profile is **1920x1080, 60 Hz, sustained close to 60 FPS, DisplayHDR-600-class output when HDR is enabled and correctly qualified**. That is an optimization and qualification target, not a hardcoded runtime configuration.
+
+The accepted toolchain hardening baseline is equally explicit: new remaster runtime targets use strict **C++26** on the GCC 16.2.x reference compiler family, retained canonical/legacy targets stay C++11 initially, and shared bridge headers remain C++11-compatible. Vulkan requires core **1.4+** while development headers/registry/validation track an accepted current 1.4.x revision rather than hard-pinning a patch number. Slang remains exactly pinned to **v2026.17**. OpenAL keeps the stable **OpenAL 1.1** API contract while the new production audio runtime targets **OpenAL Soft >=1.25.2** with required EFX/HRTF capability checks. Architecture 092 is the normative language/toolchain authority.
 
 ## Non-negotiable rules
 
@@ -45,6 +48,7 @@ The reference performance profile is **1920x1080, 60 Hz, sustained close to 60 F
 6. **Runtime settings stay runtime settings.** Display, resolution, refresh, HDR, audio device and HRTF are selectable rather than baked into the engine.
 7. **Legacy backends are migration tools, not permanent products.** OpenGL and the old mixer are removed once their modern replacements have been defaulted, soaked and separately decommissioned.
 8. **Legacy source-content import is not legacy mod compatibility.** Supported maps/models/textures/audio may be imported or converted; old gameplay mods, GUI/Lua ABI, renderer internals and source-patch total conversions are not compatibility constraints.
+9. **Language standard follows architectural ownership.** Retained canonical/legacy targets stay C++11 initially; new remaster runtime targets use strict C++26; shared canonical/remaster headers stay C++11-compatible until the lower side is deliberately migrated.
 
 See [`docs/architecture/091-implementation-execution-strategy.md`](docs/architecture/091-implementation-execution-strategy.md) for the execution contract.
 
@@ -75,18 +79,21 @@ M0 is sealed. The spatial-service and tactical-publication slices of M1 are qual
 
 1. formalize canonical spatial wrappers and tests — **complete**;
 2. introduce immutable tactical/strategic publication seams — **complete**;
-3. introduce typed presentation IDs and intent dispatch — **typed presentation identity complete; typed intent dispatch remaining**;
-4. bring up the SDL3/Vulkan production platform path;
-5. implement frame contexts, allocator and production descriptor-heap runtime;
-6. implement Frame Graph + swapchain/output diagnostic frame;
-7. implement representative `.rshader` / `.r*` asset conversion and loading;
-8. qualify legacy source-content import fixtures for maps/models/textures/audio;
-9. build Presentation World -> first real Vulkan tactical scene;
-10. reach tactical presentation parity, default Vulkan tactical presentation, soak, then retire tactical OpenGL ownership;
-11. migrate strategic/Geoscape presentation, default it, soak, then retire strategic OpenGL ownership;
-12. complete retained UI/text/2D plus Vulkan cinematic frame display, then fully decommission OpenGL in M7;
-13. complete OpenAL/EFX production audio, default/soak it, then remove the old mixer in M8;
-14. continue with VFX/Jolt, RT, full FFmpeg cinematic completion, performance specialization and release hardening.
+3. introduce typed presentation IDs — **complete**;
+4. document the C++11/C++26 language/toolchain boundary and current dependency hardening baseline — **complete**;
+5. implement and qualify the C++11 legacy/bridge + strict C++26 remaster target split, including atomic-`shared_ptr` modernization and a mixed-standard link fixture;
+6. introduce typed intent dispatch without changing canonical rules;
+7. bring up the SDL3/Vulkan production platform path;
+8. implement frame contexts, allocator and production descriptor-heap runtime;
+9. implement Frame Graph + swapchain/output diagnostic frame;
+10. implement representative `.rshader` / `.r*` asset conversion and loading;
+11. qualify legacy source-content import fixtures for maps/models/textures/audio;
+12. build Presentation World -> first real Vulkan tactical scene;
+13. reach tactical presentation parity, default Vulkan tactical presentation, soak, then retire tactical OpenGL ownership;
+14. migrate strategic/Geoscape presentation, default it, soak, then retire strategic OpenGL ownership;
+15. complete retained UI/text/2D plus Vulkan cinematic frame display, then fully decommission OpenGL in M7;
+16. complete OpenAL Soft >=1.25.2 / EFX production audio, default/soak it, then remove the old mixer in M8;
+17. continue with VFX/Jolt, RT, full FFmpeg cinematic completion, performance specialization and release hardening.
 
 ## Readiness checklist
 
@@ -105,12 +112,12 @@ M0 is sealed. The spatial-service and tactical-publication slices of M1 are qual
 ### Local development environment
 
 - [x] Fedora 44 KDE/Wayland reference workstation captured.
-- [x] GCC 16.2.1 / Clang 22.1.8 available.
+- [x] GCC 16.2.1 / Clang 22.1.8 available; GCC 16.2.x accepted as the initial strict-C++26 reference compiler family.
 - [x] CMake 4.3.0 / Ninja 1.13.2 / ccache 4.12.3 available.
 - [x] Vulkan headers/loader/tools and validation layer available.
 - [x] Intel Arc B580 / Mesa 26.2.2 exposes `VK_EXT_descriptor_heap`.
 - [x] SDL3 3.4.14 development environment available.
-- [x] OpenAL Soft 1.24.2 development environment available.
+- [x] OpenAL Soft 1.24.2 is currently installed and capability-tested; OpenAL Soft >=1.25.2 is the accepted reference implementation baseline for the new production audio runtime, so local upgrade/requalification remains pending before M8 closure.
 - [x] FFmpeg 8.1.2 development modules available.
 - [x] Slang v2026.17 provisioned and hash-verified.
 - [x] Slang emits `SPV_EXT_descriptor_heap` and Fedora SPIR-V Tools validates it for Vulkan 1.4.
@@ -150,6 +157,12 @@ M0 is sealed. The spatial-service and tactical-publication slices of M1 are qual
   - [x] Project campaign time/credits/selection plus missions, aircraft/UFOs, bases, installations, nations and messages as owning value data.
   - [x] Confine campaign/message pointers and message identity mapping to the legacy adapter; reset mapping on new game/load/shutdown.
   - [x] Qualify public pointer isolation, production ordering, canonical preservation and both production client builds.
+- [ ] Establish the split C++ language/toolchain boundary before expanding the new runtime.
+  - [x] Document C++11 retained canonical/bridge ownership and strict C++26 remaster ownership in Architecture 092.
+  - [ ] Remove inherited global C++0x standard forcing and assign language modes per target.
+  - [ ] Move modern publication/runtime ownership into a strict C++26 target while keeping legacy adapters C++11.
+  - [ ] Replace tactical deprecated `shared_ptr` atomic free functions with `std::atomic<std::shared_ptr<...>>`.
+  - [ ] Add a strict C++11 + strict C++26 mixed compile/link/run qualification lane.
 - [ ] Introduce typed intent dispatch without changing canonical rules.
 - [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
 
@@ -196,13 +209,15 @@ Runtime configuration is not restricted to that profile. The renderer is explici
 ## Key implementation technologies
 
 ```text
+Language/runtime        C++26 new remaster runtime; C++11 retained canonical/bridge initially
+Reference compiler      GCC 16.2.x / libstdc++
 Platform/window/input   SDL3
-Graphics                Vulkan 1.4
-Shader language/tool    Slang v2026.17
+Graphics                Vulkan >=1.4; accepted current 1.4.x tooling/registry
+Shader language/tool    Slang v2026.17 exact pin
 Binding model           VK_EXT_descriptor_heap
 Primary GPU             Intel Arc B580 / Xe2
 Primary CPU             Intel Core i9-9900K
-Audio                   OpenAL Soft + EFX
+Audio                   OpenAL Soft >=1.25.2 / OpenAL 1.1 + EFX + HRTF
 Presentation physics    Jolt Physics v5.6.0
 Video/cinematics        FFmpeg 8.1.x API family
 Build                    CMake + Ninja + ccache
@@ -246,6 +261,8 @@ Start here:
 - [`docs/README.md`](docs/README.md) — complete design-document index.
 - [`docs/architecture/080-implementation-migration-roadmap.md`](docs/architecture/080-implementation-migration-roadmap.md) — M0-M13 roadmap.
 - [`docs/architecture/091-implementation-execution-strategy.md`](docs/architecture/091-implementation-execution-strategy.md) — day-to-day implementation method and gates.
+- [`docs/architecture/092-cpp26-language-toolchain-and-boundary-contract.md`](docs/architecture/092-cpp26-language-toolchain-and-boundary-contract.md) — C++11/C++26 ownership, compiler/ABI and dependency-version hardening contract.
+- [`docs/reference/reference-cpp26-toolchain-audio-hardening-2026-09-07.md`](docs/reference/reference-cpp26-toolchain-audio-hardening-2026-09-07.md) — adoption-time GCC/Vulkan/Slang/OpenAL and canonical-regression evidence.
 - [`docs/reference/reference-current-build-environment-readiness-2026-09-04-120248.md`](docs/reference/reference-current-build-environment-readiness-2026-09-04-120248.md) — local build-environment readiness evidence.
 - [`docs/reference/reference-current-jolt-provisioning-2026-09-04-121547.md`](docs/reference/reference-current-jolt-provisioning-2026-09-04-121547.md) — exact Jolt provisioning/build evidence.
 - [`docs/reference/reference-m1-tactical-publication-2026-09-06.txt`](docs/reference/reference-m1-tactical-publication-2026-09-06.txt) — M1.2 tactical publication qualification evidence.
@@ -266,6 +283,8 @@ The M1 typed presentation identity contract is also qualified. Tactical `EntityI
 
 The M1 strategic publication boundary is qualified. Campaign/Geoscape presentation can now consume an immutable owning snapshot containing typed mission, aircraft/UFO, base, installation, nation and message views plus campaign time/credits and typed selection state. Publication occurs after canonical campaign frame updates; raw campaign/message pointers remain confined to the legacy adapter, and campaign/load reset clears transient message identity mapping.
 
+A post-M1 hardening audit and fresh local validation confirmed 104/104 canonical tests twice with trace repeatability and the same evidence identity, while GCC 16.2.1 reproduced the expected deprecation of the tactical `shared_ptr` atomic free functions. The project has therefore accepted strict C++26 for new remaster runtime targets, retained C++11 for canonical/legacy targets initially, OpenAL Soft >=1.25.2 for eventual production-audio qualification, Vulkan >=1.4 without a patch-level runtime pin, and the existing exact Slang v2026.17 pin. These decisions are documentation-complete; the corresponding build-target split and atomic modernization remain implementation work.
+
 Do not interpret checked design/provisioning/qualification items above as implemented Vulkan/OpenAL presentation features.
 
 ## Upstream lineage and licensing
@@ -280,4 +299,4 @@ The project-local Slang binary cache under `tools/slang/` is a development depen
 
 **Current phase: M1 — canonical boundary shims.**
 
-M0 is complete; the M1 canonical spatial-service workstream, tactical publication, typed presentation identity contract and immutable strategic publication boundary are qualified. Active M1 work now moves to typed intent dispatch and temporary legacy-consumer adapters.
+M0 is complete; the M1 canonical spatial-service workstream, tactical publication, typed presentation identity contract and immutable strategic publication boundary are qualified. The language/toolchain hardening decision is now documented; active M1 implementation first establishes the C++11/C++26 target boundary and mixed-standard qualification, then continues with typed intent dispatch and temporary legacy-consumer adapters.
