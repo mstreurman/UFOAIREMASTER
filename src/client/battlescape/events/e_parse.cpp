@@ -43,6 +43,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../cl_localentity.h"
 #include "../../cgame/cl_game.h"
+#include "../../presentation/tactical_publication.h"
 
 cvar_t* cl_log_battlescape_events;
 
@@ -183,6 +184,9 @@ static void CL_ExecuteBattlescapeEvent (int now, void* data)
 
 		GAME_NotifyEvent(event->eType);
 		eventData->eventCallback(eventData, event->msg);
+		ufo::presentation::legacy::publishAfterCanonicalEvent(
+			static_cast<uint16_t>(event->eType),
+			static_cast<uint64_t>(now));
 	} else {
 		Com_DPrintf(DEBUG_EVENTSYS, "event(not executed): %s %p\n", eventData->name, (void*)event);
 	}
@@ -290,6 +294,9 @@ event_t CL_ParseEvent (dbuffer* msg)
 		Com_DPrintf(DEBUG_EVENTSYS, "event(now [%i]): %s\n", cl.time, eventData->name);
 		GAME_NotifyEvent((event_t)eType);
 		eventData->eventCallback(eventData, msg);
+		ufo::presentation::legacy::publishAfterCanonicalEvent(
+			static_cast<uint16_t>(eType),
+			static_cast<uint64_t>(cl.time));
 	} else {
 		evTimes_t* const cur = Mem_PoolAllocType(evTimes_t, cl_genericPool);
 

@@ -71,11 +71,11 @@ The accepted migration roadmap is [`docs/architecture/080-implementation-migrati
 
 ### Immediate execution order
 
-M0 is sealed. The active implementation queue now begins at M1:
+M0 is sealed. The spatial-service and tactical-publication slices of M1 are qualified. The active queue continues within M1:
 
-1. formalize canonical spatial wrappers and tests;
-2. introduce immutable tactical/strategic publication seams;
-3. introduce typed presentation IDs and intent dispatch;
+1. formalize canonical spatial wrappers and tests — **complete**;
+2. introduce immutable tactical/strategic publication seams — **tactical complete; strategic remaining**;
+3. introduce typed presentation IDs and intent dispatch — **tactical canonical entity identity introduced; remaining strategic/intent typing active**;
 4. bring up the SDL3/Vulkan production platform path;
 5. implement frame contexts, allocator and production descriptor-heap runtime;
 6. implement Frame Graph + swapchain/output diagnostic frame;
@@ -138,7 +138,12 @@ M0 is sealed. The active implementation queue now begins at M1:
   - [x] Add direct executable fixtures for map bounds and core grid/path result semantics.
   - [x] Qualify the remaining stateful routing/world/model/trajectory services; final evidence partition is 7 sentinel + 16 direct = 23/23.
 - [ ] Introduce typed presentation IDs where required.
-- [ ] Publish immutable tactical snapshots/events without raw canonical pointers.
+  - [x] Introduce the strong canonical entity identity used by tactical publication.
+  - [ ] Extend typed identity coverage to the remaining strategic/view/intent seams as those seams are introduced.
+- [x] Publish immutable tactical snapshots/events without raw canonical pointers.
+  - [x] Publish only after canonical client-mirror event mutation, with one monotonic sequence and scheduled presentation time.
+  - [x] Confine legacy local-entity access to the adapter; public tactical snapshot/event contracts are value-only.
+  - [x] Qualify canonical value projection, ordered publication and immutable/copyable public value types in the dedicated 3-test M1 lane.
 - [ ] Publish immutable strategic snapshots/view data without raw canonical pointers.
 - [ ] Introduce typed intent dispatch without changing canonical rules.
 - [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
@@ -238,14 +243,17 @@ Start here:
 - [`docs/architecture/091-implementation-execution-strategy.md`](docs/architecture/091-implementation-execution-strategy.md) — day-to-day implementation method and gates.
 - [`docs/reference/reference-current-build-environment-readiness-2026-09-04-120248.md`](docs/reference/reference-current-build-environment-readiness-2026-09-04-120248.md) — local build-environment readiness evidence.
 - [`docs/reference/reference-current-jolt-provisioning-2026-09-04-121547.md`](docs/reference/reference-current-jolt-provisioning-2026-09-04-121547.md) — exact Jolt provisioning/build evidence.
+- [`docs/reference/reference-m1-tactical-publication-2026-09-06.txt`](docs/reference/reference-m1-tactical-publication-2026-09-06.txt) — M1.2 tactical publication qualification evidence.
 
 ## Build status
 
-M0 is qualified and sealed: the original UFO:AI source, preservation harness and high-risk dependency fixtures reproduce from a clean checkout. The new remaster presentation runtime is **not implemented yet**; the active production phase is M1.
+M0 is qualified and sealed: the original UFO:AI source, preservation harness and high-risk dependency fixtures reproduce from a clean checkout. The full remaster presentation runtime is **not implemented yet**; the active production phase is M1.
 
 M1 canonical spatial-service work is qualified. Commit `041cf2297426f259dd38df901927cbd715aed261` centralized the 23 import bindings; `85e3c218eb2e84de8d99ba34b77de48e63479dc4` established the M1 semantic sentinel lane; `9e52c5fd286273830d6dd7e2bdd735a00ee4a4e0` added direct map-bounds coverage; and `4ad13451e20b66293d3eb788cdae3150e0f61754` added the core grid/path exact-result bundle.
 
 The closure audit corrected an earlier over-count: `GameTest.Shooting` is currently a placeholder and does not execute `Trace`, while `GameTest.VisFlags` directly supports the entity-aware `TestLineWithEnt` path rather than plain `TestLine`/`GetVisibility`. A dedicated M1-only stateful integration lane now executes the corrected remaining routing/world/model/trajectory services against live canonical map/server state without changing the sealed `src/tests/CMakeLists.txt`. The final evidence partition is 7 sentinel services plus 16 directly qualified services, covering all 23 Architecture-075 spatial services. G0 legacy/remaster builds pass and the sealed M0 canonical regression remains 104/104 tests in both repeatability passes with evidence identity `b5a6178ef17c3eb9f8957307ef94dc9d367ca2495d970f5c747170fe435b6a7e`.
+
+M1.2 tactical publication is qualified. The tactical client now exposes a strong canonical entity identity and immutable, value-only snapshot/event publication after canonical mirror mutation, with legacy local-entity access confined to an adapter. The dedicated M1 lane passes 3/3 tests; the sealed canonical regression remains 104/104 in both repeatability passes with the same evidence identity; and both legacy and remaster production client builds pass. The qualification transcript is summarized in `docs/reference/reference-m1-tactical-publication-2026-09-06.txt`.
 
 Do not interpret checked design/provisioning/qualification items above as implemented Vulkan/OpenAL presentation features.
 
@@ -261,4 +269,4 @@ The project-local Slang binary cache under `tools/slang/` is a development depen
 
 **Current phase: M1 — canonical boundary shims.**
 
-M0 is complete and the M1 canonical spatial-service workstream is qualified. Active M1 work now moves to typed presentation identity and immutable tactical/strategic publication seams.
+M0 is complete; the M1 canonical spatial-service workstream and M1.2 tactical publication slice are qualified. Active M1 work now moves to immutable strategic publication/view data and typed intent dispatch, extending typed identity coverage as those seams are introduced.

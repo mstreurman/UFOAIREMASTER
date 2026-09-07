@@ -3,6 +3,7 @@
 **Status:** Source-grounded migration contract  
 **Source baseline:** `763173ed036ebbee32c2a7bf6aefa19748df89ff`  
 **Primary authorities:** ADR-024–027, architecture 002, 035–050, 054
+**Retirement sequencing authority:** architecture 080 and 091
 
 ## 1. Purpose
 
@@ -196,6 +197,16 @@ Compatibility adapters are migration tools, not the final API.
 ## 11. Removal gates
 
 ### Renderer legacy removal
+
+Renderer removal is progressive rather than deferred to one final all-or-nothing change:
+
+| Milestone | OpenGL ownership removed after replacement/default/soak gates |
+|---|---|
+| M5 | tactical-only renderer ownership and callsites |
+| M6 | strategic/Geoscape renderer ownership and callsites |
+| M7 | remaining UI/text/video-display renderer ownership, SDL GL context, and obsolete OpenGL build/link infrastructure |
+
+Architecture 080 and 091 govern this sequencing if earlier broad wording in this migration map could be read differently. The complete renderer-removal gate below remains the final M7 gate; it is not a requirement to retain already-obsolete tactical or strategic OpenGL code until M7.
 
 The old renderer implementation can be removed only when:
 

@@ -41,6 +41,8 @@ Modern Presentation Runtime
 
 The current event system is therefore the most promising tactical presentation boundary.
 
+OpenGL retirement sequencing is governed by the later accepted implementation authorities in architecture 080 and 091: tactical-only OpenGL ownership is retired in M5 after Vulkan tactical parity/default/soak, strategic/Geoscape ownership follows in M6, and the remaining UI/text/video-display/context infrastructure is removed in M7. This source-boundary document does not override that progressive retirement order.
+
 The campaign/Geoscape side is less clean. Campaign logic is compiled directly into the main client and its cgame interface imports UI and renderer functions. Campaign modernization will require a deliberate separation layer.
 
 ## 2. Source-tree baseline

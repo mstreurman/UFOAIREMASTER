@@ -28,6 +28,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 option(UFOAI_REMASTER "Enable UFO:AI remaster M0 build scaffolding" OFF)
 option(UFOAI_REMASTER_STRICT_DEPENDENCIES "Fail configure when an accepted remaster dependency is unavailable" OFF)
 option(UFOAI_M1_SPATIAL_STATEFUL_TESTS "Inject the M1-only canonical spatial stateful fixture into ufotestall" OFF)
+option(UFOAI_M1_TACTICAL_PUBLICATION_TESTS "Inject the M1-only tactical publication fixture into ufotestall" OFF)
 
 # M0.6 defines migration selectors independently from dependency discovery.
 # Every selector defaults to legacy and unwired remaster values fail closed.
@@ -152,12 +153,26 @@ if (UFOAI_M1_SPATIAL_STATEFUL_TESTS AND (DISABLE_TESTS OR DISABLE_GAME))
 	message(FATAL_ERROR "UFOAI_M1_SPATIAL_STATEFUL_TESTS requires tests and the tactical game library")
 endif()
 
+if (UFOAI_M1_TACTICAL_PUBLICATION_TESTS AND (DISABLE_TESTS OR DISABLE_GAME))
+	message(FATAL_ERROR "UFOAI_M1_TACTICAL_PUBLICATION_TESTS requires tests and the tactical game library")
+endif()
+
 if (NOT DISABLE_TESTS AND NOT DISABLE_GAME) 
 	add_subdirectory("src/tests")
+	# e_parse.cpp is part of ufotestall and now publishes through this production seam.
+	# Keep its implementation linked in every test configuration; only the M1.2
+	# GoogleTest fixture itself remains opt-in.
+	target_sources(ufotestall PRIVATE
+		"${CMAKE_SOURCE_DIR}/src/client/presentation/tactical_snapshot_legacy_adapter.cpp"
+		"${CMAKE_SOURCE_DIR}/src/client/presentation/tactical_publication.cpp")
 	if (UFOAI_M1_SPATIAL_STATEFUL_TESTS)
 		target_sources(ufotestall PRIVATE
 			"${CMAKE_SOURCE_DIR}/tools/remaster/m1-canonical-spatial-stateful.cpp"
 			"${CMAKE_SOURCE_DIR}/tools/remaster/m1-canonical-spatial-stateful-server.cpp")
+	endif()
+	if (UFOAI_M1_TACTICAL_PUBLICATION_TESTS)
+		target_sources(ufotestall PRIVATE
+			"${CMAKE_SOURCE_DIR}/tools/remaster/m1-tactical-publication-integration.cpp")
 	endif()
 endif()
 
