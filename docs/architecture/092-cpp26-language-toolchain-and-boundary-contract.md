@@ -346,6 +346,15 @@ latest stable upstream: OpenAL Soft 1.25.2
 
 The current workstation capture remains valid historical evidence but is below the accepted implementation baseline for eventual M8 production qualification. The local package/runtime must therefore be upgraded and requalified before M8 audio closure.
 
+Current reference-workstation state after the 2026-09-07 environment rotation:
+
+```text
+OpenAL Soft 1.25.2 installed
+M0.3 environment manifest: aa42dc88f980845c94fab1d6ff992657f935f25c13ac418c16aa25f3baa5d305
+```
+
+This satisfies the implementation-version baseline itself. M8 audio closure still requires the dedicated runtime capability/device/HRTF/EFX qualification and production-audio soak; installing 1.25.2 alone does not close M8.
+
 EFX remains the required environmental-effects interface. HRTF remains user/runtime selectable rather than hardcoded always-on.
 
 ### Jolt
@@ -415,6 +424,8 @@ b5a6178ef17c3eb9f8957307ef94dc9d367ca2495d970f5c747170fe435b6a7e
 ```
 
 The permanent evidence record is `docs/reference/reference-m1-cpp26-language-boundary-2026-09-07.md`.
+
+The later 2026-09-07 OpenAL Soft 1.25.2 reference-environment rotation intentionally resealed M0.3/M0.5 evidence without changing the canonical 104-test corpus or two-run trace. The current M0.3 environment identity is `aa42dc88f980845c94fab1d6ff992657f935f25c13ac418c16aa25f3baa5d305` and the current M0.5 evidence identity is `33143dc7b737b6df7c2a1496500bf435b6563f259d60561c4db7f75c2f00bed2`. The earlier `b5a6178ef17c3eb9f8957307ef94dc9d367ca2495d970f5c747170fe435b6a7e` M0.5 digest remains historical evidence for the prior 1.24.2 environment.
 
 ## 14. Sequencing
 

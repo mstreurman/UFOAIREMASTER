@@ -15,7 +15,7 @@ from typing import Iterable
 
 CANONICAL_REVISION = "763173ed036ebbee32c2a7bf6aefa19748df89ff"
 M0_4_REVISION = "20e035758fa12ac8c7ee2fe71632eb3ed733dcc3"
-M0_3_MANIFEST_B3 = "4b319f96f5674b3d39108fdd327b2e04143b1f4eaeaa88469eac364071f756b5"
+M0_3_MANIFEST_B3 = "aa42dc88f980845c94fab1d6ff992657f935f25c13ac418c16aa25f3baa5d305"
 M0_4_EVIDENCE_B3 = "0bcf17b95ab6cccffab75f059c9ff919fe098e424fb02a8f579af7b1b0617d8e"
 
 SCOPE_REL = Path("tools/remaster/m0-canonical-reference-scope.json")
