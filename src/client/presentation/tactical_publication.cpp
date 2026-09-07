@@ -12,7 +12,7 @@
 namespace {
 
 std::atomic<uint64_t> publicationSequence(0);
-ufo::presentation::TacticalPublicationPtr latestPublication;
+std::atomic<ufo::presentation::TacticalPublicationPtr> latestPublication;
 
 } // namespace
 
@@ -21,7 +21,7 @@ namespace presentation {
 
 TacticalPublicationPtr latestTacticalPublication() noexcept
 {
-	return std::atomic_load_explicit(&latestPublication, std::memory_order_acquire);
+	return latestPublication.load(std::memory_order_acquire);
 }
 
 namespace legacy {
@@ -42,7 +42,7 @@ void publishAfterCanonicalEvent(uint16_t canonicalEventType, uint64_t scheduledP
 
 	const TacticalPublicationPtr publication =
 		std::make_shared<const TacticalPublication>(std::move(snapshot), event);
-	std::atomic_store_explicit(&latestPublication, publication, std::memory_order_release);
+	latestPublication.store(publication, std::memory_order_release);
 }
 
 } // namespace legacy

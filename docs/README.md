@@ -259,6 +259,7 @@ Earlier documents remain useful for rationale/history but must not redefine an A
 - `reference/reference-arc-b580-xe2-microarchitecture.md`
 - `reference/reference-third-party-toolchain-manifest.md`
 - `reference/reference-cpp26-toolchain-audio-hardening-2026-09-07.md`
+- `reference/reference-m1-cpp26-language-boundary-2026-09-07.md`
 
 ### Public documentation scope
 

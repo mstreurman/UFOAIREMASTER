@@ -109,12 +109,13 @@ def audit_source_contract(root: Path) -> None:
             raise GateError(f"missing tactical-publication CMake token: {token}")
 
     client_cmake = (root / "src/client/CMakeLists.txt").read_text(encoding="utf-8")
-    for token in (
-        "presentation/tactical_snapshot_legacy_adapter.cpp",
-        "presentation/tactical_publication.cpp",
-    ):
-        if token not in client_cmake:
-            raise GateError(f"production client does not compile tactical publication source: {token}")
+    if "presentation/tactical_snapshot_legacy_adapter.cpp" not in client_cmake:
+        raise GateError("production client does not compile the tactical legacy adapter")
+    if "presentation/tactical_publication.cpp" in client_cmake:
+        raise GateError("tactical publication must be owned by the root C++26 object target, not compiled directly by ufo")
+    for token in ("add_library(ufoai_remaster_publication OBJECT", "$<TARGET_OBJECTS:ufoai_remaster_publication>"):
+        if token not in cmake:
+            raise GateError(f"missing root C++26 publication ownership token: {token}")
 
     public_headers = [
         root / "src/client/presentation/canonical_identity.h",
@@ -150,8 +151,13 @@ def audit_source_contract(root: Path) -> None:
             raise GateError(f"legacy actor projection is missing required mapping/guard: {token}")
 
     publication = (root / "src/client/presentation/tactical_publication.cpp").read_text(encoding="utf-8")
-    if "std::atomic_load_explicit(&latestPublication, std::memory_order_acquire)" not in publication:
+    if "std::atomic<ufo::presentation::TacticalPublicationPtr> latestPublication;" not in publication:
+        raise GateError("latest tactical publication must use std::atomic<std::shared_ptr<T>> ownership")
+    if "latestPublication.load(std::memory_order_acquire)" not in publication:
         raise GateError("latest tactical publication must use an acquire read-side handoff")
+    for removed in ("std::atomic_load_explicit(&latestPublication", "std::atomic_store_explicit(&latestPublication"):
+        if removed in publication:
+            raise GateError(f"removed/deprecated shared_ptr atomic free function remains: {removed}")
     for token in (
         "publicationSequence.fetch_add(1, std::memory_order_relaxed) + 1;",
         "TacticalSnapshot snapshot = buildCurrentClientSnapshot(sequence);",
@@ -160,7 +166,7 @@ def audit_source_contract(root: Path) -> None:
         "event.kind = TacticalPresentationEventKind::CanonicalMirrorUpdated;",
         "event.canonicalType = CanonicalEventTypeId(canonicalEventType);",
         "std::make_shared<const TacticalPublication>",
-        "std::atomic_store_explicit(&latestPublication, publication, std::memory_order_release);",
+        "latestPublication.store(publication, std::memory_order_release);",
     ):
         if token not in publication:
             raise GateError(f"publication ordering contract missing token: {token}")

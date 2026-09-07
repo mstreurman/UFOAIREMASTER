@@ -95,21 +95,22 @@ def audit(root: Path) -> None:
     require(campaign.count("ufo::presentation::legacy::resetStrategicPublication();") == 2,
             "strategic publication/message identity state must reset at campaign init and shutdown")
 
-    for token in (
-        "presentation/strategic_snapshot_legacy_adapter.cpp",
-        "presentation/strategic_publication.cpp",
-    ):
-        require(token in client_cmake, f"production client CMake missing strategic source: {token}")
+    require("presentation/strategic_snapshot_legacy_adapter.cpp" in client_cmake,
+            "production client CMake missing strategic legacy adapter")
+    require("presentation/strategic_publication.cpp" not in client_cmake,
+            "strategic publication must be owned by the root C++26 object target")
+    require("add_library(ufoai_remaster_publication OBJECT" in root_cmake,
+            "root CMake missing C++26 publication object target")
+    require("$<TARGET_OBJECTS:ufoai_remaster_publication>" in root_cmake,
+            "production/test consumers are not linked to the C++26 publication object target")
 
     # cp_campaign.cpp and cp_cgame_callbacks.cpp are compiled into ufotestall by the sealed
-    # canonical harness. Their strategic publication calls therefore require the same
-    # implementation TUs to be attached at the root target-ownership seam, just as M1.2
-    # already does for tactical publication.
-    for token in (
-        '${CMAKE_SOURCE_DIR}/src/client/presentation/strategic_snapshot_legacy_adapter.cpp',
-        '${CMAKE_SOURCE_DIR}/src/client/presentation/strategic_publication.cpp',
-    ):
-        require(token in root_cmake, f"ufotestall root CMake ownership missing strategic source: {token}")
+    # canonical harness. The C++11 adapter remains attached directly to ufotestall while
+    # the C++26 publication implementation arrives through the root object target.
+    require('${CMAKE_SOURCE_DIR}/src/client/presentation/strategic_snapshot_legacy_adapter.cpp' in root_cmake,
+            "ufotestall root CMake ownership missing strategic legacy adapter")
+    require('${CMAKE_SOURCE_DIR}/src/client/presentation/strategic_publication.cpp' in root_cmake,
+            "root C++26 object target missing strategic publication implementation")
 
 
 def compile_contract(root: Path) -> None:
@@ -118,13 +119,15 @@ def compile_contract(root: Path) -> None:
         shutil.rmtree(build)
     build.mkdir(parents=True)
     binary = build / "m1-strategic-publication-contract"
-    common = ["g++", "-std=c++11", "-Wall", "-Wextra", "-Werror", "-pedantic", "-I", str(root)]
-    run(common + [str(root / "tools/remaster/m1-strategic-publication-contract.cpp"), "-o", str(binary)], root)
+    legacy_common = ["g++", "-std=c++11", "-Wall", "-Wextra", "-Werror", "-pedantic", "-I", str(root)]
+    run(legacy_common + [str(root / "tools/remaster/m1-strategic-publication-contract.cpp"), "-o", str(binary)], root)
     output = run([str(binary)], root)
     require("M1 strategic snapshot contract: PASS" in output, "strategic snapshot contract executable did not pass")
 
-    # Compile the publication handoff itself as a strict standalone translation unit.
-    run(common + ["-c", str(root / "src/client/presentation/strategic_publication.cpp"), "-o", str(build / "strategic_publication.o")], root)
+    # The public snapshot remains C++11-compatible, while the owning publication
+    # implementation is now a strict C++26 translation unit.
+    modern_common = ["g++", "-std=c++26", "-Wall", "-Wextra", "-Werror", "-pedantic", "-I", str(root)]
+    run(modern_common + ["-c", str(root / "src/client/presentation/strategic_publication.cpp"), "-o", str(build / "strategic_publication.o")], root)
 
 
 def main() -> int:
@@ -138,7 +141,7 @@ def main() -> int:
     print("  legacy adapter campaign prerequisite audit: PASS")
     print("  ufotestall source-ownership audit: PASS")
     print("  strict C++11 snapshot contract: PASS")
-    print("  strict C++11 publication TU compile: PASS")
+    print("  strict C++26 publication TU compile: PASS")
     return 0
 
 

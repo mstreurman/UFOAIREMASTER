@@ -157,12 +157,12 @@ M0 is sealed. The spatial-service and tactical-publication slices of M1 are qual
   - [x] Project campaign time/credits/selection plus missions, aircraft/UFOs, bases, installations, nations and messages as owning value data.
   - [x] Confine campaign/message pointers and message identity mapping to the legacy adapter; reset mapping on new game/load/shutdown.
   - [x] Qualify public pointer isolation, production ordering, canonical preservation and both production client builds.
-- [ ] Establish the split C++ language/toolchain boundary before expanding the new runtime.
+- [x] Establish the split C++ language/toolchain boundary before expanding the new runtime.
   - [x] Document C++11 retained canonical/bridge ownership and strict C++26 remaster ownership in Architecture 092.
-  - [ ] Remove inherited global C++0x standard forcing and assign language modes per target.
-  - [ ] Move modern publication/runtime ownership into a strict C++26 target while keeping legacy adapters C++11.
-  - [ ] Replace tactical deprecated `shared_ptr` atomic free functions with `std::atomic<std::shared_ptr<...>>`.
-  - [ ] Add a strict C++11 + strict C++26 mixed compile/link/run qualification lane.
+  - [x] Remove inherited global C++0x standard forcing and assign language modes per target.
+  - [x] Move modern publication/runtime ownership into a strict C++26 target while keeping legacy adapters C++11.
+  - [x] Replace tactical deprecated `shared_ptr` atomic free functions with `std::atomic<std::shared_ptr<...>>`.
+  - [x] Add and qualify a strict C++11 + strict C++26 mixed compile/link/run lane on GCC 16.2.1 / libstdc++.
 - [ ] Introduce typed intent dispatch without changing canonical rules.
 - [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
 
@@ -299,4 +299,4 @@ The project-local Slang binary cache under `tools/slang/` is a development depen
 
 **Current phase: M1 — canonical boundary shims.**
 
-M0 is complete; the M1 canonical spatial-service workstream, tactical publication, typed presentation identity contract and immutable strategic publication boundary are qualified. The language/toolchain hardening decision is now documented; active M1 implementation first establishes the C++11/C++26 target boundary and mixed-standard qualification, then continues with typed intent dispatch and temporary legacy-consumer adapters.
+M0 is complete; the M1 canonical spatial-service workstream, tactical publication, typed presentation identity contract and immutable strategic publication boundary are qualified. The C++11/C++26 target boundary and mixed-standard qualification are now implemented and qualified on GCC 16.2.1 / libstdc++; active M1 implementation continues with typed intent dispatch and temporary legacy-consumer adapters.

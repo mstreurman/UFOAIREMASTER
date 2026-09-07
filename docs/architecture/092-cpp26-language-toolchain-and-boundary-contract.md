@@ -386,6 +386,36 @@ Slang provision: v2026.17 PASS
 
 GCC 16.2.1 independently reproduced the tactical `shared_ptr` atomic deprecation warning, confirming the first source-level modernization required by the C++26 slice.
 
+## 13.1. Implementation qualification status
+
+The split-language boundary was implemented and qualified on 2026-09-07.
+
+Qualified evidence:
+
+```text
+GCC 16.2.1
+_GLIBCXX_USE_CXX11_ABI=1
+shared bridge headers strict C++11: PASS
+shared bridge headers strict C++26: PASS
+C++11 producer -> C++26 consumer ABI fixture: PASS
+production ufo legacy adapter ownership C++11: PASS
+ufoai_remaster_publication ownership C++26: PASS
+tactical publication integration: 3/3 PASS
+strategic publication focused lane: PASS
+canonical regression: 104/104 PASS twice
+two-run trace repeatability: PASS
+legacy clean production build: PASS
+remaster clean production build: PASS
+```
+
+Canonical evidence identity remains:
+
+```text
+b5a6178ef17c3eb9f8957307ef94dc9d367ca2495d970f5c747170fe435b6a7e
+```
+
+The permanent evidence record is `docs/reference/reference-m1-cpp26-language-boundary-2026-09-07.md`.
+
 ## 14. Sequencing
 
 Documentation is updated first.

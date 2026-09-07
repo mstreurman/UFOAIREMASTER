@@ -15,10 +15,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.25)
 
 # Project settings
-project(ufoai LANGUAGES NONE)
+# CXX is enabled at the root because the remaster language boundary owns a
+# root-level C++26 object target shared by production and qualification builds.
+project(ufoai LANGUAGES CXX)
 
 # cmake paths
 set(CMAKE_CONFIG_DIR "${CMAKE_SOURCE_DIR}/cmake/config")
@@ -105,11 +107,17 @@ if (NOT CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
 	endforeach(CHAP)
 endif()
 
-# -std=c++11 is bugged on cygwin/mingw
+# Retained canonical/legacy targets remain C++11 by default.  New remaster
+# ownership overrides this per target.  Do not mutate CMAKE_CXX_FLAGS with a
+# global -std= flag; mixed-standard ownership is a target property.
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED YES)
 if (WIN32 AND MINGW)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
-elseif (!MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+	# Preserve the inherited MinGW GNU-extension compatibility while the
+	# retained Windows path is still transitional.
+	set(CMAKE_CXX_EXTENSIONS ON)
+else()
+	set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
 
 add_custom_target(tools) # Complex target for console developer tools
@@ -128,6 +136,19 @@ option(DISABLE_DOXYGEN_DOCS "Disable doxygen documentation generating")
 option(DISABLE_BASE_PACKAGES "Disable compress game data packages")
 option(DISABLE_MAPS_COMPILE "Disable the maps compile and pack")
 
+# The immutable publication runtime is the first remaster-owned C++26 target.
+# It deliberately contains no legacy campaign/local-entity projection code;
+# those adapters remain C++11-owned by their consuming legacy targets.
+if (NOT DISABLE_GAME)
+	add_library(ufoai_remaster_publication OBJECT
+		"${CMAKE_SOURCE_DIR}/src/client/presentation/tactical_publication.cpp"
+		"${CMAKE_SOURCE_DIR}/src/client/presentation/strategic_publication.cpp")
+	set_target_properties(ufoai_remaster_publication PROPERTIES
+		CXX_STANDARD 26
+		CXX_STANDARD_REQUIRED YES
+		CXX_EXTENSIONS NO)
+endif()
+
 if (NOT DISABLE_GAME)
 	add_subdirectory("src/game")
 	set(TEXTDOMAINS "${PROJECT_NAME}")
@@ -135,6 +156,11 @@ endif()
 
 if (NOT DISABLE_UFO AND NOT DISABLE_GAME)
 	add_subdirectory("src/client")
+	set_target_properties(ufo PROPERTIES
+		CXX_STANDARD 11
+		CXX_STANDARD_REQUIRED YES
+		CXX_EXTENSIONS NO)
+	target_sources(ufo PRIVATE $<TARGET_OBJECTS:ufoai_remaster_publication>)
 endif()
 
 if (NOT DISABLE_UFODED AND NOT DISABLE_GAME)
@@ -162,11 +188,14 @@ if (NOT DISABLE_TESTS AND NOT DISABLE_GAME)
 	# Canonical test sources compile the production tactical and strategic publication call sites.
 	# Keep both implementation seams linked in every test configuration; only dedicated M1
 	# GoogleTest fixtures remain opt-in.
+	# ufotestall is a qualification harness, not the production language-boundary
+	# authority. Its dependency graph may legitimately raise the effective C++
+	# standard (for example GoogleTest 1.17 requires a newer language mode).
+	# Production C++11 ownership is qualified against the ufo target separately.
 	target_sources(ufotestall PRIVATE
 		"${CMAKE_SOURCE_DIR}/src/client/presentation/tactical_snapshot_legacy_adapter.cpp"
-		"${CMAKE_SOURCE_DIR}/src/client/presentation/tactical_publication.cpp"
 		"${CMAKE_SOURCE_DIR}/src/client/presentation/strategic_snapshot_legacy_adapter.cpp"
-		"${CMAKE_SOURCE_DIR}/src/client/presentation/strategic_publication.cpp")
+		$<TARGET_OBJECTS:ufoai_remaster_publication>)
 	if (UFOAI_M1_SPATIAL_STATEFUL_TESTS)
 		target_sources(ufotestall PRIVATE
 			"${CMAKE_SOURCE_DIR}/tools/remaster/m1-canonical-spatial-stateful.cpp"
