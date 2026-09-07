@@ -74,7 +74,7 @@ The accepted migration roadmap is [`docs/architecture/080-implementation-migrati
 M0 is sealed. The spatial-service and tactical-publication slices of M1 are qualified. The active queue continues within M1:
 
 1. formalize canonical spatial wrappers and tests — **complete**;
-2. introduce immutable tactical/strategic publication seams — **tactical complete; strategic remaining**;
+2. introduce immutable tactical/strategic publication seams — **complete**;
 3. introduce typed presentation IDs and intent dispatch — **typed presentation identity complete; typed intent dispatch remaining**;
 4. bring up the SDL3/Vulkan production platform path;
 5. implement frame contexts, allocator and production descriptor-heap runtime;
@@ -145,7 +145,11 @@ M0 is sealed. The spatial-service and tactical-publication slices of M1 are qual
   - [x] Publish only after canonical client-mirror event mutation, with one monotonic sequence and scheduled presentation time.
   - [x] Confine legacy local-entity access to the adapter; public tactical snapshot/event contracts are value-only.
   - [x] Qualify canonical value projection, ordered publication and immutable/copyable public value types in the dedicated 3-test M1 lane.
-- [ ] Publish immutable strategic snapshots/view data without raw canonical pointers.
+- [x] Publish immutable strategic snapshots/view data without raw canonical pointers.
+  - [x] Publish one immutable generation after canonical Geoscape frame updates on Main.
+  - [x] Project campaign time/credits/selection plus missions, aircraft/UFOs, bases, installations, nations and messages as owning value data.
+  - [x] Confine campaign/message pointers and message identity mapping to the legacy adapter; reset mapping on new game/load/shutdown.
+  - [x] Qualify public pointer isolation, production ordering, canonical preservation and both production client builds.
 - [ ] Introduce typed intent dispatch without changing canonical rules.
 - [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
 
@@ -246,6 +250,7 @@ Start here:
 - [`docs/reference/reference-current-jolt-provisioning-2026-09-04-121547.md`](docs/reference/reference-current-jolt-provisioning-2026-09-04-121547.md) — exact Jolt provisioning/build evidence.
 - [`docs/reference/reference-m1-tactical-publication-2026-09-06.txt`](docs/reference/reference-m1-tactical-publication-2026-09-06.txt) — M1.2 tactical publication qualification evidence.
 - [`docs/reference/reference-m1-typed-identity-2026-09-07.txt`](docs/reference/reference-m1-typed-identity-2026-09-07.txt) — M1 typed canonical presentation identity qualification evidence.
+- [`docs/reference/reference-m1-strategic-publication-2026-09-07.txt`](docs/reference/reference-m1-strategic-publication-2026-09-07.txt) — M1 immutable strategic publication qualification evidence.
 
 ## Build status
 
@@ -258,6 +263,8 @@ The closure audit corrected an earlier over-count: `GameTest.Shooting` is curren
 M1.2 tactical publication is qualified. The tactical client now exposes a strong canonical entity identity and immutable, value-only snapshot/event publication after canonical mirror mutation, with legacy local-entity access confined to an adapter. The dedicated M1 lane passes 3/3 tests; the sealed canonical regression remains 104/104 in both repeatability passes with the same evidence identity; and both legacy and remaster production client builds pass. The qualification transcript is summarized in `docs/reference/reference-m1-tactical-publication-2026-09-06.txt`.
 
 The M1 typed presentation identity contract is also qualified. Tactical `EntityId` remains unchanged, while the strategic/view/intent bridge now defines distinct 32-bit `MissionId`, `AircraftId`, `BaseId`, `InstallationId`, `NationId`, `EmployeeId`, `TechnologyId`, `ProductionId`, `MessageId` and `ItemId` domains. The strict C++11 contract proves domain separation and value semantics, and both qualified production client configurations rebuild successfully.
+
+The M1 strategic publication boundary is qualified. Campaign/Geoscape presentation can now consume an immutable owning snapshot containing typed mission, aircraft/UFO, base, installation, nation and message views plus campaign time/credits and typed selection state. Publication occurs after canonical campaign frame updates; raw campaign/message pointers remain confined to the legacy adapter, and campaign/load reset clears transient message identity mapping.
 
 Do not interpret checked design/provisioning/qualification items above as implemented Vulkan/OpenAL presentation features.
 
@@ -273,4 +280,4 @@ The project-local Slang binary cache under `tools/slang/` is a development depen
 
 **Current phase: M1 — canonical boundary shims.**
 
-M0 is complete; the M1 canonical spatial-service workstream, M1.2 tactical publication slice and typed presentation identity contract are qualified. Active M1 work now moves to immutable strategic publication/view data and typed intent dispatch; those remaining seams consume the completed typed identity contract.
+M0 is complete; the M1 canonical spatial-service workstream, tactical publication, typed presentation identity contract and immutable strategic publication boundary are qualified. Active M1 work now moves to typed intent dispatch and temporary legacy-consumer adapters.

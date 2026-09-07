@@ -159,12 +159,14 @@ endif()
 
 if (NOT DISABLE_TESTS AND NOT DISABLE_GAME) 
 	add_subdirectory("src/tests")
-	# e_parse.cpp is part of ufotestall and now publishes through this production seam.
-	# Keep its implementation linked in every test configuration; only the M1.2
-	# GoogleTest fixture itself remains opt-in.
+	# Canonical test sources compile the production tactical and strategic publication call sites.
+	# Keep both implementation seams linked in every test configuration; only dedicated M1
+	# GoogleTest fixtures remain opt-in.
 	target_sources(ufotestall PRIVATE
 		"${CMAKE_SOURCE_DIR}/src/client/presentation/tactical_snapshot_legacy_adapter.cpp"
-		"${CMAKE_SOURCE_DIR}/src/client/presentation/tactical_publication.cpp")
+		"${CMAKE_SOURCE_DIR}/src/client/presentation/tactical_publication.cpp"
+		"${CMAKE_SOURCE_DIR}/src/client/presentation/strategic_snapshot_legacy_adapter.cpp"
+		"${CMAKE_SOURCE_DIR}/src/client/presentation/strategic_publication.cpp")
 	if (UFOAI_M1_SPATIAL_STATEFUL_TESTS)
 		target_sources(ufotestall PRIVATE
 			"${CMAKE_SOURCE_DIR}/tools/remaster/m1-canonical-spatial-stateful.cpp"

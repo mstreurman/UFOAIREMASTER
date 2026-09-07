@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../cl_shared.h"
 #include "../../input/cl_keys.h"
 #include "../../ui/ui_dataids.h"
+#include "../../presentation/strategic_publication.h"
 #include "cp_cgame_callbacks.h"
 #include "cp_campaign.h"
 #include "cp_character.h"
@@ -387,6 +388,7 @@ void GAME_CP_Frame (float secondsSinceLastFrame)
 
 	/* advance time */
 	CP_CampaignRun(ccs.curCampaign, secondsSinceLastFrame);
+	ufo::presentation::legacy::publishAfterCanonicalCampaignUpdate();
 }
 
 /**

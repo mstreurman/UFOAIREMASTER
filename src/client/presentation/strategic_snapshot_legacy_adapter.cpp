@@ -1,0 +1,243 @@
+/**
+ * @file
+ * @brief Legacy campaign -> immutable strategic snapshot projection.
+ */
+
+#include "../cl_shared.h"
+#include "../cgame/campaign/cp_campaign.h"
+#include "../cgame/campaign/cp_messages.h"
+#include "../cgame/campaign/cp_missions.h"
+#include "strategic_snapshot_legacy_adapter.h"
+
+#include <cstdint>
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
+
+namespace ufo {
+namespace presentation {
+namespace legacy {
+namespace {
+
+const uint32_t UFO_AIRCRAFT_ID_BIT = 0x80000000u;
+std::map<const uiMessageListNodeMessage_t*, canonical::MessageId> messageIds;
+uint32_t nextMessageId = 0;
+
+template<typename Id>
+Id indexedId(int idx)
+{
+	if (idx < 0)
+		return Id();
+	return Id(static_cast<uint32_t>(idx));
+}
+
+canonical::AircraftId aircraftId(const aircraft_t* aircraft, bool ufo)
+{
+	if (!aircraft || aircraft->idx < 0)
+		return canonical::AircraftId();
+	const uint32_t value = static_cast<uint32_t>(aircraft->idx);
+	if ((value & UFO_AIRCRAFT_ID_BIT) != 0)
+		return canonical::AircraftId();
+	return canonical::AircraftId(ufo ? (value | UFO_AIRCRAFT_ID_BIT) : value);
+}
+
+canonical::MessageId messageId(const uiMessageListNodeMessage_t* message)
+{
+	const std::map<const uiMessageListNodeMessage_t*, canonical::MessageId>::const_iterator found = messageIds.find(message);
+	if (found != messageIds.end())
+		return found->second;
+
+	if (nextMessageId == canonical::MessageId::invalidValue())
+		return canonical::MessageId();
+	const canonical::MessageId id(nextMessageId++);
+	messageIds.insert(std::make_pair(message, id));
+	return id;
+}
+
+StrategicPosition position3(const float* pos)
+{
+	StrategicPosition out = {pos[0], pos[1], pos[2]};
+	return out;
+}
+
+StrategicPosition position2(const float* pos)
+{
+	StrategicPosition out = {pos[0], pos[1], 0.0f};
+	return out;
+}
+
+StrategicCampaignTime campaignTime(const DateTime& date)
+{
+	StrategicCampaignTime out = {
+		static_cast<int32_t>(date.getDateAsDays()),
+		static_cast<int32_t>(date.getTimeAsSeconds())
+	};
+	return out;
+}
+
+std::string valueString(const char* value)
+{
+	return value ? std::string(value) : std::string();
+}
+
+StrategicMissionView projectMission(const mission_t& mission)
+{
+	StrategicMissionView out;
+	out.id = indexedId<canonical::MissionId>(mission.idx);
+	out.position = position2(mission.pos);
+	out.category = static_cast<int32_t>(mission.category);
+	out.stage = static_cast<int32_t>(mission.stage);
+	out.active = mission.active;
+	out.onGeoscape = mission.onGeoscape;
+	out.crashed = mission.crashed;
+	return out;
+}
+
+StrategicAircraftView projectAircraft(const aircraft_t& aircraft, bool ufo)
+{
+	StrategicAircraftView out;
+	out.id = aircraftId(&aircraft, ufo);
+	out.homeBase = aircraft.homebase ? indexedId<canonical::BaseId>(aircraft.homebase->idx) : canonical::BaseId();
+	out.mission = aircraft.mission ? indexedId<canonical::MissionId>(aircraft.mission->idx) : canonical::MissionId();
+	out.position = position3(aircraft.pos);
+	out.status = static_cast<int32_t>(aircraft.status);
+	out.fuel = aircraft.fuel;
+	out.damage = aircraft.damage;
+	out.ufo = ufo;
+	out.detected = aircraft.detected;
+	out.landed = aircraft.landed;
+	out.hiddenFromGeoscape = aircraft.notOnGeoscape;
+	out.name = valueString(aircraft.name);
+	return out;
+}
+
+StrategicBaseView projectBase(const base_t& base)
+{
+	StrategicBaseView out;
+	out.id = indexedId<canonical::BaseId>(base.idx);
+	out.position = position3(base.pos);
+	out.status = static_cast<int32_t>(base.baseStatus);
+	out.alienInterest = base.alienInterest;
+	out.founded = base.founded;
+	out.selected = base.selected;
+	out.name = valueString(base.name);
+	return out;
+}
+
+StrategicInstallationView projectInstallation(const installation_t& installation)
+{
+	StrategicInstallationView out;
+	out.id = indexedId<canonical::InstallationId>(installation.idx);
+	out.position = position3(installation.pos);
+	out.status = static_cast<int32_t>(installation.installationStatus);
+	out.type = installation.installationTemplate
+		? static_cast<int32_t>(installation.installationTemplate->type)
+		: -1;
+	out.damage = installation.installationDamage;
+	out.maxDamage = installation.installationTemplate ? installation.installationTemplate->maxDamage : 0;
+	out.alienInterest = installation.alienInterest;
+	out.selected = installation.selected;
+	out.name = valueString(installation.name);
+	return out;
+}
+
+StrategicNationView projectNation(const nation_t& nation)
+{
+	StrategicNationView out;
+	out.id = indexedId<canonical::NationId>(nation.idx);
+	out.position = position2(nation.pos);
+	const nationInfo_t* info = NAT_GetCurrentMonthInfo(&nation);
+	out.happiness = info ? info->happiness : 0.0f;
+	out.xviInfection = info ? info->xviInfection : 0;
+	out.maxFunding = nation.maxFunding;
+	out.scriptId = valueString(nation.id);
+	out.name = valueString(nation.name);
+	return out;
+}
+
+StrategicMessageView projectMessage(const uiMessageListNodeMessage_t& message)
+{
+	StrategicMessageView out;
+	out.id = messageId(&message);
+	out.time = campaignTime(message.date);
+	out.type = static_cast<int32_t>(message.type);
+	out.title = valueString(message.title);
+	out.text = valueString(message.text);
+	out.iconName = valueString(message.iconName);
+	return out;
+}
+
+} // namespace
+
+StrategicSnapshot buildCurrentStrategicSnapshot(uint64_t publicationSerial)
+{
+	std::vector<StrategicMissionView> missions;
+	MIS_Foreach(mission) {
+		missions.push_back(projectMission(*mission));
+	}
+
+	std::vector<StrategicAircraftView> aircraft;
+	AIR_Foreach(craft) {
+		aircraft.push_back(projectAircraft(*craft, false));
+	}
+	for (int i = 0; i < ccs.numUFOs; ++i) {
+		aircraft.push_back(projectAircraft(ccs.ufos[i], true));
+	}
+
+	std::vector<StrategicBaseView> bases;
+	for (int i = 0; i < ccs.numBases; ++i) {
+		bases.push_back(projectBase(ccs.bases[i]));
+	}
+
+	std::vector<StrategicInstallationView> installations;
+	INS_Foreach(installation) {
+		installations.push_back(projectInstallation(*installation));
+	}
+
+	std::vector<StrategicNationView> nations;
+	NAT_Foreach(nation) {
+		nations.push_back(projectNation(*nation));
+	}
+
+	std::vector<StrategicMessageView> messages;
+	for (uiMessageListNodeMessage_t* message = cgi->UI_MessageGetStack(); message; message = message->next) {
+		messages.push_back(projectMessage(*message));
+	}
+
+	StrategicSelectionView selection;
+	selection.mission = ccs.geoscape.selectedMission
+		? indexedId<canonical::MissionId>(ccs.geoscape.selectedMission->idx)
+		: canonical::MissionId();
+	selection.aircraft = aircraftId(ccs.geoscape.selectedAircraft, false);
+	selection.ufo = aircraftId(ccs.geoscape.selectedUFO, true);
+	const base_t* selectedBase = B_GetCurrentSelectedBase();
+	selection.base = selectedBase ? indexedId<canonical::BaseId>(selectedBase->idx) : canonical::BaseId();
+	const installation_t* selectedInstallation = INS_GetCurrentSelectedInstallation();
+	selection.installation = selectedInstallation
+		? indexedId<canonical::InstallationId>(selectedInstallation->idx)
+		: canonical::InstallationId();
+
+	return StrategicSnapshot(
+		publicationSerial,
+		campaignTime(ccs.date),
+		ccs.credits,
+		ccs.gameTimeScale,
+		selection,
+		std::move(missions),
+		std::move(aircraft),
+		std::move(bases),
+		std::move(installations),
+		std::move(nations),
+		std::move(messages));
+}
+
+void resetStrategicSnapshotAdapter()
+{
+	messageIds.clear();
+	nextMessageId = 0;
+}
+
+} // namespace legacy
+} // namespace presentation
+} // namespace ufo

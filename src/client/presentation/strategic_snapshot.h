@@ -1,0 +1,157 @@
+/**
+ * @file
+ * @brief Immutable value-only strategic/campaign presentation snapshot.
+ */
+#pragma once
+
+#include "canonical_identity.h"
+
+#include <cstdint>
+#include <string>
+#include <utility>
+#include <vector>
+
+namespace ufo {
+namespace presentation {
+
+struct StrategicPosition {
+	float longitude;
+	float latitude;
+	float altitude;
+};
+
+struct StrategicCampaignTime {
+	int32_t day;
+	int32_t seconds;
+};
+
+struct StrategicMissionView {
+	canonical::MissionId id;
+	StrategicPosition position;
+	int32_t category;
+	int32_t stage;
+	bool active;
+	bool onGeoscape;
+	bool crashed;
+};
+
+struct StrategicAircraftView {
+	canonical::AircraftId id;
+	canonical::BaseId homeBase;
+	canonical::MissionId mission;
+	StrategicPosition position;
+	int32_t status;
+	int32_t fuel;
+	int32_t damage;
+	bool ufo;
+	bool detected;
+	bool landed;
+	bool hiddenFromGeoscape;
+	std::string name;
+};
+
+struct StrategicBaseView {
+	canonical::BaseId id;
+	StrategicPosition position;
+	int32_t status;
+	float alienInterest;
+	bool founded;
+	bool selected;
+	std::string name;
+};
+
+struct StrategicInstallationView {
+	canonical::InstallationId id;
+	StrategicPosition position;
+	int32_t status;
+	int32_t type;
+	int32_t damage;
+	int32_t maxDamage;
+	float alienInterest;
+	bool selected;
+	std::string name;
+};
+
+struct StrategicNationView {
+	canonical::NationId id;
+	StrategicPosition position;
+	float happiness;
+	int32_t xviInfection;
+	int32_t maxFunding;
+	std::string scriptId;
+	std::string name;
+};
+
+struct StrategicMessageView {
+	canonical::MessageId id;
+	StrategicCampaignTime time;
+	int32_t type;
+	std::string title;
+	std::string text;
+	std::string iconName;
+};
+
+struct StrategicSelectionView {
+	canonical::MissionId mission;
+	canonical::AircraftId aircraft;
+	canonical::AircraftId ufo;
+	canonical::BaseId base;
+	canonical::InstallationId installation;
+};
+
+class StrategicSnapshot {
+public:
+	StrategicSnapshot(
+		uint64_t publicationSerial,
+		StrategicCampaignTime campaignTime,
+		int32_t credits,
+		int32_t gameTimeScale,
+		StrategicSelectionView selection,
+		std::vector<StrategicMissionView> missions,
+		std::vector<StrategicAircraftView> aircraft,
+		std::vector<StrategicBaseView> bases,
+		std::vector<StrategicInstallationView> installations,
+		std::vector<StrategicNationView> nations,
+		std::vector<StrategicMessageView> messages)
+		: publicationSerial_(publicationSerial),
+		  campaignTime_(campaignTime),
+		  credits_(credits),
+		  gameTimeScale_(gameTimeScale),
+		  selection_(selection),
+		  missions_(std::move(missions)),
+		  aircraft_(std::move(aircraft)),
+		  bases_(std::move(bases)),
+		  installations_(std::move(installations)),
+		  nations_(std::move(nations)),
+		  messages_(std::move(messages))
+	{
+	}
+
+	uint64_t publicationSerial() const noexcept { return publicationSerial_; }
+	StrategicCampaignTime campaignTime() const noexcept { return campaignTime_; }
+	int32_t credits() const noexcept { return credits_; }
+	int32_t gameTimeScale() const noexcept { return gameTimeScale_; }
+	const StrategicSelectionView& selection() const noexcept { return selection_; }
+	const std::vector<StrategicMissionView>& missions() const noexcept { return missions_; }
+	const std::vector<StrategicAircraftView>& aircraft() const noexcept { return aircraft_; }
+	const std::vector<StrategicBaseView>& bases() const noexcept { return bases_; }
+	const std::vector<StrategicInstallationView>& installations() const noexcept { return installations_; }
+	const std::vector<StrategicNationView>& nations() const noexcept { return nations_; }
+	const std::vector<StrategicMessageView>& messages() const noexcept { return messages_; }
+
+private:
+	uint64_t publicationSerial_;
+	StrategicCampaignTime campaignTime_;
+	int32_t credits_;
+	int32_t gameTimeScale_;
+	StrategicSelectionView selection_;
+	std::vector<StrategicMissionView> missions_;
+	std::vector<StrategicAircraftView> aircraft_;
+	std::vector<StrategicBaseView> bases_;
+	std::vector<StrategicInstallationView> installations_;
+	std::vector<StrategicNationView> nations_;
+	std::vector<StrategicMessageView> messages_;
+};
+
+} // namespace presentation
+} // namespace ufo

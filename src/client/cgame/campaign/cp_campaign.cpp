@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../cl_shared.h"
 #include "../../ui/ui_main.h"
 #include "../cgame.h"
+#include "../../presentation/strategic_publication.h"
 #include "cp_campaign.h"
 #include "cp_capacity.h"
 #include "cp_character.h"
@@ -764,6 +765,7 @@ static void CP_RemoveCampaignCommands (void)
  */
 void CP_CampaignInit (campaign_t* campaign, bool load)
 {
+	ufo::presentation::legacy::resetStrategicPublication();
 	ccs.curCampaign = campaign;
 
 	CP_ReadCampaignData(campaign);
@@ -821,6 +823,7 @@ void CP_CampaignInit (campaign_t* campaign, bool load)
  */
 void CP_Shutdown (void)
 {
+	ufo::presentation::legacy::resetStrategicPublication();
 	if (CP_IsRunning()) {
 		AB_Shutdown();
 		UFO_Shutdown();

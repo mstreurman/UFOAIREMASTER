@@ -1,0 +1,15 @@
+UFOAIREMASTER_M1_STRATEGIC_PUBLICATION_REFERENCE_V6
+schema.version=6
+qualification.slice=M1-strategic-publication
+qualification.result=PASS
+qualification.completed_local=2026-09-07T09:47:40+02:00
+base.commit=8c8daf73150acff077b63fbf127a1cd1679f4b79
+focused.strategic_contract=PASS
+canonical.regression=PASS
+legacy.production_ufo=PASS
+remaster.production_ufo=PASS
+public.raw_pointer_isolation=PASS
+publication.after_canonical_campaign_update=PASS
+legacy.message_identity_mapping_confined=PASS
+prequalification.live_checkpoint=/home/mstreurman/Downloads/UFOAIREMASTER-M1-STRATEGIC-PUBLICATION-LIVE-CHECKPOINT-20260907-094656
+prequalification.stale_evidence_quarantine=none
