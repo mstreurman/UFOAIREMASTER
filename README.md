@@ -75,7 +75,7 @@ M0 is sealed. The spatial-service and tactical-publication slices of M1 are qual
 
 1. formalize canonical spatial wrappers and tests — **complete**;
 2. introduce immutable tactical/strategic publication seams — **tactical complete; strategic remaining**;
-3. introduce typed presentation IDs and intent dispatch — **tactical canonical entity identity introduced; remaining strategic/intent typing active**;
+3. introduce typed presentation IDs and intent dispatch — **typed presentation identity complete; typed intent dispatch remaining**;
 4. bring up the SDL3/Vulkan production platform path;
 5. implement frame contexts, allocator and production descriptor-heap runtime;
 6. implement Frame Graph + swapchain/output diagnostic frame;
@@ -137,9 +137,10 @@ M0 is sealed. The spatial-service and tactical-publication slices of M1 are qual
   - [x] Establish and audit M1 semantic sentinels over the sealed M0 corpus.
   - [x] Add direct executable fixtures for map bounds and core grid/path result semantics.
   - [x] Qualify the remaining stateful routing/world/model/trajectory services; final evidence partition is 7 sentinel + 16 direct = 23/23.
-- [ ] Introduce typed presentation IDs where required.
+- [x] Introduce typed presentation IDs where required.
   - [x] Introduce the strong canonical entity identity used by tactical publication.
-  - [ ] Extend typed identity coverage to the remaining strategic/view/intent seams as those seams are introduced.
+  - [x] Define strong 32-bit canonical bridge identities for Mission, Aircraft, Base, Installation, Nation, Employee, Technology, Production, Message and Item domains required by strategic view/intent contracts.
+  - [x] Keep canonical identity domains mutually distinct, value-only and free of implicit integer or cross-domain conversions.
 - [x] Publish immutable tactical snapshots/events without raw canonical pointers.
   - [x] Publish only after canonical client-mirror event mutation, with one monotonic sequence and scheduled presentation time.
   - [x] Confine legacy local-entity access to the adapter; public tactical snapshot/event contracts are value-only.
@@ -244,6 +245,7 @@ Start here:
 - [`docs/reference/reference-current-build-environment-readiness-2026-09-04-120248.md`](docs/reference/reference-current-build-environment-readiness-2026-09-04-120248.md) — local build-environment readiness evidence.
 - [`docs/reference/reference-current-jolt-provisioning-2026-09-04-121547.md`](docs/reference/reference-current-jolt-provisioning-2026-09-04-121547.md) — exact Jolt provisioning/build evidence.
 - [`docs/reference/reference-m1-tactical-publication-2026-09-06.txt`](docs/reference/reference-m1-tactical-publication-2026-09-06.txt) — M1.2 tactical publication qualification evidence.
+- [`docs/reference/reference-m1-typed-identity-2026-09-07.txt`](docs/reference/reference-m1-typed-identity-2026-09-07.txt) — M1 typed canonical presentation identity qualification evidence.
 
 ## Build status
 
@@ -254,6 +256,8 @@ M1 canonical spatial-service work is qualified. Commit `041cf2297426f259dd38df90
 The closure audit corrected an earlier over-count: `GameTest.Shooting` is currently a placeholder and does not execute `Trace`, while `GameTest.VisFlags` directly supports the entity-aware `TestLineWithEnt` path rather than plain `TestLine`/`GetVisibility`. A dedicated M1-only stateful integration lane now executes the corrected remaining routing/world/model/trajectory services against live canonical map/server state without changing the sealed `src/tests/CMakeLists.txt`. The final evidence partition is 7 sentinel services plus 16 directly qualified services, covering all 23 Architecture-075 spatial services. G0 legacy/remaster builds pass and the sealed M0 canonical regression remains 104/104 tests in both repeatability passes with evidence identity `b5a6178ef17c3eb9f8957307ef94dc9d367ca2495d970f5c747170fe435b6a7e`.
 
 M1.2 tactical publication is qualified. The tactical client now exposes a strong canonical entity identity and immutable, value-only snapshot/event publication after canonical mirror mutation, with legacy local-entity access confined to an adapter. The dedicated M1 lane passes 3/3 tests; the sealed canonical regression remains 104/104 in both repeatability passes with the same evidence identity; and both legacy and remaster production client builds pass. The qualification transcript is summarized in `docs/reference/reference-m1-tactical-publication-2026-09-06.txt`.
+
+The M1 typed presentation identity contract is also qualified. Tactical `EntityId` remains unchanged, while the strategic/view/intent bridge now defines distinct 32-bit `MissionId`, `AircraftId`, `BaseId`, `InstallationId`, `NationId`, `EmployeeId`, `TechnologyId`, `ProductionId`, `MessageId` and `ItemId` domains. The strict C++11 contract proves domain separation and value semantics, and both qualified production client configurations rebuild successfully.
 
 Do not interpret checked design/provisioning/qualification items above as implemented Vulkan/OpenAL presentation features.
 
@@ -269,4 +273,4 @@ The project-local Slang binary cache under `tools/slang/` is a development depen
 
 **Current phase: M1 — canonical boundary shims.**
 
-M0 is complete; the M1 canonical spatial-service workstream and M1.2 tactical publication slice are qualified. Active M1 work now moves to immutable strategic publication/view data and typed intent dispatch, extending typed identity coverage as those seams are introduced.
+M0 is complete; the M1 canonical spatial-service workstream, M1.2 tactical publication slice and typed presentation identity contract are qualified. Active M1 work now moves to immutable strategic publication/view data and typed intent dispatch; those remaining seams consume the completed typed identity contract.
