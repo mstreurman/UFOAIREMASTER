@@ -31,6 +31,7 @@ option(UFOAI_REMASTER "Enable UFO:AI remaster M0 build scaffolding" OFF)
 option(UFOAI_REMASTER_STRICT_DEPENDENCIES "Fail configure when an accepted remaster dependency is unavailable" OFF)
 option(UFOAI_M1_SPATIAL_STATEFUL_TESTS "Inject the M1-only canonical spatial stateful fixture into ufotestall" OFF)
 option(UFOAI_M1_TACTICAL_PUBLICATION_TESTS "Inject the M1-only tactical publication fixture into ufotestall" OFF)
+option(UFOAI_M1_STRATEGIC_INTENT_TESTS "Inject the M1-only strategic typed-intent fixture into ufotestall" OFF)
 
 # M0.6 defines migration selectors independently from dependency discovery.
 # Every selector defaults to legacy and unwired remaster values fail closed.
@@ -147,6 +148,15 @@ if (NOT DISABLE_GAME)
 		CXX_STANDARD 26
 		CXX_STANDARD_REQUIRED YES
 		CXX_EXTENSIONS NO)
+
+	# Presentation-originated intents are transport/runtime ownership, not
+	# canonical campaign mutation. Main consumes them through a C++11 adapter.
+	add_library(ufoai_remaster_intent_runtime OBJECT
+		"${CMAKE_SOURCE_DIR}/src/client/presentation/strategic_intent_dispatch.cpp")
+	set_target_properties(ufoai_remaster_intent_runtime PROPERTIES
+		CXX_STANDARD 26
+		CXX_STANDARD_REQUIRED YES
+		CXX_EXTENSIONS NO)
 endif()
 
 if (NOT DISABLE_GAME)
@@ -160,7 +170,9 @@ if (NOT DISABLE_UFO AND NOT DISABLE_GAME)
 		CXX_STANDARD 11
 		CXX_STANDARD_REQUIRED YES
 		CXX_EXTENSIONS NO)
-	target_sources(ufo PRIVATE $<TARGET_OBJECTS:ufoai_remaster_publication>)
+	target_sources(ufo PRIVATE
+		$<TARGET_OBJECTS:ufoai_remaster_publication>
+		$<TARGET_OBJECTS:ufoai_remaster_intent_runtime>)
 endif()
 
 if (NOT DISABLE_UFODED AND NOT DISABLE_GAME)
@@ -183,6 +195,10 @@ if (UFOAI_M1_TACTICAL_PUBLICATION_TESTS AND (DISABLE_TESTS OR DISABLE_GAME))
 	message(FATAL_ERROR "UFOAI_M1_TACTICAL_PUBLICATION_TESTS requires tests and the tactical game library")
 endif()
 
+if (UFOAI_M1_STRATEGIC_INTENT_TESTS AND (DISABLE_TESTS OR DISABLE_GAME))
+	message(FATAL_ERROR "UFOAI_M1_STRATEGIC_INTENT_TESTS requires tests and the tactical game library")
+endif()
+
 if (NOT DISABLE_TESTS AND NOT DISABLE_GAME) 
 	add_subdirectory("src/tests")
 	# Canonical test sources compile the production tactical and strategic publication call sites.
@@ -195,7 +211,9 @@ if (NOT DISABLE_TESTS AND NOT DISABLE_GAME)
 	target_sources(ufotestall PRIVATE
 		"${CMAKE_SOURCE_DIR}/src/client/presentation/tactical_snapshot_legacy_adapter.cpp"
 		"${CMAKE_SOURCE_DIR}/src/client/presentation/strategic_snapshot_legacy_adapter.cpp"
-		$<TARGET_OBJECTS:ufoai_remaster_publication>)
+		"${CMAKE_SOURCE_DIR}/src/client/presentation/strategic_intent_legacy_adapter.cpp"
+		$<TARGET_OBJECTS:ufoai_remaster_publication>
+		$<TARGET_OBJECTS:ufoai_remaster_intent_runtime>)
 	if (UFOAI_M1_SPATIAL_STATEFUL_TESTS)
 		target_sources(ufotestall PRIVATE
 			"${CMAKE_SOURCE_DIR}/tools/remaster/m1-canonical-spatial-stateful.cpp"
@@ -204,6 +222,10 @@ if (NOT DISABLE_TESTS AND NOT DISABLE_GAME)
 	if (UFOAI_M1_TACTICAL_PUBLICATION_TESTS)
 		target_sources(ufotestall PRIVATE
 			"${CMAKE_SOURCE_DIR}/tools/remaster/m1-tactical-publication-integration.cpp")
+	endif()
+	if (UFOAI_M1_STRATEGIC_INTENT_TESTS)
+		target_sources(ufotestall PRIVATE
+			"${CMAKE_SOURCE_DIR}/tools/remaster/m1-strategic-intent-integration.cpp")
 	endif()
 endif()
 

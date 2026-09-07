@@ -155,6 +155,27 @@ static bool CP_AllowTimeScale (void)
 }
 
 /**
+ * @brief Canonical validation/mutation entry used by typed presentation intent dispatch.
+ * @param[in] gameLapseValue Requested canonical lapse index.
+ * @return true when canonical campaign rules accepted the requested lapse.
+ */
+bool CP_TrySetGameTimeLapse (int gameLapseValue)
+{
+	if (!CP_AllowTimeScale())
+		return false;
+
+	if (gameLapseValue < 0 || gameLapseValue >= NUM_TIMELAPSE)
+		return false;
+
+	if (gameLapseValue != ccs.gameLapse) {
+		ccs.gameLapse = gameLapseValue;
+		CP_UpdateTime();
+	}
+
+	return true;
+}
+
+/**
  * @brief Decrease game time speed
  */
 void CP_GameTimeSlow (void)

@@ -50,6 +50,7 @@ void CP_GameTimeStop(void);
 bool CP_IsTimeStopped(void);
 void CP_GameTimeFast(void);
 void CP_GameTimeSlow(void);
+bool CP_TrySetGameTimeLapse(int gameLapseValue);
 void CP_SetGameTime_f(void);
 
 int Date_DateToSeconds(const DateTime& date);

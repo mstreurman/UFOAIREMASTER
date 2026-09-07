@@ -81,8 +81,8 @@ M0 is sealed. The spatial-service and tactical-publication slices of M1 are qual
 2. introduce immutable tactical/strategic publication seams — **complete**;
 3. introduce typed presentation IDs — **complete**;
 4. document the C++11/C++26 language/toolchain boundary and current dependency hardening baseline — **complete**;
-5. implement and qualify the C++11 legacy/bridge + strict C++26 remaster target split, including atomic-`shared_ptr` modernization and a mixed-standard link fixture;
-6. introduce typed intent dispatch without changing canonical rules;
+5. implement and qualify the C++11 legacy/bridge + strict C++26 remaster target split, including atomic-`shared_ptr` modernization and a mixed-standard link fixture — **complete**;
+6. introduce typed intent dispatch without changing canonical rules — **complete foundation; catalog expansion continues with consumer migration**;
 7. bring up the SDL3/Vulkan production platform path;
 8. implement frame contexts, allocator and production descriptor-heap runtime;
 9. implement Frame Graph + swapchain/output diagnostic frame;
@@ -117,7 +117,7 @@ M0 is sealed. The spatial-service and tactical-publication slices of M1 are qual
 - [x] Vulkan headers/loader/tools and validation layer available.
 - [x] Intel Arc B580 / Mesa 26.2.2 exposes `VK_EXT_descriptor_heap`.
 - [x] SDL3 3.4.14 development environment available.
-- [x] OpenAL Soft 1.24.2 is currently installed and capability-tested; OpenAL Soft >=1.25.2 is the accepted reference implementation baseline for the new production audio runtime, so local upgrade/requalification remains pending before M8 closure.
+- [x] OpenAL Soft 1.25.2 is installed on the Fedora 44 reference workstation and the deterministic M0.3 environment manifest has been recaptured/verified at `aa42dc88f980845c94fab1d6ff992657f935f25c13ac418c16aa25f3baa5d305`; M8 still requires the dedicated EFX/HRTF/device-runtime qualification before audio closure.
 - [x] FFmpeg 8.1.2 development modules available.
 - [x] Slang v2026.17 provisioned and hash-verified.
 - [x] Slang emits `SPV_EXT_descriptor_heap` and Fedora SPIR-V Tools validates it for Vulkan 1.4.
@@ -163,7 +163,12 @@ M0 is sealed. The spatial-service and tactical-publication slices of M1 are qual
   - [x] Move modern publication/runtime ownership into a strict C++26 target while keeping legacy adapters C++11.
   - [x] Replace tactical deprecated `shared_ptr` atomic free functions with `std::atomic<std::shared_ptr<...>>`.
   - [x] Add and qualify a strict C++11 + strict C++26 mixed compile/link/run lane on GCC 16.2.1 / libstdc++.
-- [ ] Introduce typed intent dispatch without changing canonical rules.
+- [x] Introduce typed intent dispatch without changing canonical rules.
+  - [x] Establish the C++11-compatible strategic intent/result value contract.
+  - [x] Establish the bounded strict-C++26 intent/result transport with monotonic sequence IDs.
+  - [x] Route representative `SetCampaignTimeLapse` through Main/canonical validation without optimistic presentation mutation.
+  - [x] Qualify accepted/rejected/reset behavior in the dedicated 3-test strategic intent lane and preserve publication/canonical regression.
+  - [ ] Expand strategic and tactical intent catalogs as their owning presentation paths migrate.
 - [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
 
 ### Renderer and presentation

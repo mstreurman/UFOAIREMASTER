@@ -321,6 +321,52 @@ strategic audio command sequence
 selected visual regression frames
 ```
 
+## 14.1. M1 typed-intent mechanism qualification
+
+The first production typed strategic intent path was implemented and qualified on 2026-09-07.
+
+Representative action:
+
+```text
+SetCampaignTimeLapse(int32 lapseIndex)
+```
+
+Qualified flow:
+
+```text
+presentation
+    -> bounded C++26 intent runtime
+    -> C++11 Main/campaign adapter
+    -> CP_TrySetGameTimeLapse()
+    -> canonical acceptance/rejection
+    -> typed result feedback
+    -> next StrategicSnapshot publication
+```
+
+Properties proven by the focused lane:
+
+```text
+public intent/result contract strict C++11: PASS
+bounded C++26 FIFO/capacity/reset/sequence contract: PASS
+submission does not optimistically mutate canonical state: PASS
+canonical invalid-lapse rejection: PASS
+campaign reset drops pending presentation intent state: PASS
+Main intent resolution before campaign run: PASS
+campaign run before strategic publication: PASS
+integration GoogleTests: 3/3 PASS
+sealed src/tests/CMakeLists.txt: unchanged
+```
+
+This qualifies the dispatch mechanism required by section 8.
+
+It does **not** imply that every example intent listed in section 8 has already been implemented. New strategic actions should extend this typed value/dispatch path as screens and Geoscape consumers migrate. Tactical player actions may use a separate server/canonical authority adapter while preserving the same presentation-is-not-authority rule.
+
+Permanent evidence:
+
+```text
+docs/reference/reference-m1-strategic-intent-dispatch-2026-09-07.md
+```
+
 ## 15. Removal criterion
 
 `B029-001` is documentation-closed when the project has:

@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../input/cl_keys.h"
 #include "../../ui/ui_dataids.h"
 #include "../../presentation/strategic_publication.h"
+#include "../../presentation/strategic_intent_legacy_adapter.h"
 #include "cp_cgame_callbacks.h"
 #include "cp_campaign.h"
 #include "cp_character.h"
@@ -383,10 +384,13 @@ void GAME_CP_Frame (float secondsSinceLastFrame)
 	if (!CP_IsRunning())
 		return;
 
+	/* Presentation submits intent; Main/campaign validates and mutates. */
+	ufo::presentation::legacy::applyPendingStrategicIntents();
+
 	if (!CP_OnGeoscape())
 		return;
 
-	/* advance time */
+	/* advance time after pending presentation intents have been resolved */
 	CP_CampaignRun(ccs.curCampaign, secondsSinceLastFrame);
 	ufo::presentation::legacy::publishAfterCanonicalCampaignUpdate();
 }
