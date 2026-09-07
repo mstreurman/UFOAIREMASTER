@@ -417,6 +417,57 @@ The network protocol and canonical outcome stay unchanged.
 11. Dropping a presentation event consumer cannot change canonical outcomes.
 12. Presentation subsystem failure may degrade presentation, never redefine gameplay.
 
+## 18.1. Tactical presentation-intent server-authority bridge
+
+M1 now includes the first production tactical presentation-intent seed catalog:
+
+```text
+SetReactionFire(EntityId, bool)
+SetReservedTimeUnits(EntityId, shotTus, crouchTus)
+```
+
+These actions travel in the opposite direction from the tactical publication bridge:
+
+```text
+presentation input
+    -> typed tactical intent
+    -> bounded C++26 transport
+    -> retained C++11 client-Main adapter
+    -> existing PA_* request protocol
+    -> canonical game server
+```
+
+Current mapping:
+
+```text
+SetReactionFire
+    -> PA_STATE
+    -> G_ClientStateChange(..., true)
+
+SetReservedTimeUnits
+    -> PA_RESERVE_STATE
+    -> G_ActorReserveTUs(...)
+```
+
+The client-side tactical result vocabulary is deliberately:
+
+```text
+ForwardedToServer
+RejectedByClientBoundary
+```
+
+It must not report `Applied` merely because a request was serialized.
+
+`ForwardedToServer` is transport feedback only. Canonical tactical acceptance remains the server decision, observed through the existing authoritative event/mirror/publication path.
+
+This preserves the core authority rule in section 2 while giving future retained UI / Presentation World input a typed route toward canonical tactical actions.
+
+Qualified evidence:
+
+```text
+docs/reference/reference-m1-intent-catalog-expansion-2026-09-07.md
+```
+
 ## 19. Capture/replay goal
 
 A future debug capture should record normalized presentation input so that graphics/audio/physics can be replayed without rerunning tactical simulation.

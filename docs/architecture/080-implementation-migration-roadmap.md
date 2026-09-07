@@ -113,7 +113,7 @@ formalize canonical spatial service wrappers/tests
 introduce typed presentation IDs where needed
 introduce tactical/strategic immutable publication boundaries
 establish and qualify C++11 legacy/bridge + strict C++26 remaster target ownership
-introduce typed intent dispatch without changing rules — qualified mechanism; expand vocabulary with consumer migration
+introduce typed intent dispatch without changing rules — qualified mechanism + first strategic/tactical seed catalogs; richer vocabulary expands with consumer migration
 keep existing consumers behind temporary adapters
 define explicit presentation-facing ownership rather than expose raw canonical pointers
 ```
@@ -131,7 +131,7 @@ Exit:
 ```text
 canonical behavior hashes/reference tests unchanged
 new presentation consumers can read immutable snapshots/events without raw canonical pointers
-new typed intents can reach canonical action owners without changing rules — qualified by representative strategic intent
+new typed intents can reach canonical strategic owners and tactical server authority without changing rules — qualified by strategic + tactical seed catalogs
 legacy consumers still function through adapters
 mixed C++11/C++26 bridge compile/link qualification passes before modern runtime expansion
 ```

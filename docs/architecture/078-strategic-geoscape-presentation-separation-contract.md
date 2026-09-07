@@ -367,6 +367,54 @@ Permanent evidence:
 docs/reference/reference-m1-strategic-intent-dispatch-2026-09-07.md
 ```
 
+## 14.2. M1 strategic catalog expansion qualification
+
+The first strategic breadth expansion was qualified on 2026-09-07.
+
+Qualified catalog:
+
+```text
+SetCampaignTimeLapse
+SelectMission
+SelectAircraft
+SendAircraftToMission
+ReturnAircraftToBase
+```
+
+The new identity-bearing actions resolve typed `MissionId` / `AircraftId` values only inside the retained C++11 campaign adapter.
+
+Canonical owner mapping:
+
+```text
+SelectMission             -> GEO_SelectMission
+SelectAircraft            -> GEO_SelectAircraft
+SendAircraftToMission     -> AIR_SendAircraftToMission
+ReturnAircraftToBase      -> AIR_AircraftReturnToBase
+```
+
+The adapter does not reproduce legacy popup/UI behavior as part of the typed contract.
+
+Qualification:
+
+```text
+strict C++11 public contract: PASS
+strict C++26 bounded runtime: PASS
+FIFO/capacity/reset/sequence: PASS
+canonical-owner mapping audit: PASS
+typed mission selection -> StrategicSnapshot: PASS
+invalid typed identities rejected: PASS
+integration GoogleTests: 3/3 PASS
+canonical regression: 104/104 x2 + repeatable trace
+```
+
+Permanent evidence:
+
+```text
+docs/reference/reference-m1-intent-catalog-expansion-2026-09-07.md
+```
+
+This is a seed catalog, not the final strategic command surface. Further actions are added when their owning presentation consumers migrate.
+
 ## 15. Removal criterion
 
 `B029-001` is documentation-closed when the project has:

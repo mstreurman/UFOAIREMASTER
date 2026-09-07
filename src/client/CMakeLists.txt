@@ -51,6 +51,7 @@ set(UFOAI_SOURCES
 	presentation/tactical_snapshot_legacy_adapter.cpp
 	presentation/strategic_snapshot_legacy_adapter.cpp
 	presentation/strategic_intent_legacy_adapter.cpp
+	presentation/tactical_intent_legacy_adapter.cpp
 	battlescape/events/e_main.cpp
 	battlescape/events/e_parse.cpp
 	battlescape/events/e_server.cpp

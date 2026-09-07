@@ -262,6 +262,7 @@ Earlier documents remain useful for rationale/history but must not redefine an A
 - `reference/reference-openal-soft-1.25.2-environment-rotation-2026-09-07.md`
 - `reference/reference-m1-cpp26-language-boundary-2026-09-07.md`
 - `reference/reference-m1-strategic-intent-dispatch-2026-09-07.md`
+- `reference/reference-m1-intent-catalog-expansion-2026-09-07.md`
 
 ### Public documentation scope
 

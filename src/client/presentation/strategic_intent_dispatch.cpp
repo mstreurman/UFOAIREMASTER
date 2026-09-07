@@ -73,9 +73,7 @@ uint64_t allocateSequence()
 	return sequence;
 }
 
-} // namespace
-
-StrategicIntentSubmission submitSetCampaignTimeLapse(int32_t gameLapse)
+StrategicIntentSubmission submit(StrategicIntent value)
 {
 	std::lock_guard<std::mutex> lock(intentMutex);
 
@@ -83,17 +81,58 @@ StrategicIntentSubmission submitSetCampaignTimeLapse(int32_t gameLapse)
 	if (pendingIntents.full())
 		return submission;
 
-	StrategicIntent intent = {};
-	intent.sequence = allocateSequence();
-	intent.kind = StrategicIntentKind::SetCampaignTimeLapse;
-	intent.value = gameLapse;
-
-	if (!pendingIntents.push(intent))
+	value.sequence = allocateSequence();
+	if (!pendingIntents.push(value))
 		return submission;
 
-	submission.sequence = intent.sequence;
+	submission.sequence = value.sequence;
 	submission.accepted = true;
 	return submission;
+}
+
+} // namespace
+
+StrategicIntentSubmission submitSetCampaignTimeLapse(int32_t gameLapse)
+{
+	StrategicIntent value = {};
+	value.kind = StrategicIntentKind::SetCampaignTimeLapse;
+	value.value = gameLapse;
+	return submit(value);
+}
+
+StrategicIntentSubmission submitSelectMission(canonical::MissionId mission)
+{
+	StrategicIntent value = {};
+	value.kind = StrategicIntentKind::SelectMission;
+	value.mission = mission;
+	return submit(value);
+}
+
+StrategicIntentSubmission submitSelectAircraft(canonical::AircraftId aircraft)
+{
+	StrategicIntent value = {};
+	value.kind = StrategicIntentKind::SelectAircraft;
+	value.aircraft = aircraft;
+	return submit(value);
+}
+
+StrategicIntentSubmission submitSendAircraftToMission(
+	canonical::AircraftId aircraft,
+	canonical::MissionId mission)
+{
+	StrategicIntent value = {};
+	value.kind = StrategicIntentKind::SendAircraftToMission;
+	value.aircraft = aircraft;
+	value.mission = mission;
+	return submit(value);
+}
+
+StrategicIntentSubmission submitReturnAircraftToBase(canonical::AircraftId aircraft)
+{
+	StrategicIntent value = {};
+	value.kind = StrategicIntentKind::ReturnAircraftToBase;
+	value.aircraft = aircraft;
+	return submit(value);
 }
 
 bool pollStrategicIntentResult(StrategicIntentResult* result)

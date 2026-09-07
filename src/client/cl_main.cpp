@@ -39,6 +39,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cl_console.h"
 #include "cl_screen.h"
 #include "cgame/cl_game.h"
+#include "presentation/tactical_intent_legacy_adapter.h"
 #include "cl_tutorials.h"
 #include "cl_tip.h"
 #include "cl_team.h"
@@ -234,6 +235,7 @@ static void CL_Connect (void)
  */
 static void CL_ClearState (void)
 {
+	ufo::presentation::legacy::resetTacticalIntentAdapter();
 	LE_Cleanup();
 
 	cl = clientBattleScape_t();
@@ -966,6 +968,9 @@ static void CL_SendCommand (void)
 
 	/* process console commands */
 	Cbuf_Execute();
+
+	/* Translate typed tactical presentation intent into the existing PA_* protocol. */
+	ufo::presentation::legacy::applyPendingTacticalIntents();
 
 	/* send intentions now */
 	CL_SendChangedUserinfos();

@@ -4,6 +4,8 @@
  */
 #pragma once
 
+#include "canonical_identity.h"
+
 #include <cstdint>
 #include <type_traits>
 
@@ -11,7 +13,11 @@ namespace ufo {
 namespace presentation {
 
 enum class StrategicIntentKind : uint8_t {
-	SetCampaignTimeLapse = 1
+	SetCampaignTimeLapse = 1,
+	SelectMission = 2,
+	SelectAircraft = 3,
+	SendAircraftToMission = 4,
+	ReturnAircraftToBase = 5
 };
 
 enum class StrategicIntentDisposition : uint8_t {
@@ -23,6 +29,8 @@ struct StrategicIntent {
 	uint64_t sequence;
 	StrategicIntentKind kind;
 	int32_t value;
+	canonical::MissionId mission;
+	canonical::AircraftId aircraft;
 };
 
 struct StrategicIntentSubmission {
@@ -34,7 +42,14 @@ struct StrategicIntentResult {
 	uint64_t sequence;
 	StrategicIntentKind kind;
 	StrategicIntentDisposition disposition;
+
+	/**
+	 * Legacy scalar feedback retained for the already-qualified time-lapse
+	 * contract. New identity-bearing intents use the typed fields below.
+	 */
 	int32_t canonicalValue;
+	canonical::MissionId mission;
+	canonical::AircraftId aircraft;
 };
 
 static_assert(std::is_standard_layout<StrategicIntent>::value,
@@ -55,6 +70,20 @@ namespace intent {
  * intent. Acceptance into this queue is not canonical acceptance.
  */
 StrategicIntentSubmission submitSetCampaignTimeLapse(int32_t gameLapse);
+
+/** Queue selection of a canonical mission by typed presentation identity. */
+StrategicIntentSubmission submitSelectMission(canonical::MissionId mission);
+
+/** Queue selection of a PHALANX aircraft by typed presentation identity. */
+StrategicIntentSubmission submitSelectAircraft(canonical::AircraftId aircraft);
+
+/** Queue a canonical request to send a PHALANX aircraft to a mission. */
+StrategicIntentSubmission submitSendAircraftToMission(
+	canonical::AircraftId aircraft,
+	canonical::MissionId mission);
+
+/** Queue a canonical request to return a PHALANX aircraft to its home base. */
+StrategicIntentSubmission submitReturnAircraftToBase(canonical::AircraftId aircraft);
 
 /**
  * Poll canonical application/rejection feedback for previously accepted

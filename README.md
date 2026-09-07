@@ -82,7 +82,7 @@ M0 is sealed. The spatial-service and tactical-publication slices of M1 are qual
 3. introduce typed presentation IDs — **complete**;
 4. document the C++11/C++26 language/toolchain boundary and current dependency hardening baseline — **complete**;
 5. implement and qualify the C++11 legacy/bridge + strict C++26 remaster target split, including atomic-`shared_ptr` modernization and a mixed-standard link fixture — **complete**;
-6. introduce typed intent dispatch without changing canonical rules — **complete foundation; catalog expansion continues with consumer migration**;
+6. introduce typed intent dispatch without changing canonical rules — **qualified foundation + first strategic/tactical seed catalogs; richer catalog growth continues with consumer migration**;
 7. bring up the SDL3/Vulkan production platform path;
 8. implement frame contexts, allocator and production descriptor-heap runtime;
 9. implement Frame Graph + swapchain/output diagnostic frame;
@@ -168,7 +168,8 @@ M0 is sealed. The spatial-service and tactical-publication slices of M1 are qual
   - [x] Establish the bounded strict-C++26 intent/result transport with monotonic sequence IDs.
   - [x] Route representative `SetCampaignTimeLapse` through Main/canonical validation without optimistic presentation mutation.
   - [x] Qualify accepted/rejected/reset behavior in the dedicated 3-test strategic intent lane and preserve publication/canonical regression.
-  - [ ] Expand strategic and tactical intent catalogs as their owning presentation paths migrate.
+  - [x] Establish the first strategic/tactical intent catalog expansion behind real canonical/server owners (`SelectMission`, `SelectAircraft`, `SendAircraftToMission`, `ReturnAircraftToBase`, `SetReactionFire`, `SetReservedTimeUnits`).
+  - [ ] Continue expanding richer strategic/tactical intents only as their owning presentation paths migrate (`SetAircraftDestination`, base/research/market actions, tactical move/shoot/use/inventory, etc.).
 - [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
 
 ### Renderer and presentation
