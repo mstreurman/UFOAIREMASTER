@@ -115,14 +115,14 @@ try:
     for name in expected:
         if strategic[name]['authority_bridge']!='canonical_applied':
             raise AssertionError(f'{name}: not canonical_applied')
-    for name in {'BuildFacility','DestroyFacility','DestroyAntimatterFacility','StartMission'}:
+    for name in {'DestroyAntimatterFacility','StartMission'}:
         if strategic[name]['authority_bridge']!='owner_extraction_pending_fail_closed':
-            raise AssertionError(f'{name}: must remain fail-closed in this slice')
+            raise AssertionError(f'{name}: must remain fail-closed')
 
     print('PASS M1 Base + Installation lifecycle extraction: five canonical owners')
     print('PASS shared geoscape land placement rule is canonical and consumed by legacy + typed paths')
     print('PASS legacy callbacks retain presentation/confirmation only; adapter has no command/cvar fallback')
-    print('PASS facility-internal destructive/build semantics and StartMission remain explicitly fail-closed')
+    print('PASS Base + Installation owner subset remains qualified; facility lifecycle is checked by its dedicated lane')
 except AssertionError as exc:
     print('FAIL M1 Base + Installation lifecycle extraction: '+str(exc),file=sys.stderr)
     raise SystemExit(1)

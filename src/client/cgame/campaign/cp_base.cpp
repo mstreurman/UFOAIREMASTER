@@ -847,8 +847,6 @@ bool B_BuildingDestroy (building_t* building)
 
 	CAP_CheckOverflow();
 
-	cgi->Cmd_ExecuteString("base_init %d", base->idx);
-
 	return true;
 }
 
@@ -1399,10 +1397,98 @@ building_t* B_BuildBuilding (base_t* base, const building_t* buildingTemplate, i
 	CP_UpdateCredits(ccs.credits - buildingNew->fixCosts);
 	ccs.numBuildings[base->idx]++;
 
-	cgi->Cmd_ExecuteString("base_init %d", base->idx);
 	B_FireEvent(buildingNew, base, B_ONCONSTRUCT);
 
 	return buildingNew;
+}
+
+/**
+ * @brief Resolve the current base-scoped facility slot safely.
+ *
+ * Facility indices are compacted when a building is removed. They are therefore
+ * current-snapshot/base-scoped values, not persistent presentation identities.
+ */
+building_t* B_GetBuildingByIDXSafe (const base_t* base, int facilityIndex)
+{
+	if (!base || facilityIndex < 0)
+		return nullptr;
+
+	const int baseIdx = base->idx;
+	if (baseIdx < 0 || baseIdx >= MAX_BASES || B_GetBaseByIDX(baseIdx) != base)
+		return nullptr;
+	if (facilityIndex >= ccs.numBuildings[baseIdx])
+		return nullptr;
+	return B_GetBuildingByIDX(baseIdx, facilityIndex);
+}
+
+/**
+ * @brief Canonical owner for building one base facility at a grid location.
+ *
+ * This intentionally preserves the mutation callback's rules. Research and
+ * max-count filtering remain presentation/list-selection behavior until a later
+ * source-derived rule says they are mutation-time canonical eligibility gates.
+ */
+facilityBuildResult_t B_TryBuildFacility (base_t* base, const char* facilityDefinition, int col, int row, building_t** builtFacility)
+{
+	if (builtFacility)
+		*builtFacility = nullptr;
+	if (!base)
+		return B_FACILITY_BUILD_INVALID_BASE;
+
+	building_t* buildingTemplate = facilityDefinition ? B_GetBuildingTemplateSilent(facilityDefinition) : nullptr;
+	if (!buildingTemplate)
+		return B_FACILITY_BUILD_INVALID_DEFINITION;
+	if (col < 0 || row < 0 || col >= BASE_SIZE || row >= BASE_SIZE)
+		return B_FACILITY_BUILD_INVALID_POSITION;
+	if (col + int(buildingTemplate->size[0]) > BASE_SIZE || row + int(buildingTemplate->size[1]) > BASE_SIZE)
+		return B_FACILITY_BUILD_DOES_NOT_FIT;
+	if (!CP_CheckCredits(buildingTemplate->fixCosts))
+		return B_FACILITY_BUILD_INSUFFICIENT_CREDITS;
+
+	building_t* facility = B_BuildBuilding(base, buildingTemplate, col, row);
+	if (!facility)
+		return B_FACILITY_BUILD_REJECTED;
+	if (builtFacility)
+		*builtFacility = facility;
+	return B_FACILITY_BUILD_APPLIED;
+}
+
+/**
+ * @brief Canonical preflight for a final facility destruction request.
+ *
+ * Capacity-sensitive warning choice is presentation policy; this function owns
+ * only the callback's actual eligibility gates.
+ */
+facilityDestroyResult_t B_CheckDestroyFacility (base_t* base, int facilityIndex)
+{
+	if (!base)
+		return B_FACILITY_DESTROY_INVALID_BASE;
+
+	building_t* building = B_GetBuildingByIDXSafe(base, facilityIndex);
+	if (!building)
+		return B_FACILITY_DESTROY_INVALID_FACILITY;
+	if (B_IsUnderAttack(base))
+		return B_FACILITY_DESTROY_BASE_UNDER_ATTACK;
+	if (building->buildingType == B_ENTRANCE)
+		return B_FACILITY_DESTROY_ENTRANCE;
+	if (!B_IsBuildingDestroyable(building))
+		return B_FACILITY_DESTROY_BREAKS_CONNECTIVITY;
+	return B_FACILITY_DESTROY_READY;
+}
+
+/**
+ * @brief Canonical owner for an already-confirmed facility destruction intent.
+ */
+facilityDestroyResult_t B_TryDestroyFacility (base_t* base, int facilityIndex)
+{
+	const facilityDestroyResult_t check = B_CheckDestroyFacility(base, facilityIndex);
+	if (check != B_FACILITY_DESTROY_READY)
+		return check;
+
+	building_t* building = B_GetBuildingByIDXSafe(base, facilityIndex);
+	if (!building || !B_BuildingDestroy(building))
+		return B_FACILITY_DESTROY_REJECTED;
+	return B_FACILITY_DESTROY_APPLIED;
 }
 
 /**

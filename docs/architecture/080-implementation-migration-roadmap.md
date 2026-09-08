@@ -115,7 +115,8 @@ introduce tactical/strategic immutable publication boundaries
 establish and qualify C++11 legacy/bridge + strict C++26 remaster target ownership
 introduce typed intent dispatch without changing rules — qualified mechanism + first strategic/tactical seed catalogs
 extract callback-owned strategic validation/mutation into campaign-owned Try... helpers — Aircraft + Geoscape first slice covers start/stop/destination/pursuit/homebase
-extract Base + Installation lifecycle owners next — build/rename base and build/rename/destroy installation; keep facility-internal build/destroy/antimatter semantics fail-closed until their identity/confirmation rules are normalized
+extract Base + Installation lifecycle owners — qualified build/rename base and build/rename/destroy installation slice
+extract base-facility build/destroy owners — normalize current base-scoped facility index and post-confirmation destruction semantics; move base_init UI refresh out of low-level canonical build/destroy; keep DestroyAntimatterFacility fail-closed as an internal breach-event mismatch
 complete source-derived presentation-action scope + five-way authority classification, including direct input hooks/protocol callsites, before defining the remaining authoritative intent vocabulary
 keep existing consumers behind temporary adapters
 define explicit presentation-facing ownership rather than expose raw canonical pointers

@@ -63,6 +63,27 @@ typedef enum {
 	B_BUILD_REJECTED
 } baseBuildResult_t;
 
+typedef enum {
+	B_FACILITY_BUILD_APPLIED,
+	B_FACILITY_BUILD_INVALID_BASE,
+	B_FACILITY_BUILD_INVALID_DEFINITION,
+	B_FACILITY_BUILD_INVALID_POSITION,
+	B_FACILITY_BUILD_DOES_NOT_FIT,
+	B_FACILITY_BUILD_INSUFFICIENT_CREDITS,
+	B_FACILITY_BUILD_REJECTED
+} facilityBuildResult_t;
+
+typedef enum {
+	B_FACILITY_DESTROY_READY,
+	B_FACILITY_DESTROY_APPLIED,
+	B_FACILITY_DESTROY_INVALID_BASE,
+	B_FACILITY_DESTROY_INVALID_FACILITY,
+	B_FACILITY_DESTROY_BASE_UNDER_ATTACK,
+	B_FACILITY_DESTROY_ENTRANCE,
+	B_FACILITY_DESTROY_BREAKS_CONNECTIVITY,
+	B_FACILITY_DESTROY_REJECTED
+} facilityDestroyResult_t;
+
 /**
  * @brief Possible base states
  * @note: Don't change the order or you have to change the basemenu scriptfiles, too
@@ -183,6 +204,10 @@ void B_SetBuildingStatus(base_t* const base, const buildingType_t type, bool new
 
 bool B_MapIsCellFree(const base_t* base, int col, int row);
 building_t* B_BuildBuilding(base_t* base, const building_t* buildingTemplate, int col, int row);
+building_t* B_GetBuildingByIDXSafe(const base_t* base, int facilityIndex);
+facilityBuildResult_t B_TryBuildFacility(base_t* base, const char* facilityDefinition, int col, int row, building_t** builtFacility);
+facilityDestroyResult_t B_CheckDestroyFacility(base_t* base, int facilityIndex);
+facilityDestroyResult_t B_TryDestroyFacility(base_t* base, int facilityIndex);
 bool B_IsBuildingDestroyable(const building_t* building);
 bool B_BuildingDestroy(building_t* building);
 

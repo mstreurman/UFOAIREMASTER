@@ -272,29 +272,30 @@ static void B_BuildingDestroy_f (void)
 		return;
 	}
 
+	const int facilityIndex = building->idx;
 	if (cgi->Cmd_Argc() == 5 && Q_streq(cgi->Cmd_Argv(4), "confirmed")) {
-		B_BuildingDestroy(building);
+		if (B_TryDestroyFacility(base, facilityIndex) == B_FACILITY_DESTROY_APPLIED)
+			cgi->Cmd_ExecuteString("base_init %d", base->idx);
 		return;
 	}
 
-	/* you can't destroy buildings if base is under attack */
-	if (B_IsUnderAttack(base)) {
+	const facilityDestroyResult_t check = B_CheckDestroyFacility(base, facilityIndex);
+	if (check == B_FACILITY_DESTROY_BASE_UNDER_ATTACK) {
 		CP_Popup(_("Notice"), _("Base is under attack, you can't destroy buildings!"));
 		return;
 	}
-
-	baseCapacities_t cap = B_GetCapacityFromBuildingType(building->buildingType);
-	/** @todo: make base destroyable by destroying entrance */
-	if (building->buildingType == B_ENTRANCE) {
+	if (check == B_FACILITY_DESTROY_ENTRANCE) {
 		CP_Popup(_("Destroy Entrance"), _("You can't destroy the entrance of the base!"));
 		return;
 	}
-
-	if (!B_IsBuildingDestroyable(building)) {
-			CP_Popup(_("Notice"), _("You can't destroy this building! It is the only connection to other buildings!"));
-			return;
+	if (check == B_FACILITY_DESTROY_BREAKS_CONNECTIVITY) {
+		CP_Popup(_("Notice"), _("You can't destroy this building! It is the only connection to other buildings!"));
+		return;
 	}
+	if (check != B_FACILITY_DESTROY_READY)
+		return;
 
+	baseCapacities_t cap = B_GetCapacityFromBuildingType(building->buildingType);
 	if (building->buildingStatus == B_STATUS_WORKING) {
 		const bool hasMoreBases = B_GetCount() > 1;
 		switch (building->buildingType) {
@@ -619,34 +620,35 @@ static void B_BuildBuilding_f (void)
 		return;
 	}
 
-	building_t* building = B_GetBuildingTemplateSilent(cgi->Cmd_Argv(2));
-	if (!building) {
+	const int column = atoi(cgi->Cmd_Argv(3));
+	const int row = atoi(cgi->Cmd_Argv(4));
+	building_t* facility = nullptr;
+	const facilityBuildResult_t result = B_TryBuildFacility(base, cgi->Cmd_Argv(2), column, row, &facility);
+	if (result == B_FACILITY_BUILD_INVALID_DEFINITION) {
 		cgi->Com_Printf("Invalid building id\n");
 		return;
 	}
-
-	const int column = atoi(cgi->Cmd_Argv(3));
-	const int row = atoi(cgi->Cmd_Argv(4));
-	if (column < 0 || row < 0 || column >= BASE_SIZE || row >= BASE_SIZE) {
+	if (result == B_FACILITY_BUILD_INVALID_POSITION) {
 		cgi->Com_Printf("Invalid building position (%s, %s)\n", cgi->Cmd_Argv(3), cgi->Cmd_Argv(4));
 		return;
 	}
-
-	if (column + int(building->size[0]) > BASE_SIZE || row + int(building->size[1]) > BASE_SIZE) {
-		cgi->Com_Printf("Building doesn't fit position (%s, %s), size (%d, %d)\n",
-			cgi->Cmd_Argv(3), cgi->Cmd_Argv(4), int(building->size[0]), int(building->size[1]));
+	if (result == B_FACILITY_BUILD_DOES_NOT_FIT) {
+		const building_t* building = B_GetBuildingTemplateSilent(cgi->Cmd_Argv(2));
+		if (building)
+			cgi->Com_Printf("Building doesn't fit position (%s, %s), size (%d, %d)\n",
+				cgi->Cmd_Argv(3), cgi->Cmd_Argv(4), int(building->size[0]), int(building->size[1]));
 		return;
 	}
-
-	if (!CP_CheckCredits(building->fixCosts)) {
+	if (result == B_FACILITY_BUILD_INSUFFICIENT_CREDITS) {
 		CP_Popup(_("Notice"), _("Not enough credits to build this\n"));
 		return;
 	}
+	if (result != B_FACILITY_BUILD_APPLIED)
+		return;
 
-	if (B_BuildBuilding(base, building, column, row) != nullptr) {
-		cgi->S_StartLocalSample("geoscape/build-place", 1.0f);
-		cgi->Cmd_ExecuteString("ui_push bases %d", base->idx);
-	}
+	cgi->S_StartLocalSample("geoscape/build-place", 1.0f);
+	cgi->Cmd_ExecuteString("base_init %d", base->idx);
+	cgi->Cmd_ExecuteString("ui_push bases %d", base->idx);
 }
 
 /** Init/Shutdown functions */

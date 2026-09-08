@@ -103,6 +103,14 @@ void applyPendingStrategicIntents() {
             base_t* b=resolveBase(in.base); const char* name=resolveBoundedText(in.text);
             if(b&&name&&B_TrySetName(b,name)){out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=b->idx;}
             break; }
+        case StrategicIntentKind::BuildFacility: {
+            base_t* b=resolveBase(in.base); const char* definition=resolveBoundedText(in.key0); building_t* facility=nullptr;
+            if(b&&definition&&B_TryBuildFacility(b,definition,in.value0,in.value1,&facility)==B_FACILITY_BUILD_APPLIED){out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=facility?facility->idx:-1;}
+            break; }
+        case StrategicIntentKind::DestroyFacility: {
+            base_t* b=resolveBase(in.base);
+            if(b&&B_TryDestroyFacility(b,in.value0)==B_FACILITY_DESTROY_APPLIED){out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=in.value0;}
+            break; }
         case StrategicIntentKind::BuildInstallation: {
             vec2_t pos; installation_t* installation=nullptr; const char* definition=resolveBoundedText(in.key0); const char* name=resolveBoundedText(in.text);
             const installationTemplate_t* tpl=definition?INS_GetInstallationTemplateByID(definition):nullptr;
@@ -145,7 +153,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::AssignEmployeeToAircraft:
         case StrategicIntentKind::AssignResearch:
         case StrategicIntentKind::AutoResolveMission:
-        case StrategicIntentKind::BuildFacility:
         case StrategicIntentKind::BuyAircraft:
         case StrategicIntentKind::BuyItem:
         case StrategicIntentKind::BuyUGV:
@@ -153,7 +160,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::DeequipEmployee:
         case StrategicIntentKind::DeleteEmployee:
         case StrategicIntentKind::DestroyAntimatterFacility:
-        case StrategicIntentKind::DestroyFacility:
         case StrategicIntentKind::DestroyStoredUfo:
         case StrategicIntentKind::EquipAircraftItem:
         case StrategicIntentKind::EquipBaseDefenceItem:
