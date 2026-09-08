@@ -99,8 +99,14 @@ int main()
 		EmployeeId,
 		TechnologyId,
 		ProductionId,
+		FacilityId,
+		TransferId,
+		DefenceSlotId,
 		MessageId,
-		ItemId>::value,
+		ItemId,
+		StoredUfoId,
+		UfoSaleOfferId,
+		TransferManifestId>::value,
 		"canonical presentation identity domains must remain distinct types");
 
 	static_assert(IdentityShape<EntityId>::value, "EntityId shape contract failed");
@@ -112,8 +118,14 @@ int main()
 	static_assert(IdentityShape<EmployeeId>::value, "EmployeeId shape contract failed");
 	static_assert(IdentityShape<TechnologyId>::value, "TechnologyId shape contract failed");
 	static_assert(IdentityShape<ProductionId>::value, "ProductionId shape contract failed");
+	static_assert(IdentityShape<FacilityId>::value, "FacilityId shape contract failed");
+	static_assert(IdentityShape<TransferId>::value, "TransferId shape contract failed");
+	static_assert(IdentityShape<DefenceSlotId>::value, "DefenceSlotId shape contract failed");
 	static_assert(IdentityShape<MessageId>::value, "MessageId shape contract failed");
 	static_assert(IdentityShape<ItemId>::value, "ItemId shape contract failed");
+	static_assert(IdentityShape<StoredUfoId>::value, "StoredUfoId shape contract failed");
+	static_assert(IdentityShape<UfoSaleOfferId>::value, "UfoSaleOfferId shape contract failed");
+	static_assert(IdentityShape<TransferManifestId>::value, "TransferManifestId shape contract failed");
 
 	static_assert(AllCrossNonConstructible<
 		EntityId,
@@ -125,8 +137,14 @@ int main()
 		EmployeeId,
 		TechnologyId,
 		ProductionId,
+		FacilityId,
+		TransferId,
+		DefenceSlotId,
 		MessageId,
-		ItemId>::value,
+		ItemId,
+		StoredUfoId,
+		UfoSaleOfferId,
+		TransferManifestId>::value,
 		"canonical presentation identity domains must reject cross-domain construction");
 
 	static_assert(!std::is_convertible<MissionId, AircraftId>::value,
@@ -137,6 +155,12 @@ int main()
 		"BaseId must not convert to InstallationId");
 	static_assert(!std::is_convertible<TechnologyId, ProductionId>::value,
 		"TechnologyId must not convert to ProductionId");
+	static_assert(!std::is_convertible<ProductionId, FacilityId>::value,
+		"ProductionId must not convert to FacilityId");
+	static_assert(!std::is_convertible<FacilityId, DefenceSlotId>::value,
+		"FacilityId must not convert to DefenceSlotId");
+	static_assert(!std::is_convertible<TransferManifestId, TransferId>::value,
+		"TransferManifestId must not convert to active TransferId");
 	static_assert(!std::is_convertible<ItemId, TechnologyId>::value,
 		"ItemId must not convert to TechnologyId");
 
@@ -150,14 +174,20 @@ int main()
 		&& checkId<EmployeeId>(7U)
 		&& checkId<TechnologyId>(8U)
 		&& checkId<ProductionId>(9U)
-		&& checkId<MessageId>(10U)
-		&& checkId<ItemId>(11U);
+		&& checkId<FacilityId>(10U)
+		&& checkId<TransferId>(11U)
+		&& checkId<DefenceSlotId>(12U)
+		&& checkId<MessageId>(13U)
+		&& checkId<ItemId>(14U)
+		&& checkId<StoredUfoId>(15U)
+		&& checkId<UfoSaleOfferId>(16U)
+		&& checkId<TransferManifestId>(17U);
 
 	if (!ok) {
 		std::cerr << "M1 canonical identity contract: FAIL\n";
 		return 1;
 	}
 
-	std::cout << "M1 canonical identity contract: PASS (11 distinct 32-bit domains)\n";
+	std::cout << "M1 canonical identity contract: PASS (17 distinct 32-bit domains)\n";
 	return 0;
 }

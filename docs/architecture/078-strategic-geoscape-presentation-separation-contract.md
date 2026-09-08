@@ -71,6 +71,8 @@ struct StrategicSnapshot {
     Span<const StrategicBaseView> bases;
     Span<const StrategicInstallationView> installations;
     Span<const StrategicNationView> nations;
+    Span<const StrategicTechnologyView> technologies;
+    Span<const StrategicProductionView> productions;
     Span<const StrategicMessageView> messages;
 
     StrategicSelectionView selection;
@@ -86,7 +88,7 @@ Snapshot memory is immutable to UI/render/audio consumers for its lifetime.
 
 Every presentation-visible canonical object is projected using a stable typed ID, never a raw canonical pointer.
 
-Required classes include:
+Required strong identity domains include:
 
 ```text
 MissionId
@@ -97,10 +99,25 @@ NationId
 EmployeeId
 TechnologyId
 ProductionId
+FacilityId
+TransferId
+DefenceSlotId
 MessageId
+ItemId
+StoredUfoId
+UfoSaleOfferId
+TransferManifestId
 ```
 
 Where legacy code lacks a naturally persistent ID, the canonical adapter owns a generation-safe mapping for the current campaign/load lifetime.
+
+A declared strong ID type does not by itself prove that a safe legacy mapping already exists. The identity registry tracks type existence, mapping, publication and mutation readiness separately.
+
+Mutable array/list ordinals are not stable IDs. Production `queueIndex`, base-local `facilityIndex`, and defence `slotIndex` remain location metadata only until `ProductionId`, `FacilityId`, and `DefenceSlotId` mappings are implemented.
+
+`TransferManifestId` and `TransferId` have different lifetimes: the former identifies transfer submission/staging context; the latter identifies an active canonical transfer.
+
+Structural coordinates (aircraft equipment slots, facility placement cells, positions) and static script/content definition keys do not become runtime entity IDs merely because they cross the presentation boundary.
 
 ## 5. Geoscape scene extraction
 

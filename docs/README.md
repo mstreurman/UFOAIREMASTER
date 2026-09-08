@@ -270,6 +270,7 @@ Earlier documents remain useful for rationale/history but must not redefine an A
 - `reference/reference-m1-base-installation-owner-extraction-2026-09-08.md`
 - `reference/reference-m1-facility-owner-extraction-2026-09-08.md`
 - `reference/reference-m1-research-production-publication-map-2026-09-08.md`
+- `reference/reference-m1-canonical-identity-completeness-2026-09-08.md`
 
 ### Public documentation scope
 

@@ -1,0 +1,28 @@
+identity	domain	classification	legacy_source	stability	mapping_status	publication_status	intent_status	required_action
+EntityId	tactical	runtime_protocol	server entity number	server/protocol lifetime	direct_protocol	published	qualified	keep protocol-owned identity
+MissionId	strategic	runtime_direct	mission_t::idx	campaign mission lifetime	direct_qualified	published	qualified	keep
+AircraftId	strategic	runtime_direct	aircraft_t::idx plus UFO high-bit namespace	aircraft/UFO lifetime	direct_qualified	published	qualified	keep
+BaseId	strategic	runtime_direct	base_t::idx	fixed campaign base slot	direct_qualified	published	qualified	keep
+InstallationId	strategic	runtime_direct	installation_t::idx	monotonic campaign installation identity	direct_qualified	published	qualified	keep
+NationId	strategic	runtime_direct	nation_t::idx	campaign/content lifetime	direct_qualified	published	pending_owner	keep
+EmployeeId	strategic	runtime_direct	character_t::ucn	unique character lifetime	natural_mapping_pending	not_published	pending_owner	map EmployeeId directly to chr.ucn before employee intent bridging
+TechnologyId	strategic	runtime_direct	technology_t::idx	initialized technology tree/content lifetime	direct_published	published	pending_owner	keep index-backed runtime identity; do not treat as cross-content-version database key
+ProductionId	strategic	runtime_sidecar_required	production_t has only mutable queue idx	logical production lifetime	stable_mapping_missing	location_only_published	pending_fail_closed	establish stable ProductionId across queue move/delete/new/load before bridging production mutations
+FacilityId	strategic	runtime_sidecar_required	building_t::idx is base-local and compacts	logical facility lifetime	type_added_mapping_missing	not_published	current_destroy_bridge_uses_legacy_index	add generation-safe facility mapping; migrate destroy contract away from facilityIndex
+TransferId	strategic	runtime_sidecar_required	transfer_t has no id	active transfer lifetime	type_added_mapping_missing	not_published	no_current_intent	publish active transfers with TransferId when transfer view migrates
+DefenceSlotId	strategic	runtime_sidecar_required	baseWeapon_t arrays use mutable slot ordinals	logical defence slot/battery lifetime	type_added_mapping_missing	not_published	pending_owner	add stable mapping before base/installation defence slot mutations are bridged
+MessageId	strategic	runtime_sidecar_current	uiMessageListNodeMessage_t pointer	current message lifetime	pointer_sidecar_existing	published	read_only	audit node removal/address reuse before declaring campaign-lifetime generation safety
+ItemId	strategic	static_definition	objDef_t definition index/content identity	content-definition lifetime	definition_mapping_pending	not_published	pending_owner	map definition identity; do not create per-storage-item instance IDs
+StoredUfoId	strategic	runtime_direct	storedUFO_t::idx	monotonic/persisted stored-UFO lifetime	natural_mapping_pending	not_published	pending_owner	map directly to storedUFO_t::idx after focused save/load qualification
+UfoSaleOfferId	strategic	runtime_sidecar_required	generated nation offer plus generation-specific price	offer-generation lifetime	stable_mapping_missing	not_published	pending_owner	publish generation-safe recovery sale offers; NationId alone is insufficient
+TransferManifestId	strategic	submission_context	temporary transfer staging value	submission construction lifetime	typed_token_declared	not_published	pending_owner	do not reuse as active TransferId; normalize manifest payload when transfer intent is implemented
+AircraftEquipmentSlot	strategic	structural_reference	AircraftId plus slotType/slotIndex/zone	fixed aircraft slot topology	structural_tuple	not_published	pending_owner	keep as typed structural coordinate unless topology audit finds compaction
+FacilityPlacementCell	strategic	structural_reference	BaseId plus column/row	base grid topology	structural_tuple	not_published	qualified_build	keep as coordinate; it is not a facility runtime identity
+StrategicPosition	strategic	value_reference	longitude/latitude/altitude	value lifetime	value_type	published	qualified	keep
+AircraftDefinitionKey	strategic	static_definition_key	aircraft script id	content lifetime	string_key	not_published	pending_owner	do not mint runtime entity ID
+FacilityDefinitionKey	strategic	static_definition_key	building script id	content lifetime	string_key	not_published	qualified_build	do not mint runtime entity ID
+InstallationDefinitionKey	strategic	static_definition_key	installation script id	content lifetime	string_key	not_published	qualified_build	do not mint runtime entity ID
+UgvDefinitionKey	strategic	static_definition_key	UGV script id	content lifetime	string_key	not_published	pending_owner	do not mint runtime entity ID
+UfoDefinitionKey	strategic	static_definition_key	UFO/aircraft script id	content lifetime	string_key	not_published	pending_owner	do not mint runtime entity ID
+SaveSlotKey	strategic	named_resource_key	save slot name	external save-resource lifetime	string_key	not_published	pending_owner	keep named resource key; not a canonical runtime entity
+ContainedAlienSpecies	strategic	aggregate_key	TechnologyId/team definition	containment aggregate lifetime	technology_key	not_published	pending_owner	no individual AlienId: containment actions operate species/count aggregates
