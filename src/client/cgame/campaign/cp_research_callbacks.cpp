@@ -27,15 +27,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cp_campaign.h"
 #include "cp_research_callbacks.h"
 #include "cp_base.h"
+#include "cp_popup.h"
 
 /**
  * @brief Assign as many scientists to the research project as possible.
  */
 static void RS_Max_f (void)
 {
-	/* The base the tech is researched in. */
 	base_t* base = B_GetCurrentSelectedBase();
-
 	if (!base)
 		return;
 
@@ -43,25 +42,17 @@ static void RS_Max_f (void)
 		cgi->Com_Printf("Usage: %s <tech_id>\n", cgi->Cmd_Argv(0));
 		return;
 	}
-	/* The technology you want to max out. */
+
 	technology_t* tech = RS_GetTechByID(cgi->Cmd_Argv(1));
 	if (!tech) {
 		cgi->Com_Printf("RS_Max_f: Invalid tech '%s'\n", cgi->Cmd_Argv(1));
 		return;
 	}
-	if (tech->base && tech->base != base) {
+
+	const researchChangeResult_t result = RS_TryMaxAssignScientists(tech, base);
+	if (result == RS_CHANGE_WRONG_BASE) {
 		cgi->Com_Printf("RS_Max_f: Tech '%s' is not researched in this base\n", cgi->Cmd_Argv(1));
 		return;
-	}
-
-	/* Add as many scientists as possible to this tech. */
-	while (CAP_GetFreeCapacity(base, CAP_LABSPACE) > 0) {
-		Employee* employee = E_GetUnassignedEmployee(base, EMPL_SCIENTIST);
-		if (!employee)
-			break;
-		RS_AssignScientist(tech, base, employee);
-		if (!employee->isAssigned())
-			break;
 	}
 
 	cgi->UI_ExecuteConfunc("ui_research_update_topic %s %d", tech->id, tech->scientists);
@@ -75,6 +66,8 @@ static void RS_Max_f (void)
 static void RS_Change_f (void)
 {
 	base_t* base = B_GetCurrentSelectedBase();
+	if (!base)
+		return;
 
 	if (cgi->Cmd_Argc() < 2) {
 		cgi->Com_Printf("Usage: %s <tech_id>\n", cgi->Cmd_Argv(0));
@@ -85,19 +78,18 @@ static void RS_Change_f (void)
 		cgi->Com_Printf("RS_ChangeScientist_f: Invalid tech '%s'\n", cgi->Cmd_Argv(1));
 		return;
 	}
-	if (tech->base && tech->base != base) {
+
+	const int diff = atoi(cgi->Cmd_Argv(2));
+	const int scientistDelta = diff > 0 ? 1 : (diff < 0 ? -1 : 0);
+	const researchChangeResult_t result = RS_TryChangeScientists(tech, base, scientistDelta);
+	if (result == RS_CHANGE_WRONG_BASE) {
 		cgi->Com_Printf("RS_ChangeScientist_f: Tech '%s' is not researched in this base\n", cgi->Cmd_Argv(1));
 		return;
 	}
-	const int diff = atoi(cgi->Cmd_Argv(2));
-	if (diff == 0)
+	if (scientistDelta == 0)
 		return;
-
-	if (diff > 0) {
-		RS_AssignScientist(tech, base);
-	} else if (tech->base) {
-		RS_RemoveScientist(tech, nullptr);
-	}
+	if (result == RS_CHANGE_NO_LAB_SPACE)
+		CP_Popup(_("Not enough laboratories"), _("No free space in laboratories left.\nBuild more laboratories.\n"));
 
 	cgi->UI_ExecuteConfunc("ui_research_update_topic %s %d", tech->id, tech->scientists);
 	cgi->UI_ExecuteConfunc("ui_research_update_caps %d %d %d %d", E_CountUnassigned(base, EMPL_SCIENTIST),
@@ -109,7 +101,9 @@ static void RS_Change_f (void)
  */
 static void RS_Stop_f (void)
 {
-	const base_t* base = B_GetCurrentSelectedBase();
+	base_t* base = B_GetCurrentSelectedBase();
+	if (!base)
+		return;
 
 	if (cgi->Cmd_Argc() < 2) {
 		cgi->Com_Printf("Usage: %s <tech_id>\n", cgi->Cmd_Argv(0));
@@ -120,15 +114,14 @@ static void RS_Stop_f (void)
 		cgi->Com_Printf("RS_Stop_f: Invalid tech '%s'\n", cgi->Cmd_Argv(1));
 		return;
 	}
-	if (!tech->base) {
-		return;
-	}
-	if (tech->base != base) {
+
+	const researchChangeResult_t result = RS_TryStopResearch(tech, base);
+	if (result == RS_CHANGE_WRONG_BASE) {
 		cgi->Com_Printf("RS_Stop_f: Tech '%s' is not researched in this base\n", cgi->Cmd_Argv(1));
 		return;
 	}
-
-	RS_StopResearch(tech);
+	if (result != RS_CHANGE_APPLIED)
+		return;
 
 	cgi->UI_ExecuteConfunc("ui_research_update_topic %s %d", tech->id, tech->scientists);
 	cgi->UI_ExecuteConfunc("ui_research_update_caps %d %d %d %d", E_CountUnassigned(base, EMPL_SCIENTIST),

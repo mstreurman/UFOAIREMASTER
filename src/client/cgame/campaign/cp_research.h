@@ -44,6 +44,19 @@ typedef enum researchStatus_s {
 	RS_FINISH
 } researchStatus_t;
 
+/** @brief Result of presentation-facing canonical research assignment owners. */
+typedef enum researchChangeResult_s {
+	RS_CHANGE_APPLIED,
+	RS_CHANGE_INVALID_TECHNOLOGY,
+	RS_CHANGE_INVALID_BASE,
+	RS_CHANGE_WRONG_BASE,
+	RS_CHANGE_INVALID_DELTA,
+	RS_CHANGE_NOT_RESEARCHABLE,
+	RS_CHANGE_NO_SCIENTIST,
+	RS_CHANGE_NO_LAB_SPACE,
+	RS_CHANGE_NO_ACTIVE_RESEARCH
+} researchChangeResult_t;
+
 /** @brief Types of research topics */
 typedef enum researchType_s {
 	RS_TECH,
@@ -221,6 +234,10 @@ bool RS_MarkStoryLineEventResearched(const char* techID);
 void RS_ResearchFinish(technology_t* tech);
 void RS_StopResearch(technology_t* tech);
 void RS_MarkOneResearchable(technology_t* tech);
+
+researchChangeResult_t RS_TryChangeScientists(technology_t* tech, struct base_s* base, int scientistDelta);
+researchChangeResult_t RS_TryMaxAssignScientists(technology_t* tech, struct base_s* base);
+researchChangeResult_t RS_TryStopResearch(technology_t* tech, struct base_s* base);
 
 void RS_AssignScientist(technology_t* tech, struct base_s* base, Employee* employee = nullptr);
 void RS_RemoveScientist(technology_t* tech, Employee* employee);

@@ -1,7 +1,7 @@
 domain	semantic_action	transport_contract	authority_bridge	owner_source	note
 strategic	AcceptUfoSaleOffer	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	AssignEmployeeToAircraft	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_team_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
-strategic	AssignResearch	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_research_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	AssignResearch	complete	canonical_applied	src/client/cgame/campaign/cp_research.cpp	RS_TryChangeScientists owns base association, exact +/-1 scientist mutation and canonical assignment/removal; legacy callback normalizes its historic sign-only diff and owns UI feedback
 strategic	AutoResolveMission	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_mission_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	BuildBase	complete	canonical_applied	src/client/cgame/campaign/cp_base.cpp	B_TryBuildBase owns placement/count/credits/build/message/first-base setup; typed adapter supplies bounded position/name
 strategic	BuildFacility	complete	canonical_applied	src/client/cgame/campaign/cp_base.cpp	B_TryBuildFacility owns definition/grid/credit/build mutation; base_init refresh is legacy-callback-only and typed adapter passes bounded definition/base-scoped coordinates
@@ -25,7 +25,7 @@ strategic	KillContainedAlien	complete	owner_extraction_pending_fail_closed	src/c
 strategic	KillContainedAliens	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_aliencont_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	LoadGame	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_save_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	LoadLastSave	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_save_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
-strategic	MaxAssignResearch	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_research_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	MaxAssignResearch	complete	canonical_applied	src/client/cgame/campaign/cp_research.cpp	RS_TryMaxAssignScientists owns canonical lab-capacity/unassigned-scientist loop; legacy callback owns UI refresh only
 strategic	MoveProductionDown	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_produce_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	MoveProductionUp	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_produce_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	PursueUfo	complete	canonical_applied	src/client/cgame/campaign/cp_aircraft.cpp	AIR_TryPursueUFO owns Command Centre gate and pursuit request; typed adapter resolves explicit PHALANX/UFO IDs
@@ -53,7 +53,7 @@ strategic	StartMission	complete	owner_extraction_pending_fail_closed	src/client/
 strategic	StartTransfer	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_transfer_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	StopAircraft	complete	canonical_applied	src/client/cgame/campaign/cp_aircraft.cpp	AIR_TryStopAircraft owns canonical order-clear mutation
 strategic	StopProduction	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_produce_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
-strategic	StopResearch	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_research_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	StopResearch	complete	canonical_applied	src/client/cgame/campaign/cp_research.cpp	RS_TryStopResearch validates requested base/project and delegates to canonical RS_StopResearch scientist removal
 strategic	StoreRecoveredUfo	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	TransferStoredUfo	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 tactical	AbortMission	complete	client_request_helper_pending_fail_closed	src/client/cgame/cl_game.cpp	typed transport exists; adapter rejects until request helper can prove emission

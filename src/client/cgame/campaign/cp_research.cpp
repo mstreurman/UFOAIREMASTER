@@ -34,7 +34,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cp_campaign.h"
 #include "cp_capacity.h"
 #include "cp_research.h"
-#include "cp_popup.h"
 #include "cp_time.h"
 #include "save/save_research.h"
 #include "aliencontainment.h"
@@ -651,38 +650,119 @@ void RS_InitTree (const campaign_t* campaign, bool load)
  * @sa RS_AssignScientist_f
  * @sa RS_RemoveScientist
  */
-void RS_AssignScientist (technology_t* tech, base_t* base, Employee* employee)
+static researchChangeResult_t RS_TryAssignScientistCanonical (technology_t* tech, base_t* base, Employee* employee)
 {
-	assert(tech);
+	if (!tech)
+		return RS_CHANGE_INVALID_TECHNOLOGY;
+
 	cgi->Com_DPrintf(DEBUG_CLIENT, "RS_AssignScientist: %i | %s \n", tech->idx, tech->name);
 
-	/* if the tech is already assigned to a base, use that one */
+	/* Preserve the low-level legacy rule: an already-running project owns its base. */
 	if (tech->base)
 		base = tech->base;
 
-	assert(base);
+	if (!base)
+		return RS_CHANGE_INVALID_BASE;
 
 	if (!employee)
 		employee = E_GetUnassignedEmployee(base, EMPL_SCIENTIST);
 	if (!employee) {
-		/* No scientists are free in this base. */
 		cgi->Com_DPrintf(DEBUG_CLIENT, "No free scientists in this base (%s) to assign to tech '%s'\n", base->name, tech->id);
-		return;
+		return RS_CHANGE_NO_SCIENTIST;
 	}
 
 	if (!tech->statusResearchable)
-		return;
+		return RS_CHANGE_NOT_RESEARCHABLE;
 
-	if (CAP_GetFreeCapacity(base, CAP_LABSPACE) <= 0) {
-		CP_Popup(_("Not enough laboratories"), _("No free space in laboratories left.\nBuild more laboratories.\n"));
-		return;
-	}
+	if (CAP_GetFreeCapacity(base, CAP_LABSPACE) <= 0)
+		return RS_CHANGE_NO_LAB_SPACE;
 
 	tech->scientists++;
 	tech->base = base;
 	CAP_AddCurrent(base, CAP_LABSPACE, 1);
 	employee->setAssigned(true);
 	tech->statusResearch = RS_RUNNING;
+	return RS_CHANGE_APPLIED;
+}
+
+void RS_AssignScientist (technology_t* tech, base_t* base, Employee* employee)
+{
+	assert(tech);
+	if (!tech->base)
+		assert(base);
+	(void)RS_TryAssignScientistCanonical(tech, base, employee);
+}
+
+/**
+ * @brief Change a research project's scientist count by exactly one.
+ * @note The typed presentation contract accepts only +1 or -1. Legacy callbacks
+ * normalize their historic sign-only command argument before calling this owner.
+ */
+researchChangeResult_t RS_TryChangeScientists (technology_t* tech, base_t* base, int scientistDelta)
+{
+	if (!tech)
+		return RS_CHANGE_INVALID_TECHNOLOGY;
+	if (!base)
+		return RS_CHANGE_INVALID_BASE;
+	if (tech->base && tech->base != base)
+		return RS_CHANGE_WRONG_BASE;
+	if (scientistDelta != 1 && scientistDelta != -1)
+		return RS_CHANGE_INVALID_DELTA;
+
+	if (scientistDelta > 0)
+		return RS_TryAssignScientistCanonical(tech, base, nullptr);
+
+	if (!tech->base || tech->scientists <= 0)
+		return RS_CHANGE_NO_ACTIVE_RESEARCH;
+
+	RS_RemoveScientist(tech, nullptr);
+	return RS_CHANGE_APPLIED;
+}
+
+/**
+ * @brief Assign as many scientists as canonical lab capacity and staffing permit.
+ */
+researchChangeResult_t RS_TryMaxAssignScientists (technology_t* tech, base_t* base)
+{
+	if (!tech)
+		return RS_CHANGE_INVALID_TECHNOLOGY;
+	if (!base)
+		return RS_CHANGE_INVALID_BASE;
+	if (tech->base && tech->base != base)
+		return RS_CHANGE_WRONG_BASE;
+
+	bool assignedAny = false;
+	while (CAP_GetFreeCapacity(base, CAP_LABSPACE) > 0) {
+		Employee* employee = E_GetUnassignedEmployee(base, EMPL_SCIENTIST);
+		if (!employee)
+			return assignedAny ? RS_CHANGE_APPLIED : RS_CHANGE_NO_SCIENTIST;
+
+		const researchChangeResult_t result = RS_TryAssignScientistCanonical(tech, base, employee);
+		if (result != RS_CHANGE_APPLIED)
+			return assignedAny ? RS_CHANGE_APPLIED : result;
+
+		assignedAny = true;
+	}
+
+	return assignedAny ? RS_CHANGE_APPLIED : RS_CHANGE_NO_LAB_SPACE;
+}
+
+/**
+ * @brief Stop a research project in the requested base.
+ */
+researchChangeResult_t RS_TryStopResearch (technology_t* tech, base_t* base)
+{
+	if (!tech)
+		return RS_CHANGE_INVALID_TECHNOLOGY;
+	if (!base)
+		return RS_CHANGE_INVALID_BASE;
+	if (tech->base && tech->base != base)
+		return RS_CHANGE_WRONG_BASE;
+	if (!tech->base || tech->scientists <= 0)
+		return RS_CHANGE_NO_ACTIVE_RESEARCH;
+
+	RS_StopResearch(tech);
+	return RS_CHANGE_APPLIED;
 }
 
 /**

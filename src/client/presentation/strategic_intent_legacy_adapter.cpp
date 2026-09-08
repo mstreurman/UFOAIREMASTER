@@ -12,6 +12,7 @@
 #include "../cgame/campaign/cp_campaign.h"
 #include "../cgame/campaign/cp_geoscape.h"
 #include "../cgame/campaign/cp_missions.h"
+#include "../cgame/campaign/cp_research.h"
 #include "../cgame/campaign/cp_time.h"
 #include "../cgame/campaign/cp_ufo.h"
 #include "strategic_intent.h"
@@ -37,6 +38,10 @@ aircraft_t* resolvePhalanxAircraft(canonical::AircraftId id) {
 base_t* resolveBase(canonical::BaseId id) {
     if (!id.isValid() || id.value > static_cast<uint32_t>(std::numeric_limits<int>::max())) return nullptr;
     return B_GetFoundedBaseByIDX(static_cast<int>(id.value));
+}
+technology_t* resolveTechnology(canonical::TechnologyId id) {
+    if (!id.isValid() || id.value > static_cast<uint32_t>(std::numeric_limits<int>::max())) return nullptr;
+    return RS_GetTechByIDX(static_cast<int>(id.value));
 }
 aircraft_t* resolveUfoAircraft(canonical::AircraftId id) {
     if (!id.isValid() || (id.value & UFO_AIRCRAFT_ID_BIT) == 0) return nullptr;
@@ -95,6 +100,19 @@ void applyPendingStrategicIntents() {
             aircraft_t* a=resolvePhalanxAircraft(in.aircraft); if(a&&AIR_IsAircraftOnGeoscape(a)){AIR_AircraftReturnToBase(a);if(a->status==AIR_RETURNING)out.disposition=StrategicIntentDisposition::Applied;}
             if(a){out.aircraft=canonical::AircraftId(static_cast<uint32_t>(a->idx));out.canonicalValue=static_cast<int32_t>(a->status);} break; }
 
+        case StrategicIntentKind::AssignResearch: {
+            base_t* b=resolveBase(in.base); technology_t* tech=resolveTechnology(in.technology);
+            if(b&&tech&&RS_TryChangeScientists(tech,b,in.value0)==RS_CHANGE_APPLIED) out.disposition=StrategicIntentDisposition::Applied;
+            if(tech) out.canonicalValue=tech->scientists; break; }
+        case StrategicIntentKind::MaxAssignResearch: {
+            base_t* b=resolveBase(in.base); technology_t* tech=resolveTechnology(in.technology);
+            if(b&&tech&&RS_TryMaxAssignScientists(tech,b)==RS_CHANGE_APPLIED) out.disposition=StrategicIntentDisposition::Applied;
+            if(tech) out.canonicalValue=tech->scientists; break; }
+        case StrategicIntentKind::StopResearch: {
+            base_t* b=resolveBase(in.base); technology_t* tech=resolveTechnology(in.technology);
+            if(b&&tech&&RS_TryStopResearch(tech,b)==RS_CHANGE_APPLIED) out.disposition=StrategicIntentDisposition::Applied;
+            if(tech) out.canonicalValue=tech->scientists; break; }
+
         case StrategicIntentKind::BuildBase: {
             vec2_t pos; base_t* b=nullptr; const char* name=resolveBoundedText(in.text);
             if(name&&resolveStrategicPosition2(in.position,pos)&&B_TryBuildBase(pos,name,&b)==B_BUILD_APPLIED){out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=b?b->idx:-1;}
@@ -151,7 +169,6 @@ void applyPendingStrategicIntents() {
          * canonical campaign subsystem. No command-string fallback is allowed. */
         case StrategicIntentKind::AcceptUfoSaleOffer:
         case StrategicIntentKind::AssignEmployeeToAircraft:
-        case StrategicIntentKind::AssignResearch:
         case StrategicIntentKind::AutoResolveMission:
         case StrategicIntentKind::BuyAircraft:
         case StrategicIntentKind::BuyItem:
@@ -169,7 +186,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::KillContainedAliens:
         case StrategicIntentKind::LoadGame:
         case StrategicIntentKind::LoadLastSave:
-        case StrategicIntentKind::MaxAssignResearch:
         case StrategicIntentKind::MoveProductionDown:
         case StrategicIntentKind::MoveProductionUp:
         case StrategicIntentKind::RemoveAircraftItem:
@@ -188,7 +204,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::StartMission:
         case StrategicIntentKind::StartTransfer:
         case StrategicIntentKind::StopProduction:
-        case StrategicIntentKind::StopResearch:
         case StrategicIntentKind::StoreRecoveredUfo:
         case StrategicIntentKind::TransferStoredUfo:
             break;
