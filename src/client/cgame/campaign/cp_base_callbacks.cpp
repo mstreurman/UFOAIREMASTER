@@ -134,38 +134,18 @@ static void B_SetBaseTitle_f (void)
  */
 static void B_BuildBase_f (void)
 {
-	const campaign_t* campaign = ccs.curCampaign;
-
 	if (ccs.mapAction == MA_NEWBASE)
 		ccs.mapAction = MA_NONE;
 
-	if (ccs.credits - campaign->basecost > 0) {
-		const nation_t* nation;
-		const char* baseName = mn_base_title->string;
-		base_t* base;
-		/* there may be no " in the base name */
-		if (!Com_IsValidName(baseName))
-			baseName = _("Base");
-
-		base = B_Build(campaign, ccs.newBasePos, baseName);
-		if (!base)
-			cgi->Com_Error(ERR_DROP, "Cannot build base");
-
-		CP_UpdateCredits(ccs.credits - campaign->basecost);
-		nation = GEO_GetNation(base->pos);
-		if (nation)
-			Com_sprintf(cp_messageBuffer, sizeof(cp_messageBuffer), _("A new base has been built: %s (nation: %s)"), mn_base_title->string, _(nation->name));
-		else
-			Com_sprintf(cp_messageBuffer, sizeof(cp_messageBuffer), _("A new base has been built: %s"), mn_base_title->string);
-		MS_AddNewMessage(_("Base built"), cp_messageBuffer, MSG_CONSTRUCTION);
-
-		/* First base */
-		if (ccs.campaignStats.basesBuilt == 1)
-			B_SetUpFirstBase(campaign, base);
-
+	base_t* base = nullptr;
+	const baseBuildResult_t result = B_TryBuildBase(ccs.newBasePos, mn_base_title->string, &base);
+	if (result == B_BUILD_APPLIED) {
 		cgi->Cvar_SetValue("mn_base_count", B_GetCount());
 		B_SelectBase(base);
-	} else {
+		return;
+	}
+
+	if (result == B_BUILD_INSUFFICIENT_CREDITS) {
 		/** @todo Why is this needed? Also see bug #5401 */
 		if (GEO_IsRadarOverlayActivated())
 			GEO_SetOverlay("radar", 0);
@@ -190,14 +170,11 @@ static void B_ChangeBaseName_f (void)
 		return;
 	}
 
-	/* basename should not contain double-quote character */
-	if (!Com_IsValidName(cgi->Cmd_Argv(2))) {
+	if (!B_TrySetName(base, cgi->Cmd_Argv(2))) {
 		/* Cancel update, set the cvar to the original name */
 		cgi->Cvar_Set("mn_base_title", "%s", base->name);
 		return;
 	}
-
-	B_SetName(base, cgi->Cmd_Argv(2));
 }
 
 /**

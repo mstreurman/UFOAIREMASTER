@@ -102,15 +102,11 @@ try:
             raise AssertionError(f'{name}: not canonical_applied')
     if strategic['StartMission']['authority_bridge']!='owner_extraction_pending_fail_closed':
         raise AssertionError('StartMission must remain fail-closed in this slice')
-    if sum(r['authority_bridge']=='canonical_applied' for r in strategic.values()) != 8:
-        raise AssertionError('strategic applied count must be 8')
-    if sum(r['authority_bridge']=='owner_extraction_pending_fail_closed' for r in strategic.values()) != 49:
-        raise AssertionError('strategic pending count must be 49')
 
     print('PASS M1 Aircraft + Geoscape owner extraction: five canonical owners')
     print('PASS legacy UI paths consume canonical owners; UI feedback remains presentation-only')
     print('PASS typed adapter resolves/bounds IDs and destination without command/cvar fallback')
-    print('PASS bridge accounting: strategic 8 applied / 49 fail-closed; StartMission remains pending')
+    print('PASS Aircraft + Geoscape owner subset remains qualified; global accounting is checked by test-m1-authoritative-intent-surface.py')
 except AssertionError as exc:
     print('FAIL M1 Aircraft + Geoscape owner extraction: '+str(exc),file=sys.stderr)
     raise SystemExit(1)

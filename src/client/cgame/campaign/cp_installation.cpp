@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cp_mapfightequip.h"
 #include "cp_aircraft.h"
 #include "cp_missions.h"
+#include "cp_geoscape.h"
 #include "cp_installation.h"
 #include "save/save_installation.h"
 
@@ -192,6 +193,68 @@ void INS_DestroyInstallation (installation_t* installation)
 
 	cgi->LIST_Remove(&ccs.installations, installation);
 	cgi->Cvar_Set("mn_installation_count", "%i", INS_GetCount());
+}
+
+
+/**
+ * @brief Canonical owner for constructing a strategic installation.
+ */
+installationBuildResult_t INS_TryBuildInstallation (const installationTemplate_t* installationTemplate, const vec2_t pos, const char* name, installation_t** builtInstallation)
+{
+	if (builtInstallation)
+		*builtInstallation = nullptr;
+	if (!installationTemplate)
+		return INS_BUILD_INVALID_TEMPLATE;
+	if (B_GetInstallationLimit() <= INS_GetCount())
+		return INS_BUILD_LIMIT_REACHED;
+	if (installationTemplate->tech != nullptr && !RS_IsResearched_ptr(installationTemplate->tech))
+		return INS_BUILD_NOT_RESEARCHED;
+	if (installationTemplate->once && INS_HasType(installationTemplate->type, INSTALLATION_NOT_USED))
+		return INS_BUILD_UNIQUE_LIMIT_REACHED;
+	if (!GEO_IsValidLandPosition(pos))
+		return INS_BUILD_INVALID_POSITION;
+
+	assert(installationTemplate->cost >= 0);
+	if (ccs.credits - installationTemplate->cost <= 0)
+		return INS_BUILD_INSUFFICIENT_CREDITS;
+
+	installation_t* installation = INS_Build(installationTemplate, pos, name ? name : "");
+	if (!installation)
+		return INS_BUILD_REJECTED;
+
+	CP_UpdateCredits(ccs.credits - installationTemplate->cost);
+	const nation_t* nation = GEO_GetNation(installation->pos);
+	if (nation)
+		Com_sprintf(cp_messageBuffer, sizeof(cp_messageBuffer), _("A new installation has been built: %s (nation: %s)"), installation->name, _(nation->name));
+	else
+		Com_sprintf(cp_messageBuffer, sizeof(cp_messageBuffer), _("A new installation has been built: %s"), installation->name);
+	MSO_CheckAddNewMessage(NT_INSTALLATION_BUILDSTART, _("Installation building"), cp_messageBuffer, MSG_CONSTRUCTION);
+
+	if (builtInstallation)
+		*builtInstallation = installation;
+	return INS_BUILD_APPLIED;
+}
+
+/**
+ * @brief Canonical owner for renaming a strategic installation.
+ */
+bool INS_TrySetName (installation_t* installation, const char* name)
+{
+	if (!installation || !name)
+		return false;
+	Q_strncpyz(installation->name, name, sizeof(installation->name));
+	return true;
+}
+
+/**
+ * @brief Canonical owner for an already-confirmed installation destruction request.
+ */
+bool INS_TryDestroyInstallation (installation_t* installation)
+{
+	if (!installation)
+		return false;
+	INS_DestroyInstallation(installation);
+	return true;
 }
 
 /**

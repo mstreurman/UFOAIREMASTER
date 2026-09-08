@@ -30,6 +30,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MAX_INSTALLATION_DAMAGE	100
 #define MAX_INSTALLATION_BATTERIES	5
 
+typedef enum {
+	INS_BUILD_APPLIED,
+	INS_BUILD_INVALID_TEMPLATE,
+	INS_BUILD_INVALID_POSITION,
+	INS_BUILD_LIMIT_REACHED,
+	INS_BUILD_NOT_RESEARCHED,
+	INS_BUILD_UNIQUE_LIMIT_REACHED,
+	INS_BUILD_INSUFFICIENT_CREDITS,
+	INS_BUILD_REJECTED
+} installationBuildResult_t;
+
 /**
  * @brief Possible installation states
  * @note: Don't change the order or you have to change the installationmenu scriptfiles, too
@@ -123,6 +134,9 @@ installationType_t INS_GetType(const char* type);
 
 /* Lifecycle: build/update/destroy */
 installation_t* INS_Build(const installationTemplate_t* installationTemplate, const vec2_t pos, const char* name);
+installationBuildResult_t INS_TryBuildInstallation(const installationTemplate_t* installationTemplate, const vec2_t pos, const char* name, installation_t** builtInstallation);
+bool INS_TrySetName(installation_t* installation, const char* name);
+bool INS_TryDestroyInstallation(installation_t* installation);
 void INS_UpdateInstallationData(void);
 void INS_DestroyInstallation(installation_t* installation);
 

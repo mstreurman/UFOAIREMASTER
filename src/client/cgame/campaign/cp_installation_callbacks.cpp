@@ -86,48 +86,37 @@ void INS_SelectInstallation (installation_t* installation)
  */
 static void INS_BuildInstallation_f (void)
 {
-	const installationTemplate_t* installationTemplate;
-
 	if (cgi->Cmd_Argc() < 1) {
 		cgi->Com_Printf("Usage: %s <installationType>\n", cgi->Cmd_Argv(0));
 		return;
 	}
 
-	/* We shouldn't build more installations than the actual limit */
-	if (B_GetInstallationLimit() <= INS_GetCount())
-		return;
-
-	installationTemplate = INS_GetInstallationTemplateByID(cgi->Cmd_Argv(1));
+	const installationTemplate_t* installationTemplate = INS_GetInstallationTemplateByID(cgi->Cmd_Argv(1));
 	if (!installationTemplate) {
 		cgi->Com_Printf("The installation type %s passed for %s is not valid.\n", cgi->Cmd_Argv(1), cgi->Cmd_Argv(0));
 		return;
 	}
 
-	assert(installationTemplate->cost >= 0);
-
-	if (ccs.credits - installationTemplate->cost > 0) {
-		/* set up the installation */
-		installation_t* installation = INS_Build(installationTemplate, ccs.newBasePos, cgi->Cvar_GetString("mn_installation_title"));
-
-		CP_UpdateCredits(ccs.credits - installationTemplate->cost);
+	installation_t* installation = nullptr;
+	const installationBuildResult_t result = INS_TryBuildInstallation(
+		installationTemplate, ccs.newBasePos, cgi->Cvar_GetString("mn_installation_title"), &installation);
+	if (result == INS_BUILD_APPLIED) {
 		/* this cvar is used for disabling the installation build button on geoscape if MAX_INSTALLATIONS was reached */
 		cgi->Cvar_SetValue("mn_installation_count", INS_GetCount());
-
-		const nation_t* nation = GEO_GetNation(installation->pos);
-		if (nation)
-			Com_sprintf(cp_messageBuffer, sizeof(cp_messageBuffer), _("A new installation has been built: %s (nation: %s)"), installation->name, _(nation->name));
-		else
-			Com_sprintf(cp_messageBuffer, sizeof(cp_messageBuffer), _("A new installation has been built: %s"), installation->name);
-		MSO_CheckAddNewMessage(NT_INSTALLATION_BUILDSTART, _("Installation building"), cp_messageBuffer, MSG_CONSTRUCTION);
-	} else {
+	} else if (result == INS_BUILD_INSUFFICIENT_CREDITS) {
 		if (installationTemplate->type == INSTALLATION_RADAR) {
 			if (GEO_IsRadarOverlayActivated())
-					GEO_SetOverlay("radar", 1);
+				GEO_SetOverlay("radar", 1);
 		}
 		if (ccs.mapAction == MA_NEWINSTALLATION)
 			ccs.mapAction = MA_NONE;
 
 		CP_Popup(_("Notice"), _("Not enough credits to set up a new installation."));
+	} else if (result == INS_BUILD_LIMIT_REACHED
+		|| result == INS_BUILD_NOT_RESEARCHED
+		|| result == INS_BUILD_UNIQUE_LIMIT_REACHED
+		|| result == INS_BUILD_INVALID_POSITION) {
+		return;
 	}
 	ccs.mapAction = MA_NONE;
 }
@@ -165,7 +154,7 @@ static void INS_ChangeInstallationName_f (void)
 	if (!installation)
 		return;
 
-	Q_strncpyz(installation->name, cgi->Cvar_GetString("mn_installation_title"), sizeof(installation->name));
+	INS_TrySetName(installation, cgi->Cvar_GetString("mn_installation_title"));
 }
 
 /**
@@ -197,7 +186,7 @@ static void INS_DestroyInstallation_f (void)
 			nullptr, nullptr, nullptr);
 		return;
 	}
-	INS_DestroyInstallation(installation);
+	INS_TryDestroyInstallation(installation);
 }
 
 /**

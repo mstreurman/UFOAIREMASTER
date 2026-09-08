@@ -66,12 +66,13 @@ if set(ledger_t) != set(strict_t):
 expected_applied={
     'SetCampaignTimeLapse','SendAircraftToMission','ReturnAircraftToBase',
     'StartAircraft','StopAircraft','SetAircraftDestination','PursueUfo','ChangeAircraftHomebase',
+    'BuildBase','RenameBase','BuildInstallation','RenameInstallation','DestroyInstallation',
 }
 applied={name for name,row in ledger_s.items() if row['authority_bridge']=='canonical_applied'}
 if applied != expected_applied:
     print('FAIL strategic applied-owner set mismatch: '+repr(sorted(applied))); sys.exit(1)
-if sum(r['authority_bridge']=='owner_extraction_pending_fail_closed' for r in ledger_s.values()) != 49:
-    print('FAIL strategic pending-owner accounting must be 49'); sys.exit(1)
+if sum(r['authority_bridge']=='owner_extraction_pending_fail_closed' for r in ledger_s.values()) != 44:
+    print('FAIL strategic pending-owner accounting must be 44'); sys.exit(1)
 if sum(r['authority_bridge']=='server_request_forwarded' for r in ledger_t.values()) != 13:
     print('FAIL tactical v1 bridge accounting must be 13 forwarded / 2 pending'); sys.exit(1)
 if sum(r['authority_bridge']=='client_request_helper_pending_fail_closed' for r in ledger_t.values()) != 2:
@@ -81,4 +82,4 @@ if 'CL_ActorReload(' in tactical_adapter:
     print('FAIL Reload must fail closed until request emission is observable'); sys.exit(1)
 if 'NET_WriteByte(&msg,clc_endround)' not in tactical_adapter:
     print('FAIL EndTurn must emit the existing clc_endround protocol directly'); sys.exit(1)
-print('PASS bridge accounting: strategic 8 applied / 49 fail-closed; tactical 13 forwarded / 2 fail-closed')
+print('PASS bridge accounting: strategic 13 applied / 44 fail-closed; tactical 13 forwarded / 2 fail-closed')

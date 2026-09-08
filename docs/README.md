@@ -267,6 +267,7 @@ Earlier documents remain useful for rationale/history but must not redefine an A
 - `reference/reference-m1-presentation-action-authority-classification-2026-09-07.md`
 - `reference/reference-m1-authoritative-intent-surface-v1-qualification-2026-09-08.md`
 - `reference/reference-m1-aircraft-geoscape-owner-extraction-2026-09-08.md`
+- `reference/reference-m1-base-installation-owner-extraction-2026-09-08.md`
 
 ### Public documentation scope
 

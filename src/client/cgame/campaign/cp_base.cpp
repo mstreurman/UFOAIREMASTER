@@ -1175,6 +1175,19 @@ void B_SetName (base_t* base, const char* name)
 	Q_strncpyz(base->name, name, sizeof(base->name));
 }
 
+
+/**
+ * @brief Canonical owner for renaming a founded base.
+ */
+bool B_TrySetName (base_t* base, const char* name)
+{
+	if (!base || !name || !Com_IsValidName(name))
+		return false;
+
+	B_SetName(base, name);
+	return true;
+}
+
 /**
  * @brief Build new base, uses template for the first base
  * @param[in] campaign The campaign data structure
@@ -1236,6 +1249,54 @@ base_t* B_Build (const campaign_t* campaign, const vec2_t pos, const char* name,
 	B_SetCurrentSelectedBase(base);
 
 	return base;
+}
+
+
+/**
+ * @brief Canonical owner for constructing a new PHALANX base.
+ *
+ * Placement eligibility, base count, campaign credits, canonical creation,
+ * construction messaging and first-base setup stay in the campaign subsystem.
+ * Legacy UI remains responsible only for interaction state and presentation.
+ */
+baseBuildResult_t B_TryBuildBase (const vec2_t pos, const char* name, base_t** builtBase)
+{
+	if (builtBase)
+		*builtBase = nullptr;
+
+	const campaign_t* campaign = ccs.curCampaign;
+	if (!campaign)
+		return B_BUILD_INVALID_CAMPAIGN;
+	if (B_GetCount() >= MAX_BASES || !B_GetFirstUnfoundedBase())
+		return B_BUILD_LIMIT_REACHED;
+	if (!GEO_IsValidLandPosition(pos))
+		return B_BUILD_INVALID_POSITION;
+	if (ccs.credits - campaign->basecost <= 0)
+		return B_BUILD_INSUFFICIENT_CREDITS;
+
+	const char* baseName = name;
+	if (!baseName || !Com_IsValidName(baseName))
+		baseName = _("Base");
+
+	base_t* base = B_Build(campaign, pos, baseName);
+	if (!base)
+		return B_BUILD_REJECTED;
+
+	CP_UpdateCredits(ccs.credits - campaign->basecost);
+	const nation_t* nation = GEO_GetNation(base->pos);
+	const char* messageName = name ? name : base->name;
+	if (nation)
+		Com_sprintf(cp_messageBuffer, sizeof(cp_messageBuffer), _("A new base has been built: %s (nation: %s)"), messageName, _(nation->name));
+	else
+		Com_sprintf(cp_messageBuffer, sizeof(cp_messageBuffer), _("A new base has been built: %s"), messageName);
+	MS_AddNewMessage(_("Base built"), cp_messageBuffer, MSG_CONSTRUCTION);
+
+	if (ccs.campaignStats.basesBuilt == 1)
+		B_SetUpFirstBase(campaign, base);
+
+	if (builtBase)
+		*builtBase = base;
+	return B_BUILD_APPLIED;
 }
 
 /**

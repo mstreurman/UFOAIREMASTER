@@ -17,6 +17,8 @@
 #include "strategic_intent.h"
 #include "strategic_intent_legacy_adapter.h"
 #include <cmath>
+#include <cstddef>
+#include <cstring>
 #include <cstdint>
 #include <limits>
 
@@ -43,11 +45,22 @@ aircraft_t* resolveUfoAircraft(canonical::AircraftId id) {
     aircraft_t* ufo=UFO_GetByIDX(static_cast<int>(idx));
     return ufo&&AIR_IsUFO(ufo)?ufo:nullptr;
 }
-bool resolveAircraftDestination(const StrategicPosition& position, vec2_t destination) {
+bool resolveStrategicPosition2(const StrategicPosition& position, vec2_t destination) {
     if (!std::isfinite(position.longitude) || !std::isfinite(position.latitude) || !std::isfinite(position.altitude)) return false;
     if (position.longitude < -180.0f || position.longitude > 180.0f || position.latitude < -90.0f || position.latitude > 90.0f) return false;
     Vector2Set(destination, position.longitude, position.latitude);
     return true;
+}
+bool resolveAircraftDestination(const StrategicPosition& position, vec2_t destination) {
+    return resolveStrategicPosition2(position, destination);
+}
+installation_t* resolveInstallation(canonical::InstallationId id) {
+    if (!id.isValid() || id.value > static_cast<uint32_t>(std::numeric_limits<int>::max())) return nullptr;
+    return INS_GetByIDX(static_cast<int>(id.value));
+}
+template <std::size_t N>
+const char* resolveBoundedText(const char (&text)[N]) {
+    return std::memchr(text, '\0', N) ? text : nullptr;
 }
 canonical::MissionId selectedMissionId() {
     const mission_t* p=GEO_GetSelectedMission(); return p&&p->idx>=0?canonical::MissionId(static_cast<uint32_t>(p->idx)):canonical::MissionId();
@@ -82,6 +95,28 @@ void applyPendingStrategicIntents() {
             aircraft_t* a=resolvePhalanxAircraft(in.aircraft); if(a&&AIR_IsAircraftOnGeoscape(a)){AIR_AircraftReturnToBase(a);if(a->status==AIR_RETURNING)out.disposition=StrategicIntentDisposition::Applied;}
             if(a){out.aircraft=canonical::AircraftId(static_cast<uint32_t>(a->idx));out.canonicalValue=static_cast<int32_t>(a->status);} break; }
 
+        case StrategicIntentKind::BuildBase: {
+            vec2_t pos; base_t* b=nullptr; const char* name=resolveBoundedText(in.text);
+            if(name&&resolveStrategicPosition2(in.position,pos)&&B_TryBuildBase(pos,name,&b)==B_BUILD_APPLIED){out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=b?b->idx:-1;}
+            break; }
+        case StrategicIntentKind::RenameBase: {
+            base_t* b=resolveBase(in.base); const char* name=resolveBoundedText(in.text);
+            if(b&&name&&B_TrySetName(b,name)){out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=b->idx;}
+            break; }
+        case StrategicIntentKind::BuildInstallation: {
+            vec2_t pos; installation_t* installation=nullptr; const char* definition=resolveBoundedText(in.key0); const char* name=resolveBoundedText(in.text);
+            const installationTemplate_t* tpl=definition?INS_GetInstallationTemplateByID(definition):nullptr;
+            if(tpl&&name&&resolveStrategicPosition2(in.position,pos)&&INS_TryBuildInstallation(tpl,pos,name,&installation)==INS_BUILD_APPLIED){out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=installation?installation->idx:-1;}
+            break; }
+        case StrategicIntentKind::RenameInstallation: {
+            installation_t* installation=resolveInstallation(in.installation); const char* name=resolveBoundedText(in.text);
+            if(installation&&name&&INS_TrySetName(installation,name)){out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=installation->idx;}
+            break; }
+        case StrategicIntentKind::DestroyInstallation: {
+            installation_t* installation=resolveInstallation(in.installation);
+            if(installation){const int idx=installation->idx;if(INS_TryDestroyInstallation(installation)){out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=idx;}}
+            break; }
+
         case StrategicIntentKind::ChangeAircraftHomebase: {
             aircraft_t* a=resolvePhalanxAircraft(in.aircraft); base_t* b=resolveBase(in.base);
             if(a&&b&&AIR_TryChangeHomebase(a,b)) out.disposition=StrategicIntentDisposition::Applied;
@@ -110,9 +145,7 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::AssignEmployeeToAircraft:
         case StrategicIntentKind::AssignResearch:
         case StrategicIntentKind::AutoResolveMission:
-        case StrategicIntentKind::BuildBase:
         case StrategicIntentKind::BuildFacility:
-        case StrategicIntentKind::BuildInstallation:
         case StrategicIntentKind::BuyAircraft:
         case StrategicIntentKind::BuyItem:
         case StrategicIntentKind::BuyUGV:
@@ -121,7 +154,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::DeleteEmployee:
         case StrategicIntentKind::DestroyAntimatterFacility:
         case StrategicIntentKind::DestroyFacility:
-        case StrategicIntentKind::DestroyInstallation:
         case StrategicIntentKind::DestroyStoredUfo:
         case StrategicIntentKind::EquipAircraftItem:
         case StrategicIntentKind::EquipBaseDefenceItem:
@@ -137,9 +169,7 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::RemoveAircraftItem:
         case StrategicIntentKind::RemoveBaseDefenceItem:
         case StrategicIntentKind::RenameAircraft:
-        case StrategicIntentKind::RenameBase:
         case StrategicIntentKind::RenameEmployee:
-        case StrategicIntentKind::RenameInstallation:
         case StrategicIntentKind::SaveGame:
         case StrategicIntentKind::SellAircraft:
         case StrategicIntentKind::SellItem:

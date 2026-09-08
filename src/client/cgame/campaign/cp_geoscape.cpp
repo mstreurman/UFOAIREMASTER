@@ -36,6 +36,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cp_time.h"
 #include "cp_xvi.h"
 
+#include <cmath>
+
 static uiNode_t* geoscapeNode;
 
 #ifdef DEBUG
@@ -98,6 +100,18 @@ static inline bool GEO_IsXVIOverlayActivated (void)
 }
 
 /**
+ * @brief Validate a canonical strategic placement position against geoscape bounds and land mask.
+ */
+bool GEO_IsValidLandPosition (const vec2_t pos)
+{
+	if (!pos || !std::isfinite(pos[0]) || !std::isfinite(pos[1]))
+		return false;
+	if (pos[0] < -180.0f || pos[0] > 180.0f || pos[1] < -90.0f || pos[1] > 90.0f)
+		return false;
+	return !MapIsWater(GEO_GetColor(pos, MAPTYPE_TERRAIN, nullptr));
+}
+
+/**
  * @brief Click on the map/geoscape
  * @param[in] node UI Node of the geoscape map
  * @param[in] x,y Mouse click coordinates
@@ -110,7 +124,7 @@ bool GEO_Click (const uiNode_t* node, int x, int y, const vec2_t pos)
 	case MA_NEWBASE:
 		/* new base construction */
 		/** @todo make this a function in cp_base.c - B_BuildBaseAtPos */
-		if (!MapIsWater(GEO_GetColor(pos, MAPTYPE_TERRAIN, nullptr))) {
+		if (GEO_IsValidLandPosition(pos)) {
 			if (B_GetCount() < MAX_BASES) {
 				Vector2Copy(pos, ccs.newBasePos);
 				CP_GameTimeStop();
@@ -122,7 +136,7 @@ bool GEO_Click (const uiNode_t* node, int x, int y, const vec2_t pos)
 		}
 		break;
 	case MA_NEWINSTALLATION:
-		if (!MapIsWater(GEO_GetColor(pos, MAPTYPE_TERRAIN, nullptr))) {
+		if (GEO_IsValidLandPosition(pos)) {
 			Vector2Copy(pos, ccs.newBasePos);
 			CP_GameTimeStop();
 			cgi->UI_PushWindow("popup_newinstallation");

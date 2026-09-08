@@ -3,9 +3,9 @@ strategic	AcceptUfoSaleOffer	complete	owner_extraction_pending_fail_closed	src/c
 strategic	AssignEmployeeToAircraft	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_team_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	AssignResearch	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_research_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	AutoResolveMission	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_mission_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
-strategic	BuildBase	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_base_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	BuildBase	complete	canonical_applied	src/client/cgame/campaign/cp_base.cpp	B_TryBuildBase owns placement/count/credits/build/message/first-base setup; typed adapter supplies bounded position/name
 strategic	BuildFacility	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_base_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
-strategic	BuildInstallation	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_installation_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	BuildInstallation	complete	canonical_applied	src/client/cgame/campaign/cp_installation.cpp	INS_TryBuildInstallation owns limit/research/unique/land/credits/build/message semantics; typed adapter resolves bounded definition/name
 strategic	BuyAircraft	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_market_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	BuyItem	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_market_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	BuyUGV	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_market_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
@@ -15,7 +15,7 @@ strategic	DeequipEmployee	complete	owner_extraction_pending_fail_closed	src/clie
 strategic	DeleteEmployee	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_employee_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	DestroyAntimatterFacility	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_base_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	DestroyFacility	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_base_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
-strategic	DestroyInstallation	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_installation_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	DestroyInstallation	complete	canonical_applied	src/client/cgame/campaign/cp_installation.cpp	INS_TryDestroyInstallation owns already-confirmed canonical destruction; typed adapter resolves explicit InstallationId
 strategic	DestroyStoredUfo	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	EquipAircraftItem	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_fightequip_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	EquipBaseDefenceItem	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_basedefence_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
@@ -32,9 +32,9 @@ strategic	PursueUfo	complete	canonical_applied	src/client/cgame/campaign/cp_airc
 strategic	RemoveAircraftItem	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_fightequip_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	RemoveBaseDefenceItem	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_basedefence_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	RenameAircraft	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_aircraft_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
-strategic	RenameBase	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_base_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	RenameBase	complete	canonical_applied	src/client/cgame/campaign/cp_base.cpp	B_TrySetName owns legacy name validation and mutation; typed adapter resolves explicit BaseId/bounded name
 strategic	RenameEmployee	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_employee_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
-strategic	RenameInstallation	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_installation_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	RenameInstallation	complete	canonical_applied	src/client/cgame/campaign/cp_installation.cpp	INS_TrySetName owns bounded installation-name mutation; typed adapter resolves explicit InstallationId/bounded name
 strategic	ReturnAircraftToBase	complete	canonical_applied	src/client/cgame/campaign/cp_aircraft_callbacks.cpp	already-qualified canonical owner path
 strategic	SaveGame	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_save_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	SellAircraft	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_market_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted

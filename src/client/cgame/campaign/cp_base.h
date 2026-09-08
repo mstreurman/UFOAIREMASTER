@@ -54,6 +54,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define B_AtLeastOneExists() (B_GetNext(nullptr) != nullptr)
 
+typedef enum {
+	B_BUILD_APPLIED,
+	B_BUILD_INVALID_CAMPAIGN,
+	B_BUILD_INVALID_POSITION,
+	B_BUILD_LIMIT_REACHED,
+	B_BUILD_INSUFFICIENT_CREDITS,
+	B_BUILD_REJECTED
+} baseBuildResult_t;
+
 /**
  * @brief Possible base states
  * @note: Don't change the order or you have to change the basemenu scriptfiles, too
@@ -153,6 +162,8 @@ void B_SelectBase(const base_t* base);
 void B_Destroy(base_t* base);
 void B_Delete(base_t* base);
 void B_SetName(base_t* base, const char* name);
+baseBuildResult_t B_TryBuildBase(const vec2_t pos, const char* name, base_t** builtBase);
+bool B_TrySetName(base_t* base, const char* name);
 
 base_t* B_GetFirstUnfoundedBase(void);
 base_t* B_GetCurrentSelectedBase(void);

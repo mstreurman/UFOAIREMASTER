@@ -90,6 +90,7 @@ void GEO_NotifyUFODisappear(const aircraft_t* ufo);
 void GEO_InitStartup(void);
 int GEO_GetCivilianNumberByPosition(const vec2_t pos);
 void GEO_PrintParameterStringByPos(const vec2_t pos);
+bool GEO_IsValidLandPosition(const vec2_t pos);
 void GEO_CheckPositionBoundaries(float* pos);
 bool GEO_IsNight(const vec2_t pos);
 const byte* GEO_GetColor(const vec2_t pos, mapType_t type, bool* coast);
