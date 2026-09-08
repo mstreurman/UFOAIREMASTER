@@ -1,111 +1,174 @@
 /**
  * @file
- * @brief C++11-compatible typed strategic presentation intent contract.
+ * @brief Complete C++11-compatible strategic authoritative intent surface from the strict M1 authority inventory.
  */
 #pragma once
-
 #include "canonical_identity.h"
-
+#include "strategic_position.h"
 #include <cstdint>
 #include <type_traits>
 
-namespace ufo {
-namespace presentation {
-
+namespace ufo { namespace presentation {
 enum class StrategicIntentKind : uint8_t {
-	SetCampaignTimeLapse = 1,
-	SelectMission = 2,
-	SelectAircraft = 3,
-	SendAircraftToMission = 4,
-	ReturnAircraftToBase = 5
+    SetCampaignTimeLapse = 1,
+    SelectMission = 2,
+    SelectAircraft = 3,
+    SendAircraftToMission = 4,
+    ReturnAircraftToBase = 5,
+    AcceptUfoSaleOffer = 6,
+    AssignEmployeeToAircraft = 7,
+    AssignResearch = 8,
+    AutoResolveMission = 9,
+    BuildBase = 10,
+    BuildFacility = 11,
+    BuildInstallation = 12,
+    BuyAircraft = 13,
+    BuyItem = 14,
+    BuyUGV = 15,
+    ChangeAircraftHomebase = 16,
+    DecreaseProduction = 17,
+    DeequipEmployee = 18,
+    DeleteEmployee = 19,
+    DestroyAntimatterFacility = 20,
+    DestroyFacility = 21,
+    DestroyInstallation = 22,
+    DestroyStoredUfo = 23,
+    EquipAircraftItem = 24,
+    EquipBaseDefenceItem = 25,
+    HireOrFireEmployee = 26,
+    IncreaseProduction = 27,
+    KillContainedAlien = 28,
+    KillContainedAliens = 29,
+    LoadGame = 30,
+    LoadLastSave = 31,
+    MaxAssignResearch = 32,
+    MoveProductionDown = 33,
+    MoveProductionUp = 34,
+    PursueUfo = 35,
+    RemoveAircraftItem = 36,
+    RemoveBaseDefenceItem = 37,
+    RenameAircraft = 38,
+    RenameBase = 39,
+    RenameEmployee = 40,
+    RenameInstallation = 41,
+    SaveGame = 42,
+    SellAircraft = 43,
+    SellItem = 44,
+    SellUGV = 45,
+    SetAirDefenceAutoFire = 46,
+    SetAirDefenceTarget = 47,
+    SetAircraftDestination = 48,
+    SetAutoSellPolicy = 49,
+    SetEmployeeSkin = 50,
+    SetProductionAmount = 51,
+    StartAircraft = 52,
+    StartMission = 53,
+    StartTransfer = 54,
+    StopAircraft = 55,
+    StopProduction = 56,
+    StopResearch = 57,
+    StoreRecoveredUfo = 58,
+    TransferStoredUfo = 59,
 };
-
-enum class StrategicIntentDisposition : uint8_t {
-	Applied = 1,
-	RejectedByCanonical = 2
-};
-
+enum class StrategicIntentDisposition : uint8_t { Applied = 1, RejectedByCanonical = 2 };
 struct StrategicIntent {
-	uint64_t sequence;
-	StrategicIntentKind kind;
-	int32_t value;
-	canonical::MissionId mission;
-	canonical::AircraftId aircraft;
+    uint64_t sequence;
+    StrategicIntentKind kind;
+    int32_t value; /* compatibility scalar for the qualified SetCampaignTimeLapse lane */
+    int32_t value0, value1, value2, value3, value4, value5;
+    float scalar0;
+    StrategicPosition position;
+    canonical::MissionId mission;
+    canonical::AircraftId aircraft;
+    canonical::AircraftId targetAircraft;
+    canonical::BaseId base;
+    canonical::InstallationId installation;
+    canonical::NationId nation;
+    canonical::EmployeeId employee;
+    canonical::TechnologyId technology;
+    canonical::ProductionId production;
+    canonical::ItemId item;
+    canonical::StoredUfoId storedUfo;
+    canonical::UfoSaleOfferId offer;
+    canonical::TransferManifestId transferManifest;
+    char key0[96];
+    char key1[96];
+    char text[128];
 };
-
-struct StrategicIntentSubmission {
-	uint64_t sequence;
-	bool accepted;
-};
-
+struct StrategicIntentSubmission { uint64_t sequence; bool accepted; };
 struct StrategicIntentResult {
-	uint64_t sequence;
-	StrategicIntentKind kind;
-	StrategicIntentDisposition disposition;
-
-	/**
-	 * Legacy scalar feedback retained for the already-qualified time-lapse
-	 * contract. New identity-bearing intents use the typed fields below.
-	 */
-	int32_t canonicalValue;
-	canonical::MissionId mission;
-	canonical::AircraftId aircraft;
+    uint64_t sequence; StrategicIntentKind kind; StrategicIntentDisposition disposition;
+    int32_t canonicalValue; canonical::MissionId mission; canonical::AircraftId aircraft;
 };
-
-static_assert(std::is_standard_layout<StrategicIntent>::value,
-	"StrategicIntent must remain standard-layout");
-static_assert(std::is_trivially_copyable<StrategicIntent>::value,
-	"StrategicIntent must remain trivially copyable");
-static_assert(std::is_standard_layout<StrategicIntentResult>::value,
-	"StrategicIntentResult must remain standard-layout");
-static_assert(std::is_trivially_copyable<StrategicIntentResult>::value,
-	"StrategicIntentResult must remain trivially copyable");
-
+static_assert(std::is_standard_layout<StrategicIntent>::value, "StrategicIntent must remain standard-layout");
+static_assert(std::is_trivially_copyable<StrategicIntent>::value, "StrategicIntent must remain trivially copyable");
+static_assert(std::is_standard_layout<StrategicIntentResult>::value, "StrategicIntentResult must remain standard-layout");
+static_assert(std::is_trivially_copyable<StrategicIntentResult>::value, "StrategicIntentResult must remain trivially copyable");
 namespace intent {
-
-/**
- * Queue a request to set the canonical campaign time-lapse index.
- *
- * The returned sequence is non-zero only when the bounded queue accepted the
- * intent. Acceptance into this queue is not canonical acceptance.
- */
 StrategicIntentSubmission submitSetCampaignTimeLapse(int32_t gameLapse);
-
-/** Queue selection of a canonical mission by typed presentation identity. */
+/** @deprecated strict M1 authority inventory classifies viewed mission selection as presentation context. */
 StrategicIntentSubmission submitSelectMission(canonical::MissionId mission);
-
-/** Queue selection of a PHALANX aircraft by typed presentation identity. */
+/** @deprecated strict M1 authority inventory classifies viewed aircraft selection as presentation context. */
 StrategicIntentSubmission submitSelectAircraft(canonical::AircraftId aircraft);
-
-/** Queue a canonical request to send a PHALANX aircraft to a mission. */
-StrategicIntentSubmission submitSendAircraftToMission(
-	canonical::AircraftId aircraft,
-	canonical::MissionId mission);
-
-/** Queue a canonical request to return a PHALANX aircraft to its home base. */
+StrategicIntentSubmission submitSendAircraftToMission(canonical::AircraftId aircraft, canonical::MissionId mission);
 StrategicIntentSubmission submitReturnAircraftToBase(canonical::AircraftId aircraft);
 
-/**
- * Poll canonical application/rejection feedback for previously accepted
- * intents. The next StrategicSnapshot remains authoritative.
- */
+StrategicIntentSubmission submitAcceptUfoSaleOffer(canonical::UfoSaleOfferId offer);
+StrategicIntentSubmission submitAssignEmployeeToAircraft(canonical::EmployeeId employee, canonical::AircraftId aircraft, bool assigned);
+StrategicIntentSubmission submitAssignResearch(canonical::BaseId base, canonical::TechnologyId technology, int32_t scientistDelta);
+StrategicIntentSubmission submitAutoResolveMission(canonical::MissionId mission, canonical::AircraftId missionAircraft, canonical::AircraftId interceptorAircraft);
+StrategicIntentSubmission submitBuildBase(StrategicPosition position, const char* name);
+StrategicIntentSubmission submitBuildFacility(canonical::BaseId base, const char* facilityDefinition, int32_t column, int32_t row);
+StrategicIntentSubmission submitBuildInstallation(StrategicPosition position, const char* installationDefinition, const char* name);
+StrategicIntentSubmission submitBuyAircraft(canonical::BaseId base, const char* aircraftDefinition);
+StrategicIntentSubmission submitBuyItem(canonical::BaseId base, canonical::ItemId item, int32_t count);
+StrategicIntentSubmission submitBuyUGV(canonical::BaseId base, const char* ugvDefinition);
+StrategicIntentSubmission submitChangeAircraftHomebase(canonical::AircraftId aircraft, canonical::BaseId base);
+StrategicIntentSubmission submitDecreaseProduction(canonical::BaseId base, int32_t queueIndex, int32_t amount);
+StrategicIntentSubmission submitDeequipEmployee(canonical::BaseId base, canonical::EmployeeId employee);
+StrategicIntentSubmission submitDeleteEmployee(canonical::EmployeeId employee);
+StrategicIntentSubmission submitDestroyAntimatterFacility(canonical::BaseId base, int32_t facilityIndex);
+StrategicIntentSubmission submitDestroyFacility(canonical::BaseId base, int32_t facilityIndex);
+StrategicIntentSubmission submitDestroyInstallation(canonical::InstallationId installation);
+StrategicIntentSubmission submitDestroyStoredUfo(canonical::StoredUfoId storedUfo);
+StrategicIntentSubmission submitEquipAircraftItem(canonical::AircraftId aircraft, int32_t slotType, int32_t slotIndex, int32_t zone, canonical::ItemId item);
+StrategicIntentSubmission submitEquipBaseDefenceItem(canonical::BaseId base, canonical::InstallationId installation, int32_t defenceType, int32_t slotIndex, canonical::ItemId item);
+StrategicIntentSubmission submitHireOrFireEmployee(canonical::BaseId base, canonical::EmployeeId employee, bool hire);
+StrategicIntentSubmission submitIncreaseProduction(canonical::BaseId base, int32_t subjectKind, canonical::ItemId item, canonical::StoredUfoId storedUfo, const char* aircraftDefinition, int32_t queueIndex, int32_t amount);
+StrategicIntentSubmission submitKillContainedAlien(canonical::BaseId base, canonical::TechnologyId technology);
+StrategicIntentSubmission submitKillContainedAliens(canonical::BaseId base);
+StrategicIntentSubmission submitLoadGame(const char* slot);
+StrategicIntentSubmission submitLoadLastSave();
+StrategicIntentSubmission submitMaxAssignResearch(canonical::BaseId base, canonical::TechnologyId technology);
+StrategicIntentSubmission submitMoveProductionDown(canonical::BaseId base, int32_t queueIndex);
+StrategicIntentSubmission submitMoveProductionUp(canonical::BaseId base, int32_t queueIndex);
+StrategicIntentSubmission submitPursueUfo(canonical::AircraftId aircraft, canonical::AircraftId ufo);
+StrategicIntentSubmission submitRemoveAircraftItem(canonical::AircraftId aircraft, int32_t slotType, int32_t slotIndex, int32_t zone);
+StrategicIntentSubmission submitRemoveBaseDefenceItem(canonical::BaseId base, canonical::InstallationId installation, int32_t defenceType, int32_t slotIndex);
+StrategicIntentSubmission submitRenameAircraft(canonical::AircraftId aircraft, const char* name);
+StrategicIntentSubmission submitRenameBase(canonical::BaseId base, const char* name);
+StrategicIntentSubmission submitRenameEmployee(canonical::EmployeeId employee, const char* name);
+StrategicIntentSubmission submitRenameInstallation(canonical::InstallationId installation, const char* name);
+StrategicIntentSubmission submitSaveGame(const char* slot, const char* comment);
+StrategicIntentSubmission submitSellAircraft(canonical::AircraftId aircraft);
+StrategicIntentSubmission submitSellItem(canonical::BaseId base, canonical::ItemId item, int32_t count);
+StrategicIntentSubmission submitSellUGV(canonical::EmployeeId employee);
+StrategicIntentSubmission submitSetAirDefenceAutoFire(canonical::BaseId base, canonical::InstallationId installation, bool enabled);
+StrategicIntentSubmission submitSetAirDefenceTarget(canonical::BaseId base, canonical::InstallationId installation, canonical::AircraftId ufo);
+StrategicIntentSubmission submitSetAircraftDestination(canonical::AircraftId aircraft, StrategicPosition position);
+StrategicIntentSubmission submitSetAutoSellPolicy(canonical::ItemId item, bool enabled);
+StrategicIntentSubmission submitSetEmployeeSkin(canonical::EmployeeId employee, int32_t bodySkin);
+StrategicIntentSubmission submitSetProductionAmount(canonical::BaseId base, int32_t queueIndex, int32_t amount);
+StrategicIntentSubmission submitStartAircraft(canonical::AircraftId aircraft);
+StrategicIntentSubmission submitStartMission(canonical::MissionId mission, canonical::AircraftId aircraft);
+StrategicIntentSubmission submitStartTransfer(canonical::TransferManifestId manifest);
+StrategicIntentSubmission submitStopAircraft(canonical::AircraftId aircraft);
+StrategicIntentSubmission submitStopProduction(canonical::BaseId base, int32_t queueIndex);
+StrategicIntentSubmission submitStopResearch(canonical::BaseId base, canonical::TechnologyId technology);
+StrategicIntentSubmission submitStoreRecoveredUfo(const char* ufoDefinition, float conditionPercent, canonical::InstallationId installation);
+StrategicIntentSubmission submitTransferStoredUfo(canonical::StoredUfoId storedUfo, canonical::InstallationId installation);
+
 bool pollStrategicIntentResult(StrategicIntentResult* result);
-
-namespace legacy {
-
-/** Main/canonical ownership only. */
-bool tryPopStrategicIntent(StrategicIntent* intent);
-
-/** Main/canonical ownership only. */
-void publishStrategicIntentResult(const StrategicIntentResult& result);
-
-/**
- * Drop pending intents/results at campaign lifetime boundaries.
- * Sequence allocation intentionally remains process-monotonic.
- */
-void resetStrategicIntentRuntime();
-
-} // namespace legacy
-} // namespace intent
-} // namespace presentation
-} // namespace ufo
+namespace legacy { bool tryPopStrategicIntent(StrategicIntent* intent); void publishStrategicIntentResult(const StrategicIntentResult& result); void resetStrategicIntentRuntime(); }
+} // intent
+} } // ufo::presentation

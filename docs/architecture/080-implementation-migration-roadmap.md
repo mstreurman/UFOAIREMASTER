@@ -113,7 +113,8 @@ formalize canonical spatial service wrappers/tests
 introduce typed presentation IDs where needed
 introduce tactical/strategic immutable publication boundaries
 establish and qualify C++11 legacy/bridge + strict C++26 remaster target ownership
-introduce typed intent dispatch without changing rules — qualified mechanism + first strategic/tactical seed catalogs; richer vocabulary expands with consumer migration
+introduce typed intent dispatch without changing rules — qualified mechanism + first strategic/tactical seed catalogs
+complete source-derived presentation-action scope + five-way authority classification, including direct input hooks/protocol callsites, before defining the remaining authoritative intent vocabulary
 keep existing consumers behind temporary adapters
 define explicit presentation-facing ownership rather than expose raw canonical pointers
 ```
@@ -132,6 +133,7 @@ Exit:
 canonical behavior hashes/reference tests unchanged
 new presentation consumers can read immutable snapshots/events without raw canonical pointers
 new typed intents can reach canonical strategic owners and tactical server authority without changing rules — qualified by strategic + tactical seed catalogs
+presentation-originated action surface is mechanically inventoried and classified before the remaining intent vocabulary is sealed
 legacy consumers still function through adapters
 mixed C++11/C++26 bridge compile/link qualification passes before modern runtime expansion
 ```
@@ -614,3 +616,24 @@ M13 delete only residual migration scaffolding and obsolete parsers
 A subsystem does not stay in the tree merely because it could be useful as a hypothetical compatibility backend. Once its replacement is proven, defaulted, soaked and separately decommissioned, version control is the rollback mechanism.
 
 This policy keeps the production architecture moving toward one coherent runtime rather than maintaining two engines indefinitely.
+## M1 authoritative intent surface v1 qualification — 2026-09-08
+
+The source-derived authority classification and complete typed authoritative surface are now qualified at their stated migration scope.
+
+Qualified surface:
+
+```text
+57/57 strategic authoritative semantics typed
+15/15 tactical authoritative semantics typed
+```
+
+Current bridge state intentionally remains fail-closed where canonical owner extraction is pending:
+
+```text
+strategic: 3/57 canonical-applied, 54/57 fail-closed
+tactical: 13/15 server-forwarded, 2/15 fail-closed
+```
+
+Canonical preservation passed twice at 104/104 with trace repeatability and M0.5 digest verification, and both fresh legacy/remaster production builds passed.
+
+The next M1 implementation work is canonical owner/request-helper extraction. No further action-classification pass is required before that work.

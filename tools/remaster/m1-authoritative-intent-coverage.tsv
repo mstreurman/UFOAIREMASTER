@@ -1,0 +1,73 @@
+domain	semantic_action	transport_contract	authority_bridge	owner_source	note
+strategic	AcceptUfoSaleOffer	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	AssignEmployeeToAircraft	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_team_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	AssignResearch	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_research_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	AutoResolveMission	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_mission_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	BuildBase	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_base_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	BuildFacility	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_base_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	BuildInstallation	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_installation_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	BuyAircraft	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_market_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	BuyItem	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_market_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	BuyUGV	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_market_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	ChangeAircraftHomebase	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_popup.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	DecreaseProduction	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_produce_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	DeequipEmployee	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_team_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	DeleteEmployee	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_employee_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	DestroyAntimatterFacility	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_base_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	DestroyFacility	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_base_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	DestroyInstallation	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_installation_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	DestroyStoredUfo	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	EquipAircraftItem	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_fightequip_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	EquipBaseDefenceItem	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_basedefence_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	HireOrFireEmployee	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_employee_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	IncreaseProduction	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_produce_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	KillContainedAlien	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_aliencont_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	KillContainedAliens	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_aliencont_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	LoadGame	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_save_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	LoadLastSave	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_save_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	MaxAssignResearch	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_research_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	MoveProductionDown	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_produce_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	MoveProductionUp	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_produce_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	PursueUfo	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_popup.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	RemoveAircraftItem	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_fightequip_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	RemoveBaseDefenceItem	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_basedefence_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	RenameAircraft	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_aircraft_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	RenameBase	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_base_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	RenameEmployee	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_employee_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	RenameInstallation	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_installation_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	ReturnAircraftToBase	complete	canonical_applied	src/client/cgame/campaign/cp_aircraft_callbacks.cpp	already-qualified canonical owner path
+strategic	SaveGame	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_save_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	SellAircraft	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_market_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	SellItem	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_market_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	SellUGV	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_market_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	SendAircraftToMission	complete	canonical_applied	src/client/cgame/campaign/cp_aircraft_callbacks.cpp	already-qualified canonical owner path
+strategic	SetAirDefenceAutoFire	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_basedefence_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	SetAirDefenceTarget	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_popup.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	SetAircraftDestination	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cl_game_campaign.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	SetAutoSellPolicy	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_market_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	SetCampaignTimeLapse	complete	canonical_applied	src/client/cgame/campaign/cp_campaign.cpp	already-qualified canonical owner path
+strategic	SetEmployeeSkin	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_team_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	SetProductionAmount	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_produce_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	StartAircraft	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_aircraft_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	StartMission	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_campaign.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	StartTransfer	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_transfer_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	StopAircraft	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_aircraft_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	StopProduction	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_produce_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	StopResearch	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_research_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	StoreRecoveredUfo	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	TransferStoredUfo	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+tactical	AbortMission	complete	client_request_helper_pending_fail_closed	src/client/cgame/cl_game.cpp	typed transport exists; adapter rejects until request helper can prove emission
+tactical	ClearShotReservation	complete	server_request_forwarded	src/client/battlescape/cl_hud.cpp	existing protocol request emitted; server remains authoritative
+tactical	EndTurn	complete	server_request_forwarded	src/client/battlescape/events/e_server.cpp	existing protocol request emitted; server remains authoritative
+tactical	MoveActor	complete	server_request_forwarded	src/client/battlescape/cl_actor.cpp	existing protocol request emitted; server remains authoritative
+tactical	Reload	complete	client_request_helper_pending_fail_closed	src/client/battlescape/cl_hud_callbacks.cpp	typed transport exists; adapter rejects until request helper can prove emission
+tactical	SelectReactionFireMode	complete	server_request_forwarded	src/client/battlescape/cl_hud.cpp	existing protocol request emitted; server remains authoritative
+tactical	SetCrouchState	complete	server_request_forwarded	src/client/battlescape/cl_actor.cpp	existing protocol request emitted; server remains authoritative
+tactical	SetReactionFire	complete	server_request_forwarded	src/client/battlescape/cl_hud_callbacks.cpp	existing protocol request emitted; server remains authoritative
+tactical	SetReservedTimeUnits	complete	server_request_forwarded	src/client/battlescape/cl_hud_callbacks.cpp	existing protocol request emitted; server remains authoritative
+tactical	SetShotReservation	complete	server_request_forwarded	src/client/battlescape/cl_hud.cpp	existing protocol request emitted; server remains authoritative
+tactical	Shoot	complete	server_request_forwarded	src/client/battlescape/cl_actor.cpp	existing protocol request emitted; server remains authoritative
+tactical	Use	complete	server_request_forwarded	src/client/battlescape/cl_actor.cpp	existing protocol request emitted; server remains authoritative
+tactical	UseHeadgear	complete	server_request_forwarded	src/client/battlescape/cl_actor.cpp	existing protocol request emitted; server remains authoritative
+tactical	TurnActor	complete	server_request_forwarded		existing protocol request emitted; server remains authoritative
+tactical	InventoryMove	complete	server_request_forwarded		existing protocol request emitted; server remains authoritative

@@ -1,0 +1,231 @@
+source	entry_kind	name	handler	scope	authority	semantic_action	api_relevance	confidence	rationale
+src/client/cgame/campaign/cp_base_callbacks.cpp	command	basemapshot		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Creates legacy Baseview screenshot/presentation output.
+src/client/cgame/campaign/cp_base_callbacks.cpp	command	mn_base_select		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Legacy viewed/selected base context; retained presentation should own BaseId locally.
+src/client/cgame/campaign/cp_base_callbacks.cpp	command	mn_base_build		PRESENTATION_ACTION	STRATEGIC_CANONICAL	BuildBase	yes	HIGH	Builds a canonical base and changes campaign credits/stats.
+src/client/cgame/campaign/cp_base_callbacks.cpp	command	mn_set_base_title		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Prepares/edit-stages a base title in UI state.
+src/client/cgame/campaign/cp_base_callbacks.cpp	command	base_changename		PRESENTATION_ACTION	STRATEGIC_CANONICAL	RenameBase	yes	HIGH	Mutates canonical base name.
+src/client/cgame/campaign/cp_base_callbacks.cpp	command	base_init		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects base availability/capacity to legacy UI.
+src/client/cgame/campaign/cp_base_callbacks.cpp	command	base_assemble		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Builds Baseview data from canonical layout; incidental cache/renderer effects must be split later.
+src/client/cgame/campaign/cp_base_callbacks.cpp	command	building_destroy		PRESENTATION_ACTION	STRATEGIC_CANONICAL	DestroyFacility	yes	HIGH	Destroys canonical facility state; confirmation UI is presentation side effect.
+src/client/cgame/campaign/cp_base_callbacks.cpp	command	building_amdestroy		PRESENTATION_ACTION	STRATEGIC_CANONICAL	DestroyAntimatterFacility	yes	HIGH	Canonical destruction path with antimatter consequences.
+src/client/cgame/campaign/cp_base_callbacks.cpp	command	base_selectbuilding		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Navigates to building-specific window/pedia/info.
+src/client/cgame/campaign/cp_base_callbacks.cpp	command	ui_list_buildings		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Populates building presentation data.
+src/client/cgame/campaign/cp_base_callbacks.cpp	command	ui_show_buildinginfo		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects building details.
+src/client/cgame/campaign/cp_base_callbacks.cpp	command	ui_base_fillmap		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects base-grid state.
+src/client/cgame/campaign/cp_base_callbacks.cpp	command	ui_build_building		PRESENTATION_ACTION	STRATEGIC_CANONICAL	BuildFacility	yes	HIGH	Calls canonical facility construction; UI/sound are side effects.
+src/client/cgame/campaign/cp_aircraft_callbacks.cpp	command	aircraft_start		PRESENTATION_ACTION	STRATEGIC_CANONICAL	StartAircraft	yes	HIGH	Commits an aircraft campaign action; payload must identify aircraft explicitly.
+src/client/cgame/campaign/cp_aircraft_callbacks.cpp	command	ui_aircraft_select		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Aircraft-management selection context.
+src/client/cgame/campaign/cp_aircraft_callbacks.cpp	command	geo_aircraft_select		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Legacy Geoscape selection plus popup; final viewed aircraft is presentation context.
+src/client/cgame/campaign/cp_aircraft_callbacks.cpp	command	aircraft_return		PRESENTATION_ACTION	STRATEGIC_CANONICAL	ReturnAircraftToBase	yes	HIGH	Orders canonical aircraft return.
+src/client/cgame/campaign/cp_aircraft_callbacks.cpp	command	ui_aircraft_changename		PRESENTATION_ACTION	STRATEGIC_CANONICAL	RenameAircraft	yes	HIGH	Mutates canonical aircraft name.
+src/client/cgame/campaign/cp_aircraft_callbacks.cpp	command	ui_aircraft_fill		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Populates aircraft management view.
+src/client/cgame/campaign/cp_aircraft_callbacks.cpp	command	ui_aircraft_stop		PRESENTATION_ACTION	STRATEGIC_CANONICAL	StopAircraft	yes	HIGH	Clears canonical aircraft order/status.
+src/client/cgame/campaign/cp_aircraft_callbacks.cpp	command	ui_aircraft_to_mission		PRESENTATION_ACTION	STRATEGIC_CANONICAL	SendAircraftToMission	yes	HIGH	Orders aircraft to mission.
+src/client/cgame/campaign/cp_aircraft_callbacks.cpp	command	ui_aircraft_changehomebase		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Opens change-homebase popup; confirmation is separate authoritative action.
+src/client/cgame/campaign/cp_aircraft_callbacks.cpp	command	ui_show_aircraft		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects aircraft list/status.
+src/client/cgame/campaign/cp_market_callbacks.cpp	command	ui_market_openpedia		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Navigates to UFOPedia.
+src/client/cgame/campaign/cp_market_callbacks.cpp	command	ui_market_setautosell		PRESENTATION_ACTION	STRATEGIC_CANONICAL	SetAutoSellPolicy	yes	HIGH	Changes campaign auto-sell policy.
+src/client/cgame/campaign/cp_market_callbacks.cpp	command	ui_market_buy		PRESENTATION_ACTION	SPLIT_REQUIRED	MarketTransaction	yes	HIGH	Legacy umbrella spans buy/sell and multiple item/aircraft/UGV transaction forms.
+src/client/cgame/campaign/cp_market_callbacks.cpp	command	ui_market_showinfo		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects selected market object details.
+src/client/cgame/campaign/cp_market_callbacks.cpp	command	ui_market_fill		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects market/storage/capacity rows.
+src/client/cgame/campaign/cp_market_callbacks.cpp	command	debug_marketadd		DEBUG_TOOLING		DebugMarketAdd	no	HIGH	Debug-only canonical market mutation; not production presentation intent.
+src/client/cgame/campaign/cp_research_callbacks.cpp	command	ui_research_fill		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects research topics/capacities.
+src/client/cgame/campaign/cp_research_callbacks.cpp	command	ui_research_getdetails		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects research details.
+src/client/cgame/campaign/cp_research_callbacks.cpp	command	ui_research_stop		PRESENTATION_ACTION	STRATEGIC_CANONICAL	StopResearch	yes	HIGH	Stops canonical research.
+src/client/cgame/campaign/cp_research_callbacks.cpp	command	ui_research_change		PRESENTATION_ACTION	STRATEGIC_CANONICAL	AssignResearch	yes	HIGH	Assigns/removes scientists.
+src/client/cgame/campaign/cp_research_callbacks.cpp	command	ui_research_max		PRESENTATION_ACTION	STRATEGIC_CANONICAL	MaxAssignResearch	yes	HIGH	Assigns scientists up to available capacity.
+src/client/cgame/campaign/cp_research_callbacks.cpp	command	ui_research_show_active		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects active research state.
+src/client/cgame/campaign/cp_produce_callbacks.cpp	command	prod_init		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Initializes production presentation; selectedProduction coupling must be removed.
+src/client/cgame/campaign/cp_produce_callbacks.cpp	command	prod_type		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Changes production-list category/selection context.
+src/client/cgame/campaign/cp_produce_callbacks.cpp	command	prod_up		PRESENTATION_ACTION	STRATEGIC_CANONICAL	MoveProductionUp	yes	HIGH	Reorders canonical production queue.
+src/client/cgame/campaign/cp_produce_callbacks.cpp	command	prod_down		PRESENTATION_ACTION	STRATEGIC_CANONICAL	MoveProductionDown	yes	HIGH	Reorders canonical production queue.
+src/client/cgame/campaign/cp_produce_callbacks.cpp	command	prod_change		PRESENTATION_ACTION	STRATEGIC_CANONICAL	SetProductionAmount	yes	HIGH	Dispatches canonical production amount mutation.
+src/client/cgame/campaign/cp_produce_callbacks.cpp	command	prod_inc		PRESENTATION_ACTION	STRATEGIC_CANONICAL	IncreaseProduction	yes	HIGH	Creates/increases production queue item.
+src/client/cgame/campaign/cp_produce_callbacks.cpp	command	prod_dec		PRESENTATION_ACTION	STRATEGIC_CANONICAL	DecreaseProduction	yes	HIGH	Decreases/stops production item.
+src/client/cgame/campaign/cp_produce_callbacks.cpp	command	prod_stop		PRESENTATION_ACTION	STRATEGIC_CANONICAL	StopProduction	yes	HIGH	Deletes production queue item.
+src/client/cgame/campaign/cp_produce_callbacks.cpp	command	prodlist_rclick		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Production-list interaction/selection context.
+src/client/cgame/campaign/cp_produce_callbacks.cpp	command	prodlist_click		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Production-list selection context.
+src/client/cgame/campaign/cp_produce_callbacks.cpp	command	prod_show_active		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects active production status.
+src/client/battlescape/cl_hud_callbacks.cpp	command	hud_movemode		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Changes local actor interaction/move mode.
+src/client/battlescape/cl_hud_callbacks.cpp	command	hud_reloadleft		PRESENTATION_ACTION	TACTICAL_SERVER	Reload	yes	HIGH	Delegates reload into tactical inventory/server path.
+src/client/battlescape/cl_hud_callbacks.cpp	command	hud_reloadright		PRESENTATION_ACTION	TACTICAL_SERVER	Reload	yes	HIGH	Delegates reload into tactical inventory/server path.
+src/client/battlescape/cl_hud_callbacks.cpp	command	hud_togglecrouchreserve		PRESENTATION_ACTION	TACTICAL_SERVER	SetReservedTimeUnits	yes	HIGH	Changes tactical TU reservation.
+src/client/battlescape/cl_hud_callbacks.cpp	command	hud_togglereaction		PRESENTATION_ACTION	TACTICAL_SERVER	SetReactionFire	yes	HIGH	Sends PA_STATE reaction-fire request.
+src/client/battlescape/cl_hud_callbacks.cpp	command	hud_fireweapon		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Selects local aiming/fire mode; shot is a later server action.
+src/client/battlescape/cl_hud_callbacks.cpp	command	hud_executeaction		PRESENTATION_ACTION	SPLIT_REQUIRED	Reload + SelectFireMode	yes	HIGH	Umbrella combines reload server action and local fire-mode selection.
+src/client/battlescape/cl_hud_callbacks.cpp	command	hud_shotreservationpopup		PRESENTATION_ACTION	SPLIT_REQUIRED	OpenReservationPopup + ClearShotReservation	yes	HIGH	No-arg form opens presentation popup; reset form sends TU reservation request.
+src/client/cgame/campaign/cp_employee_callbacks.cpp	command	employee_update_count		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects employee counts.
+src/client/cgame/campaign/cp_employee_callbacks.cpp	command	employee_init		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Builds hire/fire employee view and local menu selection.
+src/client/cgame/campaign/cp_employee_callbacks.cpp	command	employee_delete		PRESENTATION_ACTION	STRATEGIC_CANONICAL	DeleteEmployee	yes	HIGH	Removes employee from canonical roster.
+src/client/cgame/campaign/cp_employee_callbacks.cpp	command	employee_hire		PRESENTATION_ACTION	STRATEGIC_CANONICAL	HireOrFireEmployee	yes	HIGH	Hires/fires canonical employee.
+src/client/cgame/campaign/cp_employee_callbacks.cpp	command	employee_select		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Selects employee for current presentation.
+src/client/cgame/campaign/cp_employee_callbacks.cpp	command	employee_changename		PRESENTATION_ACTION	STRATEGIC_CANONICAL	RenameEmployee	yes	HIGH	Mutates canonical employee name.
+src/client/cgame/campaign/cp_employee_callbacks.cpp	command	ui_get_employee_counts		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Returns employee counts for a base.
+src/client/cgame/campaign/cp_team_callbacks.cpp	command	ui_team_select_ucn		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Selects a soldier in team/equipment presentation.
+src/client/cgame/campaign/cp_team_callbacks.cpp	command	ui_team_assign_ucn		PRESENTATION_ACTION	STRATEGIC_CANONICAL	AssignEmployeeToAircraft	yes	HIGH	Adds/removes employee from canonical aircraft team.
+src/client/cgame/campaign/cp_team_callbacks.cpp	command	ui_team_fill		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects aircraft team-assignment view.
+src/client/cgame/campaign/cp_team_callbacks.cpp	command	ui_team_fillbdef		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects base-defence team assignment view.
+src/client/cgame/campaign/cp_team_callbacks.cpp	command	ui_team_fillequip		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects equipment soldier list; cleanup coupling must be split from view generation.
+src/client/cgame/campaign/cp_team_callbacks.cpp	command	ui_team_deequip		PRESENTATION_ACTION	STRATEGIC_CANONICAL	DeequipEmployee	yes	HIGH	Destroys canonical employee inventory and returns equipment.
+src/client/cgame/campaign/cp_team_callbacks.cpp	command	ui_team_changeskin		PRESENTATION_ACTION	STRATEGIC_CANONICAL	SetEmployeeSkin	yes	HIGH	Mutates canonical character skin.
+src/client/cgame/campaign/cp_team_callbacks.cpp	command	debug_teamlist		DEBUG_TOOLING			no	HIGH	Debug roster listing.
+src/client/cgame/campaign/cp_aliencont_callbacks.cpp	command	ui_aliencont_init		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects alien containment state.
+src/client/cgame/campaign/cp_aliencont_callbacks.cpp	command	ui_aliencont_killall		PRESENTATION_ACTION	STRATEGIC_CANONICAL	KillContainedAliens	yes	HIGH	Converts all live contained aliens to dead canonical cargo.
+src/client/cgame/campaign/cp_aliencont_callbacks.cpp	command	ui_aliencont_killone		PRESENTATION_ACTION	STRATEGIC_CANONICAL	KillContainedAlien	yes	HIGH	Kills one contained alien of chosen type.
+src/client/cgame/campaign/cp_aliencont_callbacks.cpp	command	aliencont_killexceeding		CANONICAL_MAINTENANCE			no	HIGH	Capacity-maintenance path; not a player presentation intent.
+src/client/cgame/campaign/cp_mission_callbacks.cpp	command	cp_missionauto_check		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Checks automission availability for presentation.
+src/client/cgame/campaign/cp_mission_callbacks.cpp	command	cp_mission_autogo		PRESENTATION_ACTION	STRATEGIC_CANONICAL	AutoResolveMission	yes	HIGH	Creates battle params and resolves selected mission canonically.
+src/client/cgame/campaign/cp_mission_callbacks.cpp	command	geo_mission_select		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Legacy mission selection plus intercept popup; retained presentation owns viewed MissionId.
+src/client/cgame/campaign/cp_messageoptions_callbacks.cpp	command	msgoptions_toggle		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Notification/UI preference workflow; not gameplay authority.
+src/client/cgame/campaign/cp_messageoptions_callbacks.cpp	command	msgoptions_scroll		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Notification/UI preference workflow; not gameplay authority.
+src/client/cgame/campaign/cp_messageoptions_callbacks.cpp	command	msgoptions_init		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Notification/UI preference workflow; not gameplay authority.
+src/client/cgame/campaign/cp_messageoptions_callbacks.cpp	command	msgoptions_backup		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Notification/UI preference workflow; not gameplay authority.
+src/client/cgame/campaign/cp_messageoptions_callbacks.cpp	command	msgoptions_restore		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Notification/UI preference workflow; not gameplay authority.
+src/client/cgame/campaign/cp_hospital_callbacks.cpp	command	hosp_init		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Hospital/detail projection only.
+src/client/cgame/campaign/cp_hospital_callbacks.cpp	command	hosp_implant_details		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Hospital/detail projection only.
+src/client/cgame/cl_map_callbacks.cpp	command	mn_getmaps		SESSION_CONTROL			no	HIGH	Map-selection/server-setup UI; outside campaign/tactical gameplay authority.
+src/client/cgame/cl_map_callbacks.cpp	command	mn_nextmap		SESSION_CONTROL			no	HIGH	Map-selection/server-setup UI; outside campaign/tactical gameplay authority.
+src/client/cgame/cl_map_callbacks.cpp	command	mn_prevmap		SESSION_CONTROL			no	HIGH	Map-selection/server-setup UI; outside campaign/tactical gameplay authority.
+src/client/cgame/cl_map_callbacks.cpp	command	mn_selectmap		SESSION_CONTROL			no	HIGH	Map-selection/server-setup UI; outside campaign/tactical gameplay authority.
+src/client/cgame/cl_map_callbacks.cpp	command	ui_listmaps		SESSION_CONTROL			no	HIGH	Map-selection/server-setup UI; outside campaign/tactical gameplay authority.
+src/client/cgame/cl_game.cpp	command	game_setmode		SESSION_CONTROL			no	HIGH	Application cgame-mode selection.
+src/client/cgame/cl_game.cpp	command	game_exit		SESSION_CONTROL			no	HIGH	Leaves current cgame mode.
+src/client/cgame/cl_game.cpp	command	game_abort		PRESENTATION_ACTION	TACTICAL_SERVER	AbortMission	yes	HIGH	Queues authoritative tactical loss via server command.
+src/client/cgame/cl_game.cpp	command	game_autoteam		SESSION_CONTROL			no	HIGH	Pre-match/team setup helper.
+src/client/cgame/cl_game.cpp	command	game_toggleactor		SESSION_CONTROL			no	HIGH	Team/equipment setup selection.
+src/client/cgame/cl_game.cpp	command	game_saveteamstate		APPLICATION_PERSISTENCE			no	HIGH	Team-slot persistence, not campaign/tactical authoritative gameplay.
+src/client/cgame/cl_game.cpp	command	game_saveteam		APPLICATION_PERSISTENCE			no	HIGH	Team-slot file save.
+src/client/cgame/cl_game.cpp	command	game_loadteam		APPLICATION_PERSISTENCE			no	HIGH	Team-slot file load.
+src/client/cgame/cl_game.cpp	command	game_teamcomments		APPLICATION_PERSISTENCE			no	HIGH	Reads saved team slot comments.
+src/client/cgame/cl_game.cpp	command	game_teamupdate		SESSION_CONTROL			no	HIGH	Updates team setup menu parameters.
+src/client/cgame/cl_game.cpp	command	game_teamdelete		APPLICATION_PERSISTENCE			no	HIGH	Deletes saved team slot.
+src/client/cgame/cl_game.cpp	command	game_actorselect		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Selects actor in equipment/team presentation.
+src/client/cgame/campaign/cp_geoscape.cpp	command	geo_setoverlay		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Changes Geoscape overlay presentation.
+src/client/cgame/campaign/cp_geoscape.cpp	command	map_selectobject		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Centers/focuses Geoscape presentation on an object.
+src/client/cgame/campaign/cp_geoscape.cpp	command	mn_mapaction_reset		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Clears current Geoscape interaction action/context.
+src/client/cgame/campaign/cl_game_campaign.cpp	direct_entry	MapClick	GEO_Click	PRESENTATION_ACTION	SPLIT_REQUIRED	SetAircraftDestination + placement/selection context	yes	HIGH	Direct cgame MapClick export mixes presentation selection/placement staging with canonical aircraft destination mutation.
+src/client/cgame/campaign/cp_popup.cpp	command	ships_click		PRESENTATION_ACTION	SPLIT_REQUIRED	SendAircraftToMission + PursueUfo	yes	HIGH	Popup confirmation dispatches aircraft to mission or pursues UFO.
+src/client/cgame/campaign/cp_popup.cpp	command	ships_rclick		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Opens aircraft management from popup selection.
+src/client/cgame/campaign/cp_popup.cpp	command	bases_click		PRESENTATION_ACTION	STRATEGIC_CANONICAL	SetAirDefenceTarget	yes	HIGH	Selects a base/installation defence target against intercepted UFO.
+src/client/cgame/campaign/cp_popup.cpp	command	change_homebase		PRESENTATION_ACTION	STRATEGIC_CANONICAL	ChangeAircraftHomebase	yes	HIGH	Moves aircraft into a new canonical homebase.
+src/client/battlescape/cl_actor.cpp	command	actor_next		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Selects next local actor.
+src/client/battlescape/cl_actor.cpp	command	actor_prev		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Selects previous local actor.
+src/client/battlescape/cl_actor.cpp	command	actor_select		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Selects a local actor.
+src/client/battlescape/cl_actor.cpp	command	actor_standcrouch		PRESENTATION_ACTION	TACTICAL_SERVER	SetCrouchState	yes	HIGH	Requests authoritative actor state change.
+src/client/battlescape/cl_actor.cpp	command	actor_use		PRESENTATION_ACTION	TACTICAL_SERVER	Use	yes	HIGH	Requests tactical use action.
+src/client/battlescape/cl_actor.cpp	command	actor_confirmaction		PRESENTATION_ACTION	SPLIT_REQUIRED	MoveActor + Shoot	yes	HIGH	Confirms pending move or shot depending on local interaction mode.
+src/client/battlescape/cl_actor.cpp	command	actor_nextalien		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Cycles local visible-target selection.
+src/client/battlescape/cl_battlescape.cpp	command	nextround	CL_NextRound_f	PRESENTATION_ACTION	TACTICAL_SERVER	EndTurn	yes	HIGH	Sends tactical end-round request; server remains authoritative.
+src/client/battlescape/cl_actor.cpp	command	actor_updatecurrent		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects/update character values for equipment presentation.
+src/client/battlescape/cl_actor.cpp	command	actor_useheadgear		PRESENTATION_ACTION	TACTICAL_SERVER	UseHeadgear	yes	HIGH	Triggers tactical headgear use via existing shoot/action path.
+src/client/battlescape/cl_actor.cpp	command	nextalien		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Cycles camera/focus among visible aliens.
+src/client/battlescape/cl_actor.cpp	command	prevalien		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Cycles camera/focus among visible aliens.
+src/client/battlescape/cl_camera.cpp	command	camsetangles		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Camera-only presentation state.
+src/client/battlescape/cl_camera.cpp	command	camsetzoom		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Camera-only presentation state.
+src/client/battlescape/cl_camera.cpp	command	centercamera		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Camera-only presentation state.
+src/client/battlescape/cl_hud.cpp	command	hud_remainingtus		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Changes remaining-TU display options only.
+src/client/battlescape/cl_hud.cpp	command	hud_shotreserve		PRESENTATION_ACTION	TACTICAL_SERVER	SetShotReservation	yes	HIGH	Changes authoritative tactical shot-TU reservation through server request path.
+src/client/battlescape/cl_hud.cpp	command	hud_selectreactionfiremode		PRESENTATION_ACTION	TACTICAL_SERVER	SelectReactionFireMode	yes	HIGH	Sends PA_REACT_SELECT tactical request.
+src/client/battlescape/cl_hud.cpp	command	hud_listfiremodes		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects tactical mirror/actor data into HUD.
+src/client/battlescape/cl_hud.cpp	command	hud_listactions		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects tactical mirror/actor data into HUD.
+src/client/battlescape/cl_hud.cpp	command	hud_updateactorwounds		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects tactical mirror/actor data into HUD.
+src/client/battlescape/cl_hud.cpp	command	hud_updateactorload		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects tactical mirror/actor data into HUD.
+src/client/battlescape/cl_radar.cpp	command	closeradar		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Battlescape radar window/render presentation only.
+src/client/battlescape/cl_radar.cpp	command	openradar		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Battlescape radar window/render presentation only.
+src/client/battlescape/cl_radar.cpp	command	ui_genpreviewradarmap		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Battlescape radar window/render presentation only.
+src/client/battlescape/cl_radar.cpp	command	ui_genradarmap		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Battlescape radar window/render presentation only.
+src/client/battlescape/cl_radar.cpp	command	ui_genallradarmap		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Battlescape radar window/render presentation only.
+src/client/battlescape/cl_radar.cpp	command	ui_genallradarmaprelease		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Battlescape radar window/render presentation only.
+src/client/battlescape/events/e_server.cpp	command	nextround		PRESENTATION_ACTION	TACTICAL_SERVER	EndTurn	yes	HIGH	Sends clc_endround; server remains authoritative.
+src/client/cgame/campaign/cp_basedefence_callbacks.cpp	command	add_battery		CANONICAL_MAINTENANCE			no	HIGH	Derived base-defence battery maintenance tied to facility state; not an independent player intent.
+src/client/cgame/campaign/cp_basedefence_callbacks.cpp	command	remove_battery		CANONICAL_MAINTENANCE			no	HIGH	Derived base-defence battery maintenance tied to facility state; not an independent player intent.
+src/client/cgame/campaign/cp_basedefence_callbacks.cpp	command	basedef_updatebatteries		CANONICAL_MAINTENANCE			no	HIGH	Derived base-defence battery maintenance tied to facility state; not an independent player intent.
+src/client/cgame/campaign/cp_basedefence_callbacks.cpp	command	basedef_updatemenu		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects base/installation defence equipment state.
+src/client/cgame/campaign/cp_basedefence_callbacks.cpp	command	basedef_selectitem		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects base/installation defence equipment state.
+src/client/cgame/campaign/cp_basedefence_callbacks.cpp	command	basedef_additem		PRESENTATION_ACTION	STRATEGIC_CANONICAL	EquipBaseDefenceItem	yes	HIGH	Changes canonical base/installation defence slot equipment.
+src/client/cgame/campaign/cp_basedefence_callbacks.cpp	command	basedef_removeitem		PRESENTATION_ACTION	STRATEGIC_CANONICAL	RemoveBaseDefenceItem	yes	HIGH	Changes canonical base/installation defence slot equipment.
+src/client/cgame/campaign/cp_basedefence_callbacks.cpp	command	basedef_autofire		PRESENTATION_ACTION	STRATEGIC_CANONICAL	SetAirDefenceAutoFire	yes	HIGH	Changes canonical base/installation autofire policy.
+src/client/cgame/campaign/cp_campaign.cpp	command	update_base_radar_coverage		CANONICAL_MAINTENANCE			no	HIGH	Recomputes derived base radar coverage.
+src/client/cgame/campaign/cp_campaign.cpp	command	addeventmail		SCRIPTED_CANONICAL_EVENT			no	HIGH	Campaign event/script mail insertion; not direct player presentation action.
+src/client/cgame/campaign/cp_campaign.cpp	command	game_go		PRESENTATION_ACTION	STRATEGIC_CANONICAL	StartMission	yes	HIGH	Starts selected campaign mission/battlescape.
+src/client/cgame/campaign/cp_campaign.cpp	command	game_timestop		PRESENTATION_ACTION	STRATEGIC_CANONICAL	SetCampaignTimeLapse	yes	HIGH	Changes canonical campaign time lapse.
+src/client/cgame/campaign/cp_campaign.cpp	command	game_timeslow		PRESENTATION_ACTION	STRATEGIC_CANONICAL	SetCampaignTimeLapse	yes	HIGH	Changes canonical campaign time lapse.
+src/client/cgame/campaign/cp_campaign.cpp	command	game_timefast		PRESENTATION_ACTION	STRATEGIC_CANONICAL	SetCampaignTimeLapse	yes	HIGH	Changes canonical campaign time lapse.
+src/client/cgame/campaign/cp_campaign.cpp	command	game_settimeid		PRESENTATION_ACTION	STRATEGIC_CANONICAL	SetCampaignTimeLapse	yes	HIGH	Changes canonical campaign time lapse.
+src/client/cgame/campaign/cp_campaign.cpp	command	map_center		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Centers/cycles Geoscape presentation view.
+src/client/cgame/campaign/cp_campaign.cpp	command	cp_start_xvi_spreading		SCRIPTED_CANONICAL_EVENT			no	HIGH	Campaign story/event control, not presentation-authored gameplay intent.
+src/client/cgame/campaign/cp_campaign.cpp	command	cp_spawn_ufocarrier		SCRIPTED_CANONICAL_EVENT			no	HIGH	Campaign story/event control, not presentation-authored gameplay intent.
+src/client/cgame/campaign/cp_campaign.cpp	command	cp_attack_ufocarrier		SCRIPTED_CANONICAL_EVENT			no	HIGH	Campaign story/event control, not presentation-authored gameplay intent.
+src/client/cgame/campaign/cp_cgame_callbacks.cpp	command	cp_results		CANONICAL_LIFECYCLE			no	HIGH	Consumes tactical mission results/retry into campaign lifecycle.
+src/client/cgame/campaign/cp_cgame_callbacks.cpp	command	cp_getdescription		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects campaign selection/setup data.
+src/client/cgame/campaign/cp_cgame_callbacks.cpp	command	cp_getcampaigns		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects campaign selection/setup data.
+src/client/cgame/campaign/cp_cgame_callbacks.cpp	command	cp_start		SESSION_CONTROL			no	HIGH	Starts/initializes a campaign session.
+src/client/cgame/campaign/cp_event_callbacks.cpp	command	cp_add_researchable		SCRIPTED_CANONICAL_EVENT			no	HIGH	Campaign event-script mutation/lifecycle command.
+src/client/cgame/campaign/cp_event_callbacks.cpp	command	cp_add_item		SCRIPTED_CANONICAL_EVENT			no	HIGH	Campaign event-script mutation/lifecycle command.
+src/client/cgame/campaign/cp_event_callbacks.cpp	command	cp_changehappiness		SCRIPTED_CANONICAL_EVENT			no	HIGH	Campaign event-script mutation/lifecycle command.
+src/client/cgame/campaign/cp_event_callbacks.cpp	command	cp_endgame		SCRIPTED_CANONICAL_EVENT			no	HIGH	Campaign event-script mutation/lifecycle command.
+src/client/cgame/campaign/cp_fightequip_callbacks.cpp	command	airequip_updatemenu		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects aircraft equipment menu.
+src/client/cgame/campaign/cp_fightequip_callbacks.cpp	command	airequip_selectcategory		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Aircraft-equipment selection/staging context.
+src/client/cgame/campaign/cp_fightequip_callbacks.cpp	command	airequip_list_click		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Aircraft-equipment selection/staging context.
+src/client/cgame/campaign/cp_fightequip_callbacks.cpp	command	airequip_slot_select		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Aircraft-equipment selection/staging context.
+src/client/cgame/campaign/cp_fightequip_callbacks.cpp	command	airequip_zone_select		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Aircraft-equipment selection/staging context.
+src/client/cgame/campaign/cp_fightequip_callbacks.cpp	command	airequip_add_item		PRESENTATION_ACTION	STRATEGIC_CANONICAL	EquipAircraftItem	yes	HIGH	Changes canonical aircraft slot/ammo equipment.
+src/client/cgame/campaign/cp_fightequip_callbacks.cpp	command	airequip_remove_item		PRESENTATION_ACTION	STRATEGIC_CANONICAL	RemoveAircraftItem	yes	HIGH	Changes canonical aircraft slot/ammo equipment.
+src/client/cgame/campaign/cp_installation_callbacks.cpp	command	mn_installation_select		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Legacy selected/viewed installation context.
+src/client/cgame/campaign/cp_installation_callbacks.cpp	command	mn_installation_build		PRESENTATION_ACTION	STRATEGIC_CANONICAL	BuildInstallation	yes	HIGH	Builds canonical installation and spends credits.
+src/client/cgame/campaign/cp_installation_callbacks.cpp	command	mn_installation_changename		PRESENTATION_ACTION	STRATEGIC_CANONICAL	RenameInstallation	yes	HIGH	Mutates canonical installation name.
+src/client/cgame/campaign/cp_installation_callbacks.cpp	command	mn_installation_destroy		PRESENTATION_ACTION	STRATEGIC_CANONICAL	DestroyInstallation	yes	HIGH	Destroys canonical installation; confirmation UI is presentation side effect.
+src/client/cgame/campaign/cp_installation_callbacks.cpp	command	mn_installation_update_max_count		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects installation capacity/type/UFO-yard data.
+src/client/cgame/campaign/cp_installation_callbacks.cpp	command	ui_fill_installationtypes		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects installation capacity/type/UFO-yard data.
+src/client/cgame/campaign/cp_installation_callbacks.cpp	command	ui_fillufoyards		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects installation capacity/type/UFO-yard data.
+src/client/cgame/campaign/cp_installation_callbacks.cpp	command	ui_build_installationtype		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Stages installation placement/type in presentation interaction context.
+src/client/cgame/campaign/cp_messageoptions.cpp	command	msgoptions_setall		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Notification/pause/sound preference, not gameplay authority.
+src/client/cgame/campaign/cp_messageoptions.cpp	command	msgoptions_set		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Notification/pause/sound preference, not gameplay authority.
+src/client/cgame/campaign/cp_nation.cpp	command	nation_getstats		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects nation statistics/charts.
+src/client/cgame/campaign/cp_nation.cpp	command	nation_drawcharts		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects nation statistics/charts.
+src/client/cgame/campaign/cp_statistics.cpp	command	stats_update		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects campaign statistics/expense data.
+src/client/cgame/campaign/cp_statistics.cpp	command	stats_getexpenses		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects campaign statistics/expense data.
+src/client/cgame/campaign/cp_save_callbacks.cpp	command	game_listsaves		APPLICATION_PERSISTENCE			no	HIGH	Enumerates save files for UI.
+src/client/cgame/campaign/cp_save_callbacks.cpp	command	game_load		PRESENTATION_ACTION	STRATEGIC_CANONICAL	LoadGame	yes	HIGH	Replaces canonical campaign state from save.
+src/client/cgame/campaign/cp_save_callbacks.cpp	command	game_saveallowed		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Queries whether canonical save is currently allowed.
+src/client/cgame/campaign/cp_save_callbacks.cpp	command	game_save		PRESENTATION_ACTION	STRATEGIC_CANONICAL	SaveGame	yes	HIGH	Serializes canonical campaign state.
+src/client/cgame/campaign/cp_save_callbacks.cpp	command	game_delete		APPLICATION_PERSISTENCE			no	HIGH	Deletes a save file; not gameplay state mutation.
+src/client/cgame/campaign/cp_save_callbacks.cpp	command	game_quickloadinit		APPLICATION_PERSISTENCE			no	HIGH	Checks quicksave availability and opens presentation UI.
+src/client/cgame/campaign/cp_save_callbacks.cpp	command	game_quickload		PRESENTATION_ACTION	STRATEGIC_CANONICAL	LoadGame	yes	HIGH	Loads canonical campaign quicksave.
+src/client/cgame/campaign/cp_save_callbacks.cpp	command	game_quicksave		PRESENTATION_ACTION	STRATEGIC_CANONICAL	SaveGame	yes	HIGH	Saves canonical campaign quicksave.
+src/client/cgame/campaign/cp_transfer_callbacks.cpp	command	trans_list		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects active transfer list.
+src/client/cgame/campaign/cp_transfer_callbacks.cpp	command	trans_init		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Edits temporary transfer draft/selection only.
+src/client/cgame/campaign/cp_transfer_callbacks.cpp	command	trans_close		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Edits temporary transfer draft/selection only.
+src/client/cgame/campaign/cp_transfer_callbacks.cpp	command	trans_emptyairstorage		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Edits temporary transfer draft/selection only.
+src/client/cgame/campaign/cp_transfer_callbacks.cpp	command	trans_selectbase		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Edits temporary transfer draft/selection only.
+src/client/cgame/campaign/cp_transfer_callbacks.cpp	command	ui_trans_add		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Edits temporary transfer draft/selection only.
+src/client/cgame/campaign/cp_transfer_callbacks.cpp	command	trans_start		PRESENTATION_ACTION	STRATEGIC_CANONICAL	StartTransfer	yes	HIGH	Commits canonical transfer from staged payload.
+src/client/cgame/campaign/cp_transfer_callbacks.cpp	command	ui_trans_caplist		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects transfer capacity/source data.
+src/client/cgame/campaign/cp_transfer_callbacks.cpp	command	ui_trans_fill		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects transfer capacity/source data.
+src/client/cgame/campaign/cp_ufo_callbacks.cpp	command	geo_ufo_select		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Legacy viewed/selected UFO context plus popup.
+src/client/cgame/campaign/cp_ufopedia.cpp	command	mn_upcontent		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	UFOPedia/mail navigation/read-state presentation behavior.
+src/client/cgame/campaign/cp_ufopedia.cpp	command	mn_upupdate		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	UFOPedia/mail navigation/read-state presentation behavior.
+src/client/cgame/campaign/cp_ufopedia.cpp	command	ufopedia		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	UFOPedia/mail navigation/read-state presentation behavior.
+src/client/cgame/campaign/cp_ufopedia.cpp	command	ufopedia_click		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	UFOPedia/mail navigation/read-state presentation behavior.
+src/client/cgame/campaign/cp_ufopedia.cpp	command	mailclient_click		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	UFOPedia/mail navigation/read-state presentation behavior.
+src/client/cgame/campaign/cp_ufopedia.cpp	command	mn_mail_readall		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	UFOPedia/mail navigation/read-state presentation behavior.
+src/client/cgame/campaign/cp_ufopedia.cpp	command	ufopedia_openmail		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	UFOPedia/mail navigation/read-state presentation behavior.
+src/client/cgame/campaign/cp_ufopedia.cpp	command	techtree_click		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	UFOPedia/mail navigation/read-state presentation behavior.
+src/client/cgame/campaign/cp_ufopedia.cpp	command	mn_upgotoresearchedlink		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	UFOPedia/mail navigation/read-state presentation behavior.
+src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	command	cp_uforecovery_sell_init		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects recovered/stored UFO offer/storage/transfer data.
+src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	command	cp_uforecovery_store_init		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects recovered/stored UFO offer/storage/transfer data.
+src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	command	ui_selectstoredufo		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects recovered/stored UFO offer/storage/transfer data.
+src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	command	ui_fill_ufotransfer		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects recovered/stored UFO offer/storage/transfer data.
+src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	command	ui_selecttransferyard		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects recovered/stored UFO offer/storage/transfer data.
+src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	command	cp_uforecovery_store_start		PRESENTATION_ACTION	STRATEGIC_CANONICAL	StoreRecoveredUfo	yes	HIGH	Commits recovered UFO to canonical UFO-yard storage.
+src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	command	cp_uforecovery_sell_start		PRESENTATION_ACTION	STRATEGIC_CANONICAL	AcceptUfoSaleOffer	yes	HIGH	Commits recovered-UFO sale; future intent must use canonical offer identity, not UI-supplied price.
+src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	command	ui_destroystoredufo		PRESENTATION_ACTION	STRATEGIC_CANONICAL	DestroyStoredUfo	yes	HIGH	Removes canonical stored UFO after confirmation.
+src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	command	ui_transferufo		PRESENTATION_ACTION	STRATEGIC_CANONICAL	TransferStoredUfo	yes	HIGH	Transfers canonical stored UFO between yards.
+src/client/cl_inventory_callbacks.cpp	command	mn_increasefiremode		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Local displayed-item/firemode/tab selection context.
+src/client/cl_inventory_callbacks.cpp	command	mn_decreasefiremode		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Local displayed-item/firemode/tab selection context.
+src/client/cl_inventory_callbacks.cpp	command	mn_increaseitem		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Local displayed-item/firemode/tab selection context.
+src/client/cl_inventory_callbacks.cpp	command	mn_decreaseitem		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Local displayed-item/firemode/tab selection context.
+src/client/cl_inventory_callbacks.cpp	command	object_update		PRESENTATION_ACTION	PRESENTATION_CONTEXT		no	HIGH	Local displayed-item/firemode/tab selection context.
+src/client/cl_inventory_callbacks.cpp	command	mn_updateactorload		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects selected actor load/TU information.
+src/client/battlescape/cl_hud.cpp	command	hud_shotreservationpopup	HUD_PopupFiremodeReservation_f	PRESENTATION_ACTION	SPLIT_REQUIRED	OpenShotReservationPopup + ClearShotReservation	yes	HIGH	One legacy command either opens presentation UI or clears a server-authoritative shot reservation.
+src/client/cgame/campaign/cp_save_callbacks.cpp	command	game_continue	SAV_GameContinue_f	PRESENTATION_ACTION	SPLIT_REQUIRED	ResumeCurrentPresentation + LoadLastSave	yes	HIGH	When a campaign is running it only closes/resumes UI; otherwise it loads the last canonical save.

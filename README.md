@@ -169,7 +169,8 @@ M0 is sealed. The spatial-service and tactical-publication slices of M1 are qual
   - [x] Route representative `SetCampaignTimeLapse` through Main/canonical validation without optimistic presentation mutation.
   - [x] Qualify accepted/rejected/reset behavior in the dedicated 3-test strategic intent lane and preserve publication/canonical regression.
   - [x] Establish the first strategic/tactical intent catalog expansion behind real canonical/server owners (`SelectMission`, `SelectAircraft`, `SendAircraftToMission`, `ReturnAircraftToBase`, `SetReactionFire`, `SetReservedTimeUnits`).
-  - [ ] Continue expanding richer strategic/tactical intents only as their owning presentation paths migrate (`SetAircraftDestination`, base/research/market actions, tactical move/shoot/use/inventory, etc.).
+  - [ ] Complete the source-derived presentation action **scope + five-way authority** classification before broadening the remaining authoritative intent surface; v2 covers command registrations, direct presentation input hooks, and tactical protocol callsites.
+  - [ ] Continue expanding richer strategic/tactical intents from that sealed authority inventory (`SetAircraftDestination`, base/research/market actions, tactical move/shoot/use/inventory, etc.).
 - [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
 
 ### Renderer and presentation

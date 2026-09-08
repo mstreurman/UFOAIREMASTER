@@ -128,21 +128,33 @@ def source_audit(root: Path) -> None:
     for token in (
         "MAX_STRATEGIC_INTENTS_PER_FRAME = 64",
         "tryPopStrategicIntent",
-        "CP_TrySetGameTimeLapse(intentValue.value)",
         "RejectedByCanonical",
-        "result.canonicalValue = ccs.gameLapse",
         "publishStrategicIntentResult",
     ):
         require(token in adapter, f"legacy intent adapter contract missing: {token}")
 
+    lapse_case = re.search(
+        r"case StrategicIntentKind::SetCampaignTimeLapse\s*:(?P<body>.*?)(?=\n\s*case StrategicIntentKind::)",
+        adapter, flags=re.S,
+    )
+    require(lapse_case is not None, "SetCampaignTimeLapse adapter case missing")
+    lapse_body = lapse_case.group("body")
+    require("CP_TrySetGameTimeLapse(" in lapse_body,
+            "SetCampaignTimeLapse must delegate to canonical CP_TrySetGameTimeLapse")
+    require("canonicalValue" in lapse_body and "ccs.gameLapse" in lapse_body,
+            "SetCampaignTimeLapse result must report the canonical campaign lapse")
+
+    # The direct runtime contract below proves FIFO, capacity=256, overflow,
+    # reset, and monotonic sequence behavior. Keep the source audit focused on
+    # ownership/API presence so internal ring/variable renames do not break it.
     for token in (
-        "STRATEGIC_INTENT_CAPACITY = 256",
-        "STRATEGIC_INTENT_RESULT_CAPACITY = 256",
         "submitSetCampaignTimeLapse",
         "pollStrategicIntentResult",
-        "pendingIntents.full()",
-        "intentResults.full()",
+        "tryPopStrategicIntent",
+        "publishStrategicIntentResult",
         "resetStrategicIntentRuntime",
+        "Ring<StrategicIntent",
+        "Ring<StrategicIntentResult",
     ):
         require(token in runtime, f"C++26 strategic intent runtime contract missing: {token}")
 

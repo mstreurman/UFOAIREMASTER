@@ -5,6 +5,7 @@
 #pragma once
 
 #include "canonical_identity.h"
+#include "strategic_position.h"
 
 #include <cstdint>
 #include <string>
@@ -13,12 +14,6 @@
 
 namespace ufo {
 namespace presentation {
-
-struct StrategicPosition {
-	float longitude;
-	float latitude;
-	float altitude;
-};
 
 struct StrategicCampaignTime {
 	int32_t day;

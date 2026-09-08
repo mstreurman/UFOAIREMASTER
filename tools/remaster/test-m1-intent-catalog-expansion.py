@@ -87,14 +87,22 @@ def source_audit(root: Path) -> None:
     ):
         require(token in tactical_h, f"tactical catalog token missing: {token}")
 
-    for token in (
-        "GEO_SelectMission(mission)",
-        "GEO_SelectAircraft(aircraft)",
-        "AIR_SendAircraftToMission(aircraft, mission)",
-        "AIR_AircraftReturnToBase(aircraft)",
-        "RejectedByCanonical",
+    # Audit owner semantics without depending on temporary local-variable names.
+    for kind, owner_call in (
+        ("SelectMission", "GEO_SelectMission("),
+        ("SelectAircraft", "GEO_SelectAircraft("),
+        ("SendAircraftToMission", "AIR_SendAircraftToMission("),
+        ("ReturnAircraftToBase", "AIR_AircraftReturnToBase("),
     ):
-        require(token in strategic_adapter, f"strategic canonical adapter mapping missing: {token}")
+        case_match = re.search(
+            rf"case StrategicIntentKind::{kind}\s*:(?P<body>.*?)(?=\n\s*case StrategicIntentKind::)",
+            strategic_adapter, flags=re.S,
+        )
+        require(case_match is not None, f"strategic compatibility case missing: {kind}")
+        require(owner_call in case_match.group("body"),
+                f"strategic canonical adapter mapping missing for {kind}: {owner_call}")
+    require("RejectedByCanonical" in strategic_adapter,
+            "strategic canonical rejection disposition missing")
 
     for token in (
         "MAX_TACTICAL_INTENTS_PER_FRAME = 64",
@@ -224,8 +232,8 @@ def main() -> int:
     integration_lane(root, build)
 
     print("M1 intent catalog expansion lane: PASS")
-    print("  strategic catalog: 5 typed intents")
-    print("  tactical catalog: 2 typed server-forwarded intents")
+    print("  seed strategic compatibility catalog: 5 intents (selection entries deprecated for new presentation)")
+    print("  seed tactical compatibility catalog: 2 typed server-forwarded intents")
     print("  strict C++11 public contracts: PASS")
     print("  strict C++26 bounded runtimes: PASS")
     print("  FIFO/capacity/reset/sequence contracts: PASS")

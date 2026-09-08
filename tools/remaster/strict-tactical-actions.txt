@@ -1,0 +1,15 @@
+AbortMission
+ClearShotReservation
+EndTurn
+MoveActor
+Reload
+SelectReactionFireMode
+SetCrouchState
+SetReactionFire
+SetReservedTimeUnits
+SetShotReservation
+Shoot
+Use
+UseHeadgear
+TurnActor
+InventoryMove

@@ -195,6 +195,7 @@ Earlier documents remain useful for rationale/history but must not redefine an A
 - `architecture/090-runtime-display-audio-selection-and-target-profile-contract.md`
 - `architecture/091-implementation-execution-strategy.md`
 - `architecture/092-cpp26-language-toolchain-and-boundary-contract.md`
+- `architecture/093-presentation-action-authority-and-intent-completeness-contract.md`
 
 ### Architecture Decision Records
 
@@ -263,6 +264,7 @@ Earlier documents remain useful for rationale/history but must not redefine an A
 - `reference/reference-m1-cpp26-language-boundary-2026-09-07.md`
 - `reference/reference-m1-strategic-intent-dispatch-2026-09-07.md`
 - `reference/reference-m1-intent-catalog-expansion-2026-09-07.md`
+- `reference/reference-m1-presentation-action-authority-classification-2026-09-07.md`
 
 ### Public documentation scope
 
@@ -506,3 +508,5 @@ Baseline 042 adds the implementation execution strategy in architecture 091. The
 Baseline 038 uses the fresh 10:41 broad workstation capture and 10:47 audio capture as current local-state authority. It records kernel 7.1.12, KDE 6.7.4 Wayland, locally installed Mesa 26.2.2 RPMs, SDL3 3.4.14, OpenAL Soft 1.24.2, FFmpeg 8.1.2 runtime, current display/HDR state and the Bluetooth A2DP/aptX-HD default audio route. Jolt and Slang remain unprovisioned; FFmpeg development pkg-config modules remain unconfirmed.
 
 ADR-046/architecture 090 make the policy explicit: B580+i9-9900K is the aggressive optimization and 1920x1080/60/DisplayHDR-600-class performance target, **not a hardcoded runtime configuration**. Users can choose display, resolution, refresh, HDR, render-resolution mode, playback device and HRTF; requested and actual state are reported separately.
+
+- [M1 authoritative intent surface v1 qualification (2026-09-08)](reference/reference-m1-authoritative-intent-surface-v1-qualification-2026-09-08.md)

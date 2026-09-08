@@ -1,0 +1,22 @@
+source	entry_kind	name	component	authority	semantic_action	api_relevance	rationale
+src/client/battlescape/cl_actor.cpp	command	actor_confirmaction	confirm_move	TACTICAL_SERVER	MoveActor	yes	Pending move confirmation becomes explicit MoveActor.
+src/client/battlescape/cl_actor.cpp	command	actor_confirmaction	confirm_shot	TACTICAL_SERVER	Shoot	yes	Pending shot confirmation becomes explicit Shoot.
+src/client/battlescape/cl_hud_callbacks.cpp	command	hud_executeaction	select_fire_mode	PRESENTATION_CONTEXT	SelectFireMode	no	Choosing fire mode is local interaction context.
+src/client/battlescape/cl_hud_callbacks.cpp	command	hud_executeaction	reload	TACTICAL_SERVER	Reload	yes	Reload remains server-authoritative inventory action.
+src/client/battlescape/cl_hud.cpp	command	hud_shotreservationpopup	open_popup	PRESENTATION_ONLY	OpenShotReservationPopup	no	No-argument branch opens presentation UI.
+src/client/battlescape/cl_hud.cpp	command	hud_shotreservationpopup	clear_reservation	TACTICAL_SERVER	ClearShotReservation	yes	Reset branch clears server-authoritative TU reservation.
+src/client/cgame/campaign/cl_game_campaign.cpp	direct_entry	MapClick	stage_base_placement	PRESENTATION_CONTEXT	StageBasePlacement	no	Click stages base placement context.
+src/client/cgame/campaign/cl_game_campaign.cpp	direct_entry	MapClick	stage_installation_placement	PRESENTATION_CONTEXT	StageInstallationPlacement	no	Click stages installation placement context.
+src/client/cgame/campaign/cl_game_campaign.cpp	direct_entry	MapClick	open_selection	PRESENTATION_ONLY	OpenGeoscapeSelection	no	Multi-object click opens selection UI.
+src/client/cgame/campaign/cl_game_campaign.cpp	direct_entry	MapClick	reset_action	PRESENTATION_CONTEXT	ResetGeoscapeAction	no	Empty click clears local Geoscape action context.
+src/client/cgame/campaign/cl_game_campaign.cpp	direct_entry	MapClick	aircraft_destination	STRATEGIC_CANONICAL	SetAircraftDestination	yes	Free-map click changes canonical aircraft route/status and must become explicit typed intent.
+src/client/cgame/campaign/cp_market_callbacks.cpp	command	ui_market_buy	buy_item	STRATEGIC_CANONICAL	BuyItem	yes	Legacy market umbrella must split by transaction type.
+src/client/cgame/campaign/cp_market_callbacks.cpp	command	ui_market_buy	sell_item	STRATEGIC_CANONICAL	SellItem	yes	Legacy market umbrella must split by transaction type.
+src/client/cgame/campaign/cp_market_callbacks.cpp	command	ui_market_buy	buy_aircraft	STRATEGIC_CANONICAL	BuyAircraft	yes	Legacy market umbrella must split by transaction type.
+src/client/cgame/campaign/cp_market_callbacks.cpp	command	ui_market_buy	sell_aircraft	STRATEGIC_CANONICAL	SellAircraft	yes	Legacy market umbrella must split by transaction type.
+src/client/cgame/campaign/cp_market_callbacks.cpp	command	ui_market_buy	buy_ugv	STRATEGIC_CANONICAL	BuyUGV	yes	Legacy market umbrella must split by transaction type.
+src/client/cgame/campaign/cp_market_callbacks.cpp	command	ui_market_buy	sell_ugv	STRATEGIC_CANONICAL	SellUGV	yes	Legacy market umbrella must split by transaction type.
+src/client/cgame/campaign/cp_popup.cpp	command	ships_click	mission	STRATEGIC_CANONICAL	SendAircraftToMission	yes	Popup mission choice becomes explicit aircraft+mission intent.
+src/client/cgame/campaign/cp_popup.cpp	command	ships_click	ufo	STRATEGIC_CANONICAL	PursueUfo	yes	Popup UFO choice becomes explicit aircraft+UFO intent.
+src/client/cgame/campaign/cp_save_callbacks.cpp	command	game_continue	resume	PRESENTATION_ONLY	ResumeCurrentPresentation	no	Running campaign branch only resumes presentation.
+src/client/cgame/campaign/cp_save_callbacks.cpp	command	game_continue	load_last	STRATEGIC_CANONICAL	LoadLastSave	yes	No-running-campaign branch loads canonical save state.
