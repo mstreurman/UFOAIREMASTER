@@ -197,15 +197,9 @@ bool GEO_Click (const uiNode_t* node, int x, int y, const vec2_t pos)
 			return false;
 		}
 
-		if (AIR_IsAircraftOnGeoscape(aircraft) && AIR_AircraftHasEnoughFuel(aircraft, pos)) {
-			/* Move the selected aircraft to the position clicked */
-			GEO_CalcLine(aircraft->pos, pos, &aircraft->route);
-			aircraft->status = AIR_TRANSIT;
-			aircraft->aircraftTarget = nullptr;
-			aircraft->time = 0;
-			aircraft->point = 0;
+		/* Move the selected aircraft to the position clicked through its canonical owner. */
+		if (AIR_TrySetAircraftDestination(aircraft, pos))
 			return true;
-		}
 	}
 	return false;
 }

@@ -72,6 +72,21 @@ typedef enum {
 	MAX_AIR_NOTIFICATIONS
 } aircraft_notifications_t;
 
+typedef enum {
+	AIR_START_APPLIED,
+	AIR_START_INVALID_AIRCRAFT,
+	AIR_START_NO_COMMAND_CENTRE,
+	AIR_START_NO_PILOT
+} aircraftStartResult_t;
+
+typedef enum {
+	AIR_PURSUIT_APPLIED,
+	AIR_PURSUIT_INVALID_TARGET,
+	AIR_PURSUIT_NO_COMMAND_CENTRE,
+	AIR_PURSUIT_REJECTED
+} aircraftPursuitResult_t;
+
+
 #define MAX_AIRCRAFTSLOT 8
 
 /** @brief slot of aircraft */
@@ -221,6 +236,12 @@ int AIR_BaseCountAircraft(const struct base_s* base);
 aircraft_t* AIR_GetAircraftFromBaseByIDXSafe(const struct base_s* base, int index);
 
 aircraft_t* AIR_AircraftGetFromIDX(int idx);
+
+aircraftStartResult_t AIR_TryStartAircraft(aircraft_t* aircraft);
+bool AIR_TryStopAircraft(aircraft_t* aircraft);
+bool AIR_TrySetAircraftDestination(aircraft_t* aircraft, const vec2_t destination);
+aircraftPursuitResult_t AIR_TryPursueUFO(aircraft_t* aircraft, aircraft_t* ufo);
+bool AIR_TryChangeHomebase(aircraft_t* aircraft, struct base_s* base);
 
 const char* AIR_AircraftStatusToName(const aircraft_t* aircraft);
 bool AIR_IsAircraftInBase(const aircraft_t* aircraft);

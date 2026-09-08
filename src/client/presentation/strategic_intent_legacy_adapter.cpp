@@ -13,8 +13,10 @@
 #include "../cgame/campaign/cp_geoscape.h"
 #include "../cgame/campaign/cp_missions.h"
 #include "../cgame/campaign/cp_time.h"
+#include "../cgame/campaign/cp_ufo.h"
 #include "strategic_intent.h"
 #include "strategic_intent_legacy_adapter.h"
+#include <cmath>
 #include <cstdint>
 #include <limits>
 
@@ -29,6 +31,23 @@ aircraft_t* resolvePhalanxAircraft(canonical::AircraftId id) {
     if (!id.isValid() || (id.value & UFO_AIRCRAFT_ID_BIT) != 0) return nullptr;
     if (id.value > static_cast<uint32_t>(std::numeric_limits<int>::max())) return nullptr;
     return AIR_AircraftGetFromIDX(static_cast<int>(id.value));
+}
+base_t* resolveBase(canonical::BaseId id) {
+    if (!id.isValid() || id.value > static_cast<uint32_t>(std::numeric_limits<int>::max())) return nullptr;
+    return B_GetFoundedBaseByIDX(static_cast<int>(id.value));
+}
+aircraft_t* resolveUfoAircraft(canonical::AircraftId id) {
+    if (!id.isValid() || (id.value & UFO_AIRCRAFT_ID_BIT) == 0) return nullptr;
+    const uint32_t idx=id.value & ~UFO_AIRCRAFT_ID_BIT;
+    if (idx >= static_cast<uint32_t>(ccs.numUFOs)) return nullptr;
+    aircraft_t* ufo=UFO_GetByIDX(static_cast<int>(idx));
+    return ufo&&AIR_IsUFO(ufo)?ufo:nullptr;
+}
+bool resolveAircraftDestination(const StrategicPosition& position, vec2_t destination) {
+    if (!std::isfinite(position.longitude) || !std::isfinite(position.latitude) || !std::isfinite(position.altitude)) return false;
+    if (position.longitude < -180.0f || position.longitude > 180.0f || position.latitude < -90.0f || position.latitude > 90.0f) return false;
+    Vector2Set(destination, position.longitude, position.latitude);
+    return true;
 }
 canonical::MissionId selectedMissionId() {
     const mission_t* p=GEO_GetSelectedMission(); return p&&p->idx>=0?canonical::MissionId(static_cast<uint32_t>(p->idx)):canonical::MissionId();
@@ -63,6 +82,27 @@ void applyPendingStrategicIntents() {
             aircraft_t* a=resolvePhalanxAircraft(in.aircraft); if(a&&AIR_IsAircraftOnGeoscape(a)){AIR_AircraftReturnToBase(a);if(a->status==AIR_RETURNING)out.disposition=StrategicIntentDisposition::Applied;}
             if(a){out.aircraft=canonical::AircraftId(static_cast<uint32_t>(a->idx));out.canonicalValue=static_cast<int32_t>(a->status);} break; }
 
+        case StrategicIntentKind::ChangeAircraftHomebase: {
+            aircraft_t* a=resolvePhalanxAircraft(in.aircraft); base_t* b=resolveBase(in.base);
+            if(a&&b&&AIR_TryChangeHomebase(a,b)) out.disposition=StrategicIntentDisposition::Applied;
+            if(a){out.aircraft=canonical::AircraftId(static_cast<uint32_t>(a->idx));out.canonicalValue=static_cast<int32_t>(a->status);} break; }
+        case StrategicIntentKind::PursueUfo: {
+            aircraft_t* a=resolvePhalanxAircraft(in.aircraft); aircraft_t* u=resolveUfoAircraft(in.targetAircraft);
+            if(a&&u&&AIR_TryPursueUFO(a,u)==AIR_PURSUIT_APPLIED) out.disposition=StrategicIntentDisposition::Applied;
+            if(a){out.aircraft=canonical::AircraftId(static_cast<uint32_t>(a->idx));out.canonicalValue=static_cast<int32_t>(a->status);} break; }
+        case StrategicIntentKind::SetAircraftDestination: {
+            aircraft_t* a=resolvePhalanxAircraft(in.aircraft); vec2_t destination;
+            if(a&&resolveAircraftDestination(in.position,destination)&&AIR_TrySetAircraftDestination(a,destination)) out.disposition=StrategicIntentDisposition::Applied;
+            if(a){out.aircraft=canonical::AircraftId(static_cast<uint32_t>(a->idx));out.canonicalValue=static_cast<int32_t>(a->status);} break; }
+        case StrategicIntentKind::StartAircraft: {
+            aircraft_t* a=resolvePhalanxAircraft(in.aircraft);
+            if(a&&AIR_TryStartAircraft(a)==AIR_START_APPLIED) out.disposition=StrategicIntentDisposition::Applied;
+            if(a){out.aircraft=canonical::AircraftId(static_cast<uint32_t>(a->idx));out.canonicalValue=static_cast<int32_t>(a->status);} break; }
+        case StrategicIntentKind::StopAircraft: {
+            aircraft_t* a=resolvePhalanxAircraft(in.aircraft);
+            if(a&&AIR_TryStopAircraft(a)) out.disposition=StrategicIntentDisposition::Applied;
+            if(a){out.aircraft=canonical::AircraftId(static_cast<uint32_t>(a->idx));out.canonicalValue=static_cast<int32_t>(a->status);} break; }
+
         /* Strict-authority catalog is transport-complete, but these actions stay
          * rejected until callback-owned validation/mutation is moved into its
          * canonical campaign subsystem. No command-string fallback is allowed. */
@@ -76,7 +116,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::BuyAircraft:
         case StrategicIntentKind::BuyItem:
         case StrategicIntentKind::BuyUGV:
-        case StrategicIntentKind::ChangeAircraftHomebase:
         case StrategicIntentKind::DecreaseProduction:
         case StrategicIntentKind::DeequipEmployee:
         case StrategicIntentKind::DeleteEmployee:
@@ -95,7 +134,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::MaxAssignResearch:
         case StrategicIntentKind::MoveProductionDown:
         case StrategicIntentKind::MoveProductionUp:
-        case StrategicIntentKind::PursueUfo:
         case StrategicIntentKind::RemoveAircraftItem:
         case StrategicIntentKind::RemoveBaseDefenceItem:
         case StrategicIntentKind::RenameAircraft:
@@ -108,14 +146,11 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::SellUGV:
         case StrategicIntentKind::SetAirDefenceAutoFire:
         case StrategicIntentKind::SetAirDefenceTarget:
-        case StrategicIntentKind::SetAircraftDestination:
         case StrategicIntentKind::SetAutoSellPolicy:
         case StrategicIntentKind::SetEmployeeSkin:
         case StrategicIntentKind::SetProductionAmount:
-        case StrategicIntentKind::StartAircraft:
         case StrategicIntentKind::StartMission:
         case StrategicIntentKind::StartTransfer:
-        case StrategicIntentKind::StopAircraft:
         case StrategicIntentKind::StopProduction:
         case StrategicIntentKind::StopResearch:
         case StrategicIntentKind::StoreRecoveredUfo:

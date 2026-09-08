@@ -98,26 +98,18 @@ static void AIM_AircraftStart_f (void)
 		return;
 	}
 
-	/* Aircraft cannot start without operational Command Centre. */
-	if (!B_GetBuildingStatus(base, B_COMMAND)) {
+	aircraft_t* aircraft = base->aircraftCurrent;
+	const aircraftStartResult_t result = AIR_TryStartAircraft(aircraft);
+	if (result == AIR_START_NO_COMMAND_CENTRE) {
 		CP_Popup(_("Notice"), _("No operational Command Centre in this base.\n\nAircraft can not start.\n"));
 		return;
 	}
-
-	aircraft_t* aircraft = base->aircraftCurrent;
-
-	/* Aircraft cannot start without a pilot. */
-	if (!AIR_GetPilot(aircraft)) {
+	if (result == AIR_START_NO_PILOT) {
 		CP_Popup(_("Notice"), _("There is no pilot assigned to this aircraft.\n\nAircraft can not start.\n"));
 		return;
 	}
-
-	if (AIR_IsAircraftInBase(aircraft)) {
-		/* reload its ammunition */
-		AII_ReloadAircraftWeapons(aircraft);
-	}
-	MS_AddNewMessage(_("Notice"), _("Aircraft started"));
-	aircraft->status = AIR_IDLE;
+	if (result != AIR_START_APPLIED)
+		return;
 
 	GEO_SelectAircraft(aircraft);
 	/* Return to geoscape. */
@@ -343,7 +335,7 @@ static void AIR_StopAircraft_f (void)
 	if (aircraft == nullptr)
 		return;
 
-	aircraft->status = AIR_IDLE;
+	AIR_TryStopAircraft(aircraft);
 }
 
 

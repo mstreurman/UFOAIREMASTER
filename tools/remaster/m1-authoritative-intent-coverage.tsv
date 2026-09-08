@@ -9,7 +9,7 @@ strategic	BuildInstallation	complete	owner_extraction_pending_fail_closed	src/cl
 strategic	BuyAircraft	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_market_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	BuyItem	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_market_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	BuyUGV	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_market_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
-strategic	ChangeAircraftHomebase	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_popup.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	ChangeAircraftHomebase	complete	canonical_applied	src/client/cgame/campaign/cp_aircraft.cpp	AIR_TryChangeHomebase owns validation/mutation; typed adapter resolves explicit AircraftId/BaseId
 strategic	DecreaseProduction	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_produce_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	DeequipEmployee	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_team_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	DeleteEmployee	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_employee_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
@@ -28,7 +28,7 @@ strategic	LoadLastSave	complete	owner_extraction_pending_fail_closed	src/client/
 strategic	MaxAssignResearch	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_research_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	MoveProductionDown	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_produce_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	MoveProductionUp	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_produce_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
-strategic	PursueUfo	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_popup.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	PursueUfo	complete	canonical_applied	src/client/cgame/campaign/cp_aircraft.cpp	AIR_TryPursueUFO owns Command Centre gate and pursuit request; typed adapter resolves explicit PHALANX/UFO IDs
 strategic	RemoveAircraftItem	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_fightequip_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	RemoveBaseDefenceItem	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_basedefence_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	RenameAircraft	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_aircraft_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
@@ -43,15 +43,15 @@ strategic	SellUGV	complete	owner_extraction_pending_fail_closed	src/client/cgame
 strategic	SendAircraftToMission	complete	canonical_applied	src/client/cgame/campaign/cp_aircraft_callbacks.cpp	already-qualified canonical owner path
 strategic	SetAirDefenceAutoFire	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_basedefence_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	SetAirDefenceTarget	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_popup.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
-strategic	SetAircraftDestination	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cl_game_campaign.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	SetAircraftDestination	complete	canonical_applied	src/client/cgame/campaign/cp_aircraft.cpp	AIR_TrySetAircraftDestination owns fuel/route/status mutation; typed adapter bounds StrategicPosition
 strategic	SetAutoSellPolicy	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_market_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	SetCampaignTimeLapse	complete	canonical_applied	src/client/cgame/campaign/cp_campaign.cpp	already-qualified canonical owner path
 strategic	SetEmployeeSkin	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_team_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	SetProductionAmount	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_produce_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
-strategic	StartAircraft	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_aircraft_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	StartAircraft	complete	canonical_applied	src/client/cgame/campaign/cp_aircraft.cpp	AIR_TryStartAircraft owns Command Centre/pilot/reload/status semantics; UI retains feedback only
 strategic	StartMission	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_campaign.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	StartTransfer	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_transfer_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
-strategic	StopAircraft	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_aircraft_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
+strategic	StopAircraft	complete	canonical_applied	src/client/cgame/campaign/cp_aircraft.cpp	AIR_TryStopAircraft owns canonical order-clear mutation
 strategic	StopProduction	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_produce_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	StopResearch	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_research_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted
 strategic	StoreRecoveredUfo	complete	owner_extraction_pending_fail_closed	src/client/cgame/campaign/cp_uforecovery_callbacks.cpp	typed transport exists; adapter rejects until campaign-owned helper is extracted

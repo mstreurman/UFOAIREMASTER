@@ -509,6 +509,58 @@ bool AIR_AircraftHasEnoughFuelOneWay (const aircraft_t* aircraft, const vec2_t d
 }
 
 /**
+ * @brief Canonical owner for starting/idling an aircraft from presentation or legacy UI.
+ */
+aircraftStartResult_t AIR_TryStartAircraft (aircraft_t* aircraft)
+{
+	if (!aircraft || !aircraft->homebase)
+		return AIR_START_INVALID_AIRCRAFT;
+
+	if (!B_GetBuildingStatus(aircraft->homebase, B_COMMAND))
+		return AIR_START_NO_COMMAND_CENTRE;
+
+	if (!AIR_GetPilot(aircraft))
+		return AIR_START_NO_PILOT;
+
+	if (AIR_IsAircraftInBase(aircraft))
+		AII_ReloadAircraftWeapons(aircraft);
+
+	MS_AddNewMessage(_("Notice"), _("Aircraft started"));
+	aircraft->status = AIR_IDLE;
+	return AIR_START_APPLIED;
+}
+
+/**
+ * @brief Canonical owner for clearing an aircraft's current geoscape order.
+ */
+bool AIR_TryStopAircraft (aircraft_t* aircraft)
+{
+	if (!aircraft)
+		return false;
+
+	aircraft->status = AIR_IDLE;
+	return true;
+}
+
+/**
+ * @brief Canonical owner for a direct geoscape aircraft destination request.
+ */
+bool AIR_TrySetAircraftDestination (aircraft_t* aircraft, const vec2_t destination)
+{
+	if (!aircraft || !AIR_IsAircraftOnGeoscape(aircraft))
+		return false;
+	if (!AIR_AircraftHasEnoughFuel(aircraft, destination))
+		return false;
+
+	GEO_CalcLine(aircraft->pos, destination, &aircraft->route);
+	aircraft->status = AIR_TRANSIT;
+	aircraft->aircraftTarget = nullptr;
+	aircraft->time = 0;
+	aircraft->point = 0;
+	return true;
+}
+
+/**
  * @brief Calculates the way back to homebase for given aircraft and returns it.
  * @param[in] aircraft Pointer to aircraft, which should return to base.
  * @note Command to call this: "aircraft_return".
@@ -776,6 +828,20 @@ static void AIR_TransferItemsCarriedByCharacterToBase (character_t* chr, base_t*
 			}
 		}
 	}
+}
+
+/**
+ * @brief Canonical owner for changing an aircraft homebase.
+ */
+bool AIR_TryChangeHomebase (aircraft_t* aircraft, base_t* base)
+{
+	if (!aircraft || !base || aircraft->homebase == base)
+		return false;
+	if (AIR_CheckMoveIntoNewHomebase(aircraft, base))
+		return false;
+
+	AIR_MoveAircraftIntoNewHomebase(aircraft, base);
+	return true;
 }
 
 /**
@@ -1921,6 +1987,23 @@ bool AIR_SendAircraftPursuingUFO (aircraft_t* aircraft, aircraft_t* ufo)
 	aircraft->point = 0;
 	aircraft->aircraftTarget = ufo;
 	return true;
+}
+
+
+/**
+ * @brief Canonical owner for a PHALANX aircraft pursuit request.
+ */
+aircraftPursuitResult_t AIR_TryPursueUFO (aircraft_t* aircraft, aircraft_t* ufo)
+{
+	if (!aircraft || !aircraft->homebase || !ufo || !AIR_IsUFO(ufo))
+		return AIR_PURSUIT_INVALID_TARGET;
+
+	if (!B_GetBuildingStatus(aircraft->homebase, B_COMMAND))
+		return AIR_PURSUIT_NO_COMMAND_CENTRE;
+
+	return AIR_SendAircraftPursuingUFO(aircraft, ufo)
+		? AIR_PURSUIT_APPLIED
+		: AIR_PURSUIT_REJECTED;
 }
 
 /*============================================

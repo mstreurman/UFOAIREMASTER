@@ -155,8 +155,7 @@ static void CL_PopupChangeHomebase_f (void)
 	if (base == nullptr)
 		return;
 
-	if (!AIR_CheckMoveIntoNewHomebase(aircraft, base))
-		AIR_MoveAircraftIntoNewHomebase(aircraft, base);
+	AIR_TryChangeHomebase(aircraft, base);
 
 	cgi->UI_PopWindow(false);
 	CL_DisplayHomebasePopup(aircraft, true);
@@ -348,19 +347,22 @@ static void CL_PopupInterceptClick_f (void)
 	if (aircraft == nullptr)
 		return;
 
-	/* Aircraft can start if only Command Centre in base is operational. */
-	base = aircraft->homebase;
-	if (!B_GetBuildingStatus(base, B_COMMAND)) {
-		/** @todo are these newlines really needed? at least the first should be handled by the menu code */
-		CP_Popup(_("Notice"), _("No Command Centre operational in homebase\nof this aircraft.\n\nAircraft cannot start.\n"));
-		return;
-	}
-
-	/* Set action to aircraft */
-	if (popupIntercept.mission)
+	/* Set action to aircraft. Mission launch keeps its existing callback gate until
+	 * the larger mission-launch owner is extracted; UFO pursuit uses the new owner. */
+	if (popupIntercept.mission) {
+		base = aircraft->homebase;
+		if (!B_GetBuildingStatus(base, B_COMMAND)) {
+			/** @todo are these newlines really needed? at least the first should be handled by the menu code */
+			CP_Popup(_("Notice"), _("No Command Centre operational in homebase\nof this aircraft.\n\nAircraft cannot start.\n"));
+			return;
+		}
 		AIR_SendAircraftToMission(aircraft, popupIntercept.mission);	/* Aircraft move to mission */
-	else if (popupIntercept.ufo)
-		AIR_SendAircraftPursuingUFO(aircraft, popupIntercept.ufo);	/* Aircraft purchase ufo */
+	} else if (popupIntercept.ufo) {
+		const aircraftPursuitResult_t result = AIR_TryPursueUFO(aircraft, popupIntercept.ufo);
+		if (result == AIR_PURSUIT_NO_COMMAND_CENTRE) {
+			CP_Popup(_("Notice"), _("No Command Centre operational in homebase\nof this aircraft.\n\nAircraft cannot start.\n"));
+		}
+	}
 }
 
 /**
