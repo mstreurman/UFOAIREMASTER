@@ -79,15 +79,17 @@ try:
         delimiter="\t",
     ))
     strategic = {r["semantic_action"]: r for r in rows if r["domain"] == "strategic"}
-    for name in {"DecreaseProduction", "MoveProductionDown", "MoveProductionUp", "StopProduction",
-                 "IncreaseProduction", "SetProductionAmount"}:
+    for name in {"DecreaseProduction", "MoveProductionDown", "MoveProductionUp", "StopProduction"}:
+        if strategic[name]["authority_bridge"] != "canonical_applied":
+            raise AssertionError(f"{name}: stable-ID production owner must be canonical_applied")
+    for name in {"IncreaseProduction", "SetProductionAmount"}:
         if strategic[name]["authority_bridge"] != "owner_extraction_pending_fail_closed":
-            raise AssertionError(f"{name}: production mutation must remain fail-closed in publication-map slice")
+            raise AssertionError(f"{name}: normalized production contract must remain fail-closed")
 
     print("PASS M1 Research + Production publication map: TechnologyId + stable ProductionId + current queue order")
     print("PASS immutable technology and production views expose no raw canonical pointers")
     print("PASS ProductionId is canonical runtime identity; queueIndex remains snapshot-local order metadata")
-    print("PASS production mutation intents remain fail-closed pending canonical owner extraction")
+    print("PASS four stable-ID production owners applied; IncreaseProduction + SetProductionAmount remain fail-closed")
 except AssertionError as exc:
     print("FAIL M1 Research + Production publication map: " + str(exc), file=sys.stderr)
     raise SystemExit(1)

@@ -584,6 +584,74 @@ int PR_DecreaseProduction (production_t* prod, int amount)
 }
 
 /**
+ * @brief Decrease a logical production job selected by stable runtime identity.
+ * @note Preserve the legacy decrease >= current amount -> stop/delete semantic
+ * before the low-level PR_DecreaseProduction disassembly guard.
+ */
+productionMutationResult_t PR_TryDecreaseProduction (base_t* base, uint32_t runtimeId, int amount)
+{
+	if (!base)
+		return PR_MUTATION_INVALID_BASE;
+	if (amount <= 0)
+		return PR_MUTATION_INVALID_AMOUNT;
+
+	production_t* prod = PR_GetProductionByRuntimeId(base, runtimeId);
+	if (!prod)
+		return PR_MUTATION_INVALID_PRODUCTION;
+
+	if (prod->amount <= amount) {
+		PR_QueueDelete(base, PR_GetProductionForBase(base), prod->idx);
+		return PR_MUTATION_APPLIED;
+	}
+
+	if (PR_IsDisassembly(prod))
+		return PR_MUTATION_NOT_DECREASABLE;
+
+	return PR_DecreaseProduction(prod, amount) > 0 ? PR_MUTATION_APPLIED : PR_MUTATION_NOT_DECREASABLE;
+}
+
+static productionMutationResult_t PR_TryMoveProductionCanonical (base_t* base, uint32_t runtimeId, int offset)
+{
+	if (!base)
+		return PR_MUTATION_INVALID_BASE;
+
+	production_t* prod = PR_GetProductionByRuntimeId(base, runtimeId);
+	if (!prod)
+		return PR_MUTATION_INVALID_PRODUCTION;
+
+	production_queue_t* queue = PR_GetProductionForBase(base);
+	const int newIndex = std::max(0, std::min(prod->idx + offset, queue->numItems - 1));
+	if (newIndex == prod->idx)
+		return PR_MUTATION_QUEUE_BOUNDARY;
+
+	PR_QueueMove(queue, prod->idx, offset);
+	return PR_MUTATION_APPLIED;
+}
+
+productionMutationResult_t PR_TryMoveProductionUp (base_t* base, uint32_t runtimeId)
+{
+	return PR_TryMoveProductionCanonical(base, runtimeId, -1);
+}
+
+productionMutationResult_t PR_TryMoveProductionDown (base_t* base, uint32_t runtimeId)
+{
+	return PR_TryMoveProductionCanonical(base, runtimeId, 1);
+}
+
+productionMutationResult_t PR_TryStopProduction (base_t* base, uint32_t runtimeId)
+{
+	if (!base)
+		return PR_MUTATION_INVALID_BASE;
+
+	production_t* prod = PR_GetProductionByRuntimeId(base, runtimeId);
+	if (!prod)
+		return PR_MUTATION_INVALID_PRODUCTION;
+
+	PR_QueueDelete(base, PR_GetProductionForBase(base), prod->idx);
+	return PR_MUTATION_APPLIED;
+}
+
+/**
  * @brief Checks whether an item is finished.
  * @note One call each game time minute
  * @sa CP_CampaignRun

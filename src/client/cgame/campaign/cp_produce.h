@@ -96,6 +96,15 @@ typedef struct production_queue_s
 	struct production_s items[MAX_PRODUCTIONS];	/**< Actual production items (in order). */
 } production_queue_t;
 
+typedef enum productionMutationResult_s {
+	PR_MUTATION_APPLIED,
+	PR_MUTATION_INVALID_BASE,
+	PR_MUTATION_INVALID_PRODUCTION,
+	PR_MUTATION_INVALID_AMOUNT,
+	PR_MUTATION_NOT_DECREASABLE,
+	PR_MUTATION_QUEUE_BOUNDARY
+} productionMutationResult_t;
+
 #define PR_GetProductionForBase(base) (&((base)->productions))
 
 int PR_GetPrice(const int productionCost);
@@ -112,6 +121,11 @@ const production_t* PR_GetProductionByRuntimeId(const struct base_s* base, uint3
 
 int PR_IncreaseProduction(production_t* prod, int amount);
 int PR_DecreaseProduction(production_t* prod, int amount);
+
+productionMutationResult_t PR_TryDecreaseProduction(struct base_s* base, uint32_t runtimeId, int amount);
+productionMutationResult_t PR_TryMoveProductionUp(struct base_s* base, uint32_t runtimeId);
+productionMutationResult_t PR_TryMoveProductionDown(struct base_s* base, uint32_t runtimeId);
+productionMutationResult_t PR_TryStopProduction(struct base_s* base, uint32_t runtimeId);
 
 const char* PR_GetName(const productionData_t* data);
 technology_t* PR_GetTech(const productionData_t* data);

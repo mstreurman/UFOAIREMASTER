@@ -12,6 +12,7 @@
 #include "../cgame/campaign/cp_campaign.h"
 #include "../cgame/campaign/cp_geoscape.h"
 #include "../cgame/campaign/cp_missions.h"
+#include "../cgame/campaign/cp_produce.h"
 #include "../cgame/campaign/cp_research.h"
 #include "../cgame/campaign/cp_time.h"
 #include "../cgame/campaign/cp_ufo.h"
@@ -113,6 +114,30 @@ void applyPendingStrategicIntents() {
             if(b&&tech&&RS_TryStopResearch(tech,b)==RS_CHANGE_APPLIED) out.disposition=StrategicIntentDisposition::Applied;
             if(tech) out.canonicalValue=tech->scientists; break; }
 
+        case StrategicIntentKind::DecreaseProduction: {
+            base_t* b=resolveBase(in.base);
+            if(b&&in.production.isValid()&&PR_TryDecreaseProduction(b,in.production.value,in.value0)==PR_MUTATION_APPLIED)
+                out.disposition=StrategicIntentDisposition::Applied;
+            production_t* prod=b&&in.production.isValid()?PR_GetProductionByRuntimeId(b,in.production.value):nullptr;
+            out.canonicalValue=prod?prod->amount:-1; break; }
+        case StrategicIntentKind::MoveProductionDown: {
+            base_t* b=resolveBase(in.base);
+            if(b&&in.production.isValid()&&PR_TryMoveProductionDown(b,in.production.value)==PR_MUTATION_APPLIED)
+                out.disposition=StrategicIntentDisposition::Applied;
+            production_t* prod=b&&in.production.isValid()?PR_GetProductionByRuntimeId(b,in.production.value):nullptr;
+            out.canonicalValue=prod?prod->idx:-1; break; }
+        case StrategicIntentKind::MoveProductionUp: {
+            base_t* b=resolveBase(in.base);
+            if(b&&in.production.isValid()&&PR_TryMoveProductionUp(b,in.production.value)==PR_MUTATION_APPLIED)
+                out.disposition=StrategicIntentDisposition::Applied;
+            production_t* prod=b&&in.production.isValid()?PR_GetProductionByRuntimeId(b,in.production.value):nullptr;
+            out.canonicalValue=prod?prod->idx:-1; break; }
+        case StrategicIntentKind::StopProduction: {
+            base_t* b=resolveBase(in.base);
+            if(b&&in.production.isValid()&&PR_TryStopProduction(b,in.production.value)==PR_MUTATION_APPLIED)
+                out.disposition=StrategicIntentDisposition::Applied;
+            break; }
+
         case StrategicIntentKind::BuildBase: {
             vec2_t pos; base_t* b=nullptr; const char* name=resolveBoundedText(in.text);
             if(name&&resolveStrategicPosition2(in.position,pos)&&B_TryBuildBase(pos,name,&b)==B_BUILD_APPLIED){out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=b?b->idx:-1;}
@@ -173,7 +198,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::BuyAircraft:
         case StrategicIntentKind::BuyItem:
         case StrategicIntentKind::BuyUGV:
-        case StrategicIntentKind::DecreaseProduction:
         case StrategicIntentKind::DeequipEmployee:
         case StrategicIntentKind::DeleteEmployee:
         case StrategicIntentKind::DestroyAntimatterFacility:
@@ -186,8 +210,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::KillContainedAliens:
         case StrategicIntentKind::LoadGame:
         case StrategicIntentKind::LoadLastSave:
-        case StrategicIntentKind::MoveProductionDown:
-        case StrategicIntentKind::MoveProductionUp:
         case StrategicIntentKind::RemoveAircraftItem:
         case StrategicIntentKind::RemoveBaseDefenceItem:
         case StrategicIntentKind::RenameAircraft:
@@ -203,7 +225,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::SetProductionAmount:
         case StrategicIntentKind::StartMission:
         case StrategicIntentKind::StartTransfer:
-        case StrategicIntentKind::StopProduction:
         case StrategicIntentKind::StoreRecoveredUfo:
         case StrategicIntentKind::TransferStoredUfo:
             break;

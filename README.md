@@ -79,8 +79,8 @@ M0 is sealed. M1 is actively extracting presentation-facing authority without re
 
 ```text
 strategic authoritative semantics: 57 total
-  canonical-applied:               18
-  fail-closed pending owners:      39
+  canonical-applied:               22
+  fail-closed pending owners:      35
 
 tactical authoritative semantics:  15 total
   forwarded to server authority:   13
@@ -97,10 +97,10 @@ The active execution order is:
 3. establish C++11-compatible strong presentation identities and C++26 remaster consumers — **complete foundation**;
 4. complete the source-derived presentation action inventory and five-way authority classification — **complete: 57 strategic + 15 tactical authoritative semantics**;
 5. introduce typed intent dispatch without changing canonical rules — **complete contract/catalog foundation**;
-6. extract canonical strategic owners from legacy callbacks — **18 strategic semantics qualified so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, facility build/destroy, and Research assign/max/stop;
+6. extract canonical strategic owners from legacy callbacks — **22 strategic semantics qualified so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, facility build/destroy, Research assign/max/stop, and Production decrease/move/stop;
 7. publish Research + Production immutable state — **complete**, including `TechnologyId`, stable runtime `ProductionId`, and snapshot-local queue order/state;
 8. complete the canonical identity audit — **complete contract pass**, with 17 strong 32-bit domains; stable Production identity is now implemented while Facility, Transfer, Defence and other runtime mappings remain explicit debt;
-9. Research owner extraction — **complete**; stable runtime `ProductionId` mapping and typed transport are **complete**; production mutation owner extraction is next;
+9. Research owner extraction and stable runtime `ProductionId` are **complete**; Production Decrease/MoveUp/MoveDown/Stop owners are **complete**, with Increase/SetAmount contract normalization next;
 10. migrate the remaining employee/team, market, stored-UFO/recovery, transfer, defence, save/load and mission-start authority families behind typed IDs and canonical owners;
 11. keep ambiguous or misclassified semantics fail-closed until their canonical contract is proven;
 12. once M1 boundary exit criteria are satisfied, bring up the SDL3/Vulkan production platform path;
@@ -190,9 +190,9 @@ The active execution order is:
   - [x] Seal typed catalog coverage at **57 strategic authoritative semantics + 15 tactical semantics**.
   - [x] Preserve the presentation authority guard: no command/cvar fallback in strategic/tactical intent adapters.
   - [x] Forward **13/15 tactical semantics** through the existing server protocol; keep AbortMission and Reload fail-closed until request helpers prove protocol emission.
-  - [x] Qualify **18/57 strategic semantics** through campaign-owned canonical owners: campaign time lapse; aircraft mission/return/start/stop/destination/pursuit/homebase; base build/rename; installation build/rename/destroy; facility build/destroy; Research assign/max/stop.
-  - [x] Keep the remaining **39 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted or corrected.
-  - [ ] Continue canonical owner extraction from the sealed catalog; `ProductionId` is now ready for production mutation owners, while facility/defence long-lived mutation still requires stable identity.
+  - [x] Qualify **22/57 strategic semantics** through campaign-owned canonical owners: campaign time lapse; aircraft mission/return/start/stop/destination/pursuit/homebase; base build/rename; installation build/rename/destroy; facility build/destroy; Research assign/max/stop; Production decrease/move-up/move-down/stop.
+  - [x] Keep the remaining **35 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted or corrected.
+  - [ ] Normalize `IncreaseProduction` and `SetProductionAmount`, then continue the sealed catalog; facility/defence long-lived mutation still requires stable identity.
 - [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
 
 ### Renderer and presentation

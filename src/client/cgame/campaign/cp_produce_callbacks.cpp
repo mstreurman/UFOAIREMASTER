@@ -714,10 +714,12 @@ static void PR_ProductionStop_f (void)
 	if (!base || !selectedProduction)
 		return;
 
+	const uint32_t runtimeId = PR_GetProductionRuntimeId(selectedProduction);
 	prodIDX = selectedProduction->idx;
 	queue = PR_GetProductionForBase(base);
 
-	PR_QueueDelete(base, queue, prodIDX);
+	if (PR_TryStopProduction(base, runtimeId) != PR_MUTATION_APPLIED)
+		return;
 
 	if (queue->numItems == 0) {
 		selectedProduction = nullptr;
@@ -737,27 +739,37 @@ static void PR_ProductionStop_f (void)
 static void PR_ProductionDecrease_f (void)
 {
 	int amount = 1;
-	const base_t* base = B_GetCurrentSelectedBase();
+	base_t* base = B_GetCurrentSelectedBase();
 	production_t* prod = selectedProduction;
 
 	if (cgi->Cmd_Argc() == 2)
 		amount = atoi(cgi->Cmd_Argv(1));
 
-	if (!prod)
+	if (!base || !prod)
 		return;
 
-	if (prod->amount <= amount) {
-		PR_ProductionStop_f();
-		return;
-	}
+	const int prodIDX = prod->idx;
+	const uint32_t runtimeId = PR_GetProductionRuntimeId(prod);
 
 	/** @todo add (confirmaton) popup in case storage cannot take all the items we add back to it */
-	PR_DecreaseProduction(prod, amount);
+	if (PR_TryDecreaseProduction(base, runtimeId, amount) != PR_MUTATION_APPLIED)
+		return;
 
-	if (base) {
-		PR_ProductionInfo(base);
-		PR_UpdateProductionList(base);
+	selectedProduction = PR_GetProductionByRuntimeId(base, runtimeId);
+	if (!selectedProduction) {
+		production_queue_t* queue = PR_GetProductionForBase(base);
+		if (queue->numItems == 0) {
+			cgi->UI_ExecuteConfunc("prod_selectline -1");
+		} else if (prodIDX >= queue->numItems) {
+			selectedProduction = &queue->items[queue->numItems - 1];
+			cgi->UI_ExecuteConfunc("prod_selectline %i", prodIDX);
+		} else {
+			selectedProduction = &queue->items[prodIDX];
+		}
 	}
+
+	PR_ProductionInfo(base);
+	PR_UpdateProductionList(base);
 }
 
 /**
@@ -791,20 +803,19 @@ static void PR_ProductionChange_f (void)
  */
 static void PR_ProductionUp_f (void)
 {
-	production_queue_t* queue;
 	base_t* base = B_GetCurrentSelectedBase();
 
 	if (!base || !selectedProduction)
 		return;
 
-	/* first position already */
-	if (selectedProduction->idx == 0)
+	const uint32_t runtimeId = PR_GetProductionRuntimeId(selectedProduction);
+	if (PR_TryMoveProductionUp(base, runtimeId) != PR_MUTATION_APPLIED)
 		return;
 
-	queue = PR_GetProductionForBase(base);
-	PR_QueueMove(queue, selectedProduction->idx, -1);
+	selectedProduction = PR_GetProductionByRuntimeId(base, runtimeId);
+	if (!selectedProduction)
+		return;
 
-	selectedProduction = &queue->items[selectedProduction->idx - 1];
 	cgi->UI_ExecuteConfunc("prod_selectline %i", selectedProduction->idx);
 	PR_UpdateProductionList(base);
 }
@@ -814,20 +825,19 @@ static void PR_ProductionUp_f (void)
  */
 static void PR_ProductionDown_f (void)
 {
-	production_queue_t* queue;
 	base_t* base = B_GetCurrentSelectedBase();
 
 	if (!base || !selectedProduction)
 		return;
 
-	queue = PR_GetProductionForBase(base);
-
-	if (selectedProduction->idx >= queue->numItems - 1)
+	const uint32_t runtimeId = PR_GetProductionRuntimeId(selectedProduction);
+	if (PR_TryMoveProductionDown(base, runtimeId) != PR_MUTATION_APPLIED)
 		return;
 
-	PR_QueueMove(queue, selectedProduction->idx, 1);
+	selectedProduction = PR_GetProductionByRuntimeId(base, runtimeId);
+	if (!selectedProduction)
+		return;
 
-	selectedProduction = &queue->items[selectedProduction->idx + 1];
 	cgi->UI_ExecuteConfunc("prod_selectline %i", selectedProduction->idx);
 	PR_UpdateProductionList(base);
 }

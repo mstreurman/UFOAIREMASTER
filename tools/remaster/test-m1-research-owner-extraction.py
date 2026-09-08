@@ -152,21 +152,23 @@ try:
         if strategic[name]['owner_source']!='src/client/cgame/campaign/cp_research.cpp':
             raise AssertionError(f'{name}: wrong owner_source')
 
-    if sum(r['authority_bridge']=='canonical_applied' for r in strategic.values()) != 18:
-        raise AssertionError('strategic applied accounting must be 18')
+    if sum(r['authority_bridge']=='canonical_applied' for r in strategic.values()) != 22:
+        raise AssertionError('strategic applied accounting must be 22')
     if sum(r['authority_bridge']=='owner_extraction_pending_fail_closed'
-           for r in strategic.values()) != 39:
-        raise AssertionError('strategic pending accounting must be 39')
+           for r in strategic.values()) != 35:
+        raise AssertionError('strategic pending accounting must be 35')
 
-    for name in ('DecreaseProduction','IncreaseProduction','MoveProductionDown',
-                 'MoveProductionUp','SetProductionAmount','StopProduction'):
+    for name in ('DecreaseProduction','MoveProductionDown','MoveProductionUp','StopProduction'):
+        if strategic[name]['authority_bridge']!='canonical_applied':
+            raise AssertionError(f'{name}: stable-ID production owner must be canonical_applied')
+    for name in ('IncreaseProduction','SetProductionAmount'):
         if strategic[name]['authority_bridge']!='owner_extraction_pending_fail_closed':
-            raise AssertionError(f'{name}: production mutation must remain fail-closed')
+            raise AssertionError(f'{name}: normalized production contract must remain fail-closed')
 
     print('PASS M1 Research owner extraction: AssignResearch + MaxAssignResearch + StopResearch')
     print('PASS typed AssignResearch accepts exactly one-scientist +/-1 mutations; legacy callback preserves sign-only behavior')
     print('PASS research canonical owners contain no UI/popup/command/cvar dispatch; no-lab popup remains legacy-callback-only')
-    print('PASS bridge accounting: strategic 18 applied / 39 fail-closed; production mutation remains fail-closed')
+    print('PASS bridge accounting: strategic 22 applied / 35 fail-closed; four stable-ID production owners qualified')
 except AssertionError as exc:
     print('FAIL M1 Research owner extraction: '+str(exc),file=sys.stderr)
     raise SystemExit(1)

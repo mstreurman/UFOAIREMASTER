@@ -273,6 +273,7 @@ Earlier documents remain useful for rationale/history but must not redefine an A
 - `reference/reference-m1-canonical-identity-completeness-2026-09-08.md`
 - `reference/reference-m1-research-owner-extraction-2026-09-08.md`
 - `reference/reference-m1-production-runtime-identity-2026-09-08.md`
+- `reference/reference-m1-production-owner-extraction-2026-09-08.md`
 
 ### Public documentation scope
 
