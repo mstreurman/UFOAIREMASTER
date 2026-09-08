@@ -156,6 +156,39 @@ StrategicNationView projectNation(const nation_t& nation)
 	return out;
 }
 
+StrategicTechnologyView projectTechnology(const technology_t& technology)
+{
+	StrategicTechnologyView out;
+	out.id = indexedId<canonical::TechnologyId>(technology.idx);
+	out.base = technology.base
+		? indexedId<canonical::BaseId>(technology.base->idx)
+		: canonical::BaseId();
+	out.status = static_cast<int32_t>(technology.statusResearch);
+	out.researchable = technology.statusResearchable;
+	out.collected = technology.statusCollected;
+	out.scientists = technology.scientists;
+	out.time = technology.time;
+	out.overallTime = technology.overallTime;
+	out.name = valueString(technology.name);
+	return out;
+}
+
+StrategicProductionView projectProduction(const base_t& base, const production_t& production)
+{
+	StrategicProductionView out;
+	out.base = indexedId<canonical::BaseId>(base.idx);
+	const technology_t* technology = PR_GetTech(&production.data);
+	out.technology = technology
+		? indexedId<canonical::TechnologyId>(technology->idx)
+		: canonical::TechnologyId();
+	out.queueIndex = production.idx;
+	out.type = static_cast<int32_t>(production.data.type);
+	out.amount = production.amount;
+	out.frame = production.frame;
+	out.totalFrames = production.totalFrames;
+	return out;
+}
+
 StrategicMessageView projectMessage(const uiMessageListNodeMessage_t& message)
 {
 	StrategicMessageView out;
@@ -200,6 +233,21 @@ StrategicSnapshot buildCurrentStrategicSnapshot(uint64_t publicationSerial)
 		nations.push_back(projectNation(*nation));
 	}
 
+	std::vector<StrategicTechnologyView> technologies;
+	for (int i = 0; i < ccs.numTechnologies; ++i) {
+		const technology_t* technology = RS_GetTechByIDX(i);
+		if (technology)
+			technologies.push_back(projectTechnology(*technology));
+	}
+
+	std::vector<StrategicProductionView> productions;
+	base_t* productionBase = nullptr;
+	while ((productionBase = B_GetNext(productionBase)) != nullptr) {
+		const production_queue_t* queue = PR_GetProductionForBase(productionBase);
+		for (int i = 0; i < queue->numItems; ++i)
+			productions.push_back(projectProduction(*productionBase, queue->items[i]));
+	}
+
 	std::vector<StrategicMessageView> messages;
 	for (uiMessageListNodeMessage_t* message = cgi->UI_MessageGetStack(); message; message = message->next) {
 		messages.push_back(projectMessage(*message));
@@ -229,6 +277,8 @@ StrategicSnapshot buildCurrentStrategicSnapshot(uint64_t publicationSerial)
 		std::move(bases),
 		std::move(installations),
 		std::move(nations),
+		std::move(technologies),
+		std::move(productions),
 		std::move(messages));
 }
 

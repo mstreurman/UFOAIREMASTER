@@ -117,6 +117,7 @@ introduce typed intent dispatch without changing rules — qualified mechanism +
 extract callback-owned strategic validation/mutation into campaign-owned Try... helpers — Aircraft + Geoscape first slice covers start/stop/destination/pursuit/homebase
 extract Base + Installation lifecycle owners — qualified build/rename base and build/rename/destroy installation slice
 extract base-facility build/destroy owners — normalize current base-scoped facility index and post-confirmation destruction semantics; move base_init UI refresh out of low-level canonical build/destroy; keep DestroyAntimatterFacility fail-closed as an internal breach-event mismatch
+map Research + Production immutable publication identities — publish TechnologyId and current (BaseId, queueIndex) queue location/state; keep production mutations fail-closed until a stable ProductionId or explicit queue revision/generation prevents stale-index mutation
 complete source-derived presentation-action scope + five-way authority classification, including direct input hooks/protocol callsites, before defining the remaining authoritative intent vocabulary
 keep existing consumers behind temporary adapters
 define explicit presentation-facing ownership rather than expose raw canonical pointers

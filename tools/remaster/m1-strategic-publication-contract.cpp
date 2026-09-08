@@ -37,6 +37,14 @@ static_assert(std::is_same<
 	const std::vector<StrategicNationView>&>::value,
 	"nation publication must be const-only");
 static_assert(std::is_same<
+	decltype(std::declval<const StrategicSnapshot&>().technologies()),
+	const std::vector<StrategicTechnologyView>&>::value,
+	"technology publication must be const-only");
+static_assert(std::is_same<
+	decltype(std::declval<const StrategicSnapshot&>().productions()),
+	const std::vector<StrategicProductionView>&>::value,
+	"production publication must be const-only");
+static_assert(std::is_same<
 	decltype(std::declval<const StrategicSnapshot&>().messages()),
 	const std::vector<StrategicMessageView>&>::value,
 	"message publication must be const-only");
@@ -97,6 +105,26 @@ StrategicSnapshot makeSnapshot(uint64_t serial, int32_t credits, const char* air
 	nation.scriptId = "nation_x";
 	nation.name = "Nation X";
 
+	StrategicTechnologyView technology;
+	technology.id = ufo::canonical::TechnologyId(70);
+	technology.base = ufo::canonical::BaseId(30);
+	technology.status = 1;
+	technology.researchable = true;
+	technology.collected = true;
+	technology.scientists = 4;
+	technology.time = 12.0f;
+	technology.overallTime = 20.0f;
+	technology.name = "Laser";
+
+	StrategicProductionView production;
+	production.base = ufo::canonical::BaseId(30);
+	production.technology = ufo::canonical::TechnologyId(70);
+	production.queueIndex = 2;
+	production.type = 0;
+	production.amount = 5;
+	production.frame = 10;
+	production.totalFrames = 100;
+
 	StrategicMessageView message;
 	message.id = ufo::canonical::MessageId(60);
 	message.time = StrategicCampaignTime{7, 123};
@@ -116,6 +144,8 @@ StrategicSnapshot makeSnapshot(uint64_t serial, int32_t credits, const char* air
 		std::vector<StrategicBaseView>(1, base),
 		std::vector<StrategicInstallationView>(1, installation),
 		std::vector<StrategicNationView>(1, nation),
+		std::vector<StrategicTechnologyView>(1, technology),
+		std::vector<StrategicProductionView>(1, production),
 		std::vector<StrategicMessageView>(1, message));
 }
 
@@ -148,7 +178,17 @@ int main()
 		return 8;
 	if (first->messages().at(0).id.value != 60U)
 		return 9;
+	if (first->technologies().at(0).id.value != 70U)
+		return 10;
+	if (first->technologies().at(0).base.value != 30U)
+		return 11;
+	if (first->productions().at(0).base.value != 30U)
+		return 12;
+	if (first->productions().at(0).technology.value != 70U)
+		return 13;
+	if (first->productions().at(0).queueIndex != 2)
+		return 14;
 
-	std::cout << "M1 strategic snapshot contract: PASS (immutable value-only root categories)\n";
+	std::cout << "M1 strategic snapshot contract: PASS (immutable value-only root categories + research/production)\n";
 	return 0;
 }

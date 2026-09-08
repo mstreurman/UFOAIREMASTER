@@ -77,6 +77,28 @@ struct StrategicNationView {
 	std::string name;
 };
 
+struct StrategicTechnologyView {
+	canonical::TechnologyId id;
+	canonical::BaseId base;
+	int32_t status;
+	bool researchable;
+	bool collected;
+	int32_t scientists;
+	float time;
+	float overallTime;
+	std::string name;
+};
+
+struct StrategicProductionView {
+	canonical::BaseId base;
+	canonical::TechnologyId technology;
+	int32_t queueIndex;
+	int32_t type;
+	int32_t amount;
+	int32_t frame;
+	int32_t totalFrames;
+};
+
 struct StrategicMessageView {
 	canonical::MessageId id;
 	StrategicCampaignTime time;
@@ -107,6 +129,8 @@ public:
 		std::vector<StrategicBaseView> bases,
 		std::vector<StrategicInstallationView> installations,
 		std::vector<StrategicNationView> nations,
+		std::vector<StrategicTechnologyView> technologies,
+		std::vector<StrategicProductionView> productions,
 		std::vector<StrategicMessageView> messages)
 		: publicationSerial_(publicationSerial),
 		  campaignTime_(campaignTime),
@@ -118,6 +142,8 @@ public:
 		  bases_(std::move(bases)),
 		  installations_(std::move(installations)),
 		  nations_(std::move(nations)),
+		  technologies_(std::move(technologies)),
+		  productions_(std::move(productions)),
 		  messages_(std::move(messages))
 	{
 	}
@@ -132,6 +158,8 @@ public:
 	const std::vector<StrategicBaseView>& bases() const noexcept { return bases_; }
 	const std::vector<StrategicInstallationView>& installations() const noexcept { return installations_; }
 	const std::vector<StrategicNationView>& nations() const noexcept { return nations_; }
+	const std::vector<StrategicTechnologyView>& technologies() const noexcept { return technologies_; }
+	const std::vector<StrategicProductionView>& productions() const noexcept { return productions_; }
 	const std::vector<StrategicMessageView>& messages() const noexcept { return messages_; }
 
 private:
@@ -145,6 +173,8 @@ private:
 	std::vector<StrategicBaseView> bases_;
 	std::vector<StrategicInstallationView> installations_;
 	std::vector<StrategicNationView> nations_;
+	std::vector<StrategicTechnologyView> technologies_;
+	std::vector<StrategicProductionView> productions_;
 	std::vector<StrategicMessageView> messages_;
 };
 
