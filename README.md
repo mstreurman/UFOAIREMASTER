@@ -75,25 +75,40 @@ The accepted migration roadmap is [`docs/architecture/080-implementation-migrati
 
 ### Immediate execution order
 
-M0 is sealed. The spatial-service and tactical-publication slices of M1 are qualified. The active queue continues within M1:
+M0 is sealed. M1 is actively extracting presentation-facing authority without replacing canonical game rules. The current boundary state is mechanically inventoried and qualified:
+
+```text
+strategic authoritative semantics: 57 total
+  canonical-applied:               15
+  fail-closed pending owners:      42
+
+tactical authoritative semantics:  15 total
+  forwarded to server authority:   13
+  fail-closed pending helpers:      2
+
+canonical regression:               104/104 twice
+canonical verification digest:      33143dc7b737b6df7c2a1496500bf435b6563f259d60561c4db7f75c2f00bed2
+```
+
+The active execution order is:
 
 1. formalize canonical spatial wrappers and tests — **complete**;
 2. introduce immutable tactical/strategic publication seams — **complete**;
-3. introduce typed presentation IDs — **complete**;
-4. document the C++11/C++26 language/toolchain boundary and current dependency hardening baseline — **complete**;
-5. implement and qualify the C++11 legacy/bridge + strict C++26 remaster target split, including atomic-`shared_ptr` modernization and a mixed-standard link fixture — **complete**;
-6. introduce typed intent dispatch without changing canonical rules — **qualified foundation + first strategic/tactical seed catalogs; richer catalog growth continues with consumer migration**;
-7. bring up the SDL3/Vulkan production platform path;
-8. implement frame contexts, allocator and production descriptor-heap runtime;
-9. implement Frame Graph + swapchain/output diagnostic frame;
-10. implement representative `.rshader` / `.r*` asset conversion and loading;
-11. qualify legacy source-content import fixtures for maps/models/textures/audio;
-12. build Presentation World -> first real Vulkan tactical scene;
-13. reach tactical presentation parity, default Vulkan tactical presentation, soak, then retire tactical OpenGL ownership;
-14. migrate strategic/Geoscape presentation, default it, soak, then retire strategic OpenGL ownership;
-15. complete retained UI/text/2D plus Vulkan cinematic frame display, then fully decommission OpenGL in M7;
-16. complete OpenAL Soft >=1.25.2 / EFX production audio, default/soak it, then remove the old mixer in M8;
-17. continue with VFX/Jolt, RT, full FFmpeg cinematic completion, performance specialization and release hardening.
+3. establish C++11-compatible strong presentation identities and C++26 remaster consumers — **complete foundation**;
+4. complete the source-derived presentation action inventory and five-way authority classification — **complete: 57 strategic + 15 tactical authoritative semantics**;
+5. introduce typed intent dispatch without changing canonical rules — **complete contract/catalog foundation**;
+6. extract canonical strategic owners from legacy callbacks — **15 strategic semantics qualified so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, and facility build/destroy;
+7. publish Research + Production immutable state — **complete**, including `TechnologyId` and snapshot-local production queue location/state;
+8. complete the canonical identity audit — **complete contract pass**, with 17 strong 32-bit domains and explicit stable-mapping debt for Production, Facility, Transfer, Defence and other runtime identities;
+9. continue M1 owner extraction with Research, then add stable `ProductionId` mapping before production queue mutation is bridged;
+10. migrate the remaining employee/team, market, stored-UFO/recovery, transfer, defence, save/load and mission-start authority families behind typed IDs and canonical owners;
+11. keep ambiguous or misclassified semantics fail-closed until their canonical contract is proven;
+12. once M1 boundary exit criteria are satisfied, bring up the SDL3/Vulkan production platform path;
+13. implement frame contexts, allocator and production descriptor-heap runtime;
+14. implement Frame Graph + swapchain/output diagnostic frame;
+15. build Presentation World and reach tactical Vulkan presentation parity before retiring tactical OpenGL;
+16. migrate strategic/Geoscape presentation and retire strategic OpenGL;
+17. complete retained UI/text/2D, OpenAL/EFX, VFX/Jolt, RT, FFmpeg cinematic completion, performance specialization and release hardening.
 
 ## Readiness checklist
 
@@ -145,18 +160,22 @@ M0 is sealed. The spatial-service and tactical-publication slices of M1 are qual
   - [x] Add direct executable fixtures for map bounds and core grid/path result semantics.
   - [x] Qualify the remaining stateful routing/world/model/trajectory services; final evidence partition is 7 sentinel + 16 direct = 23/23.
 - [x] Introduce typed presentation IDs where required.
-  - [x] Introduce the strong canonical entity identity used by tactical publication.
-  - [x] Define strong 32-bit canonical bridge identities for Mission, Aircraft, Base, Installation, Nation, Employee, Technology, Production, Message and Item domains required by strategic view/intent contracts.
-  - [x] Keep canonical identity domains mutually distinct, value-only and free of implicit integer or cross-domain conversions.
+  - [x] Introduce the strong canonical `EntityId` used by tactical publication.
+  - [x] Define and compile-qualify 17 mutually distinct 32-bit canonical identity domains, including Mission, Aircraft, Base, Installation, Nation, Employee, Technology, Production, Facility, Transfer, DefenceSlot, Message, Item, StoredUfo, UfoSaleOffer and TransferManifest identities.
+  - [x] Complete the M1 identity taxonomy/registry so runtime-direct IDs, sidecar-required IDs, structural references, static definition keys, aggregate keys and submission-context tokens cannot be conflated.
+  - [x] Reserve `FacilityId`, `TransferId` and `DefenceSlotId` while keeping their legacy mappings explicitly pending rather than fabricating stable identity from mutable indices.
+  - [x] Keep canonical identity domains value-only, C++11-compatible and free of implicit integer or cross-domain conversions.
 - [x] Publish immutable tactical snapshots/events without raw canonical pointers.
   - [x] Publish only after canonical client-mirror event mutation, with one monotonic sequence and scheduled presentation time.
   - [x] Confine legacy local-entity access to the adapter; public tactical snapshot/event contracts are value-only.
   - [x] Qualify canonical value projection, ordered publication and immutable/copyable public value types in the dedicated 3-test M1 lane.
 - [x] Publish immutable strategic snapshots/view data without raw canonical pointers.
   - [x] Publish one immutable generation after canonical Geoscape frame updates on Main.
-  - [x] Project campaign time/credits/selection plus missions, aircraft/UFOs, bases, installations, nations and messages as owning value data.
+  - [x] Project campaign time/credits/selection plus missions, aircraft/UFOs, bases, installations, nations, technologies, production queue state and messages as owning value data.
+  - [x] Publish `TechnologyId` directly from canonical technology identity.
+  - [x] Publish production as current `(BaseId, queueIndex)` location/order metadata without fabricating `ProductionId`; mutation stays fail-closed until a stable production identity mapping exists.
   - [x] Confine campaign/message pointers and message identity mapping to the legacy adapter; reset mapping on new game/load/shutdown.
-  - [x] Qualify public pointer isolation, production ordering, canonical preservation and both production client builds.
+  - [x] Qualify public pointer isolation, publication ordering, canonical preservation and both production client builds.
 - [x] Establish the split C++ language/toolchain boundary before expanding the new runtime.
   - [x] Document C++11 retained canonical/bridge ownership and strict C++26 remaster ownership in Architecture 092.
   - [x] Remove inherited global C++0x standard forcing and assign language modes per target.
@@ -166,11 +185,13 @@ M0 is sealed. The spatial-service and tactical-publication slices of M1 are qual
 - [x] Introduce typed intent dispatch without changing canonical rules.
   - [x] Establish the C++11-compatible strategic intent/result value contract.
   - [x] Establish the bounded strict-C++26 intent/result transport with monotonic sequence IDs.
-  - [x] Route representative `SetCampaignTimeLapse` through Main/canonical validation without optimistic presentation mutation.
-  - [x] Qualify accepted/rejected/reset behavior in the dedicated 3-test strategic intent lane and preserve publication/canonical regression.
-  - [x] Establish the first strategic/tactical intent catalog expansion behind real canonical/server owners (`SelectMission`, `SelectAircraft`, `SendAircraftToMission`, `ReturnAircraftToBase`, `SetReactionFire`, `SetReservedTimeUnits`).
-  - [ ] Complete the source-derived presentation action **scope + five-way authority** classification before broadening the remaining authoritative intent surface; v2 covers command registrations, direct presentation input hooks, and tactical protocol callsites.
-  - [ ] Continue expanding richer strategic/tactical intents from that sealed authority inventory (`SetAircraftDestination`, base/research/market actions, tactical move/shoot/use/inventory, etc.).
+  - [x] Complete the source-derived presentation-action scope and five-way authority classification.
+  - [x] Seal typed catalog coverage at **57 strategic authoritative semantics + 15 tactical semantics**.
+  - [x] Preserve the presentation authority guard: no command/cvar fallback in strategic/tactical intent adapters.
+  - [x] Forward **13/15 tactical semantics** through the existing server protocol; keep AbortMission and Reload fail-closed until request helpers prove protocol emission.
+  - [x] Qualify **15/57 strategic semantics** through campaign-owned canonical owners: campaign time lapse; aircraft mission/return/start/stop/destination/pursuit/homebase; base build/rename; installation build/rename/destroy; facility build/destroy.
+  - [x] Keep the remaining **42 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted or corrected.
+  - [ ] Continue canonical owner extraction from the sealed catalog, beginning with Research; require stable identity before production/facility/defence long-lived mutation contracts are expanded.
 - [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
 
 ### Renderer and presentation
