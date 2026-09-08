@@ -176,6 +176,7 @@ StrategicTechnologyView projectTechnology(const technology_t& technology)
 StrategicProductionView projectProduction(const base_t& base, const production_t& production)
 {
 	StrategicProductionView out;
+	out.id = canonical::ProductionId(PR_GetProductionRuntimeId(&production));
 	out.base = indexedId<canonical::BaseId>(base.idx);
 	const technology_t* technology = PR_GetTech(&production.data);
 	out.technology = technology

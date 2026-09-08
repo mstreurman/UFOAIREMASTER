@@ -87,6 +87,7 @@ def audit(root: Path) -> None:
         "ccs.numTechnologies", "RS_GetTechByIDX(i)",
         "std::vector<StrategicTechnologyView> technologies",
         "PR_GetProductionForBase(productionBase)", "PR_GetTech(&production.data)",
+        "PR_GetProductionRuntimeId(&production)",
         "std::vector<StrategicProductionView> productions",
     ):
         require(token in adapter, f"legacy strategic projection missing required mapping: {token}")

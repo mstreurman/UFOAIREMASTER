@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma once
 
+#include <cstdint>
+
 /** @brief Maximum number of productions queued in any one base. */
 #define MAX_PRODUCTIONS		40
 /** Maximum number of produced items. */
@@ -59,6 +61,7 @@ typedef struct {
 typedef struct production_s
 {
 	int idx; /**< Self reference in the production list. Mainly used for moving/deleting them. */
+	uint32_t runtimeId; /**< Stable runtime identity of this logical queue job; never serialized. */
 	productionData_t data; /**< The data behind this production (type and item pointer) */
 
 	int totalFrames;	/**< total number of frames needed to finish the production (it can change with worker count and so) */
@@ -103,6 +106,9 @@ void PR_ProductionRun(void);
 bool PR_ItemIsProduceable(const objDef_t* item);
 
 struct base_s* PR_ProductionBase(const production_t* production);
+uint32_t PR_GetProductionRuntimeId(const production_t* production);
+production_t* PR_GetProductionByRuntimeId(struct base_s* base, uint32_t runtimeId);
+const production_t* PR_GetProductionByRuntimeId(const struct base_s* base, uint32_t runtimeId);
 
 int PR_IncreaseProduction(production_t* prod, int amount);
 int PR_DecreaseProduction(production_t* prod, int amount);

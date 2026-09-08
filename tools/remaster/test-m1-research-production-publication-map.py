@@ -42,14 +42,15 @@ try:
         "bool collected;",
         "const std::vector<StrategicTechnologyView>& technologies() const",
         "struct StrategicProductionView",
+        "canonical::ProductionId id;",
         "canonical::TechnologyId technology;",
         "int32_t queueIndex;",
         "const std::vector<StrategicProductionView>& productions() const",
     ], "strategic snapshot")
 
     production = struct_body(snapshot, "StrategicProductionView")
-    if "canonical::ProductionId" in production:
-        raise AssertionError("StrategicProductionView must not fabricate a stable ProductionId from queue position")
+    if production.index("canonical::ProductionId id;") > production.index("int32_t queueIndex;"):
+        raise AssertionError("StrategicProductionView should present stable identity before order metadata")
 
     require(adapter, [
         "StrategicTechnologyView projectTechnology(",
@@ -57,6 +58,7 @@ try:
         "std::vector<StrategicTechnologyView> technologies;",
         "RS_GetTechByIDX(i)",
         "StrategicProductionView projectProduction(",
+        "canonical::ProductionId(PR_GetProductionRuntimeId(&production))",
         "indexedId<canonical::BaseId>(base.idx)",
         "production.idx",
         "PR_GetTech(&production.data)",
@@ -66,10 +68,10 @@ try:
 
     require(intent, [
         "canonical::ProductionId production;",
-        "submitDecreaseProduction(canonical::BaseId base, int32_t queueIndex, int32_t amount)",
-        "submitMoveProductionDown(canonical::BaseId base, int32_t queueIndex)",
-        "submitMoveProductionUp(canonical::BaseId base, int32_t queueIndex)",
-        "submitStopProduction(canonical::BaseId base, int32_t queueIndex)",
+        "submitDecreaseProduction(canonical::BaseId base, canonical::ProductionId production, int32_t amount)",
+        "submitMoveProductionDown(canonical::BaseId base, canonical::ProductionId production)",
+        "submitMoveProductionUp(canonical::BaseId base, canonical::ProductionId production)",
+        "submitStopProduction(canonical::BaseId base, canonical::ProductionId production)",
     ], "production intent debt")
 
     rows = list(csv.DictReader(
@@ -82,10 +84,10 @@ try:
         if strategic[name]["authority_bridge"] != "owner_extraction_pending_fail_closed":
             raise AssertionError(f"{name}: production mutation must remain fail-closed in publication-map slice")
 
-    print("PASS M1 Research + Production publication map: TechnologyId + current (BaseId, queueIndex)")
+    print("PASS M1 Research + Production publication map: TechnologyId + stable ProductionId + current queue order")
     print("PASS immutable technology and production views expose no raw canonical pointers")
-    print("PASS queueIndex remains snapshot-local location metadata; no fabricated ProductionId")
-    print("PASS production mutation intents remain fail-closed pending stable identity/revision contract")
+    print("PASS ProductionId is canonical runtime identity; queueIndex remains snapshot-local order metadata")
+    print("PASS production mutation intents remain fail-closed pending canonical owner extraction")
 except AssertionError as exc:
     print("FAIL M1 Research + Production publication map: " + str(exc), file=sys.stderr)
     raise SystemExit(1)

@@ -14,7 +14,7 @@ REQUIRED_REGISTRY = {
     "EntityId": ("runtime_protocol", "direct_protocol"),
     "EmployeeId": ("runtime_direct", "natural_mapping_pending"),
     "TechnologyId": ("runtime_direct", "direct_published"),
-    "ProductionId": ("runtime_sidecar_required", "stable_mapping_missing"),
+    "ProductionId": ("runtime_direct", "runtime_mapping_implemented"),
     "FacilityId": ("runtime_sidecar_required", "type_added_mapping_missing"),
     "TransferId": ("runtime_sidecar_required", "type_added_mapping_missing"),
     "DefenceSlotId": ("runtime_sidecar_required", "type_added_mapping_missing"),
@@ -62,9 +62,10 @@ def main():
     require(start >= 0, "StrategicProductionView missing")
     end = snapshot.find("};", start)
     view = snapshot[start:end]
-    require("int32_t queueIndex;" in view, "production queue location missing")
-    require("canonical::ProductionId" not in view,
-            "identity-only pass must not fabricate ProductionId mapping")
+    require("canonical::ProductionId id;" in view,
+            "stable ProductionId publication missing")
+    require("int32_t queueIndex;" in view,
+            "production queue location/order metadata missing")
     ledger = list(csv.DictReader(
         (ROOT/"tools/remaster/m1-authoritative-intent-coverage.tsv").open(), delimiter="\t"))
     strategic = [r for r in ledger if r["domain"] == "strategic"]
@@ -88,7 +89,7 @@ def main():
     require("PASS (17 distinct 32-bit domains)" in out, "expanded identity contract failed")
     print("PASS M1 canonical identity completeness: 17 strong 32-bit domains")
     print("PASS missing domains reserved: FacilityId, TransferId, DefenceSlotId")
-    print("PASS identity taxonomy and stale-index debt locked")
+    print("PASS identity taxonomy and remaining stale-index debt locked; ProductionId mapping published")
     print("PASS authority accounting current: strategic 18/39; tactical 13/2")
     return 0
 if __name__ == "__main__":

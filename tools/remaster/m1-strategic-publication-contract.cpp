@@ -117,6 +117,7 @@ StrategicSnapshot makeSnapshot(uint64_t serial, int32_t credits, const char* air
 	technology.name = "Laser";
 
 	StrategicProductionView production;
+	production.id = ufo::canonical::ProductionId(80);
 	production.base = ufo::canonical::BaseId(30);
 	production.technology = ufo::canonical::TechnologyId(70);
 	production.queueIndex = 2;
@@ -182,12 +183,14 @@ int main()
 		return 10;
 	if (first->technologies().at(0).base.value != 30U)
 		return 11;
-	if (first->productions().at(0).base.value != 30U)
+	if (first->productions().at(0).id.value != 80U)
 		return 12;
-	if (first->productions().at(0).technology.value != 70U)
+	if (first->productions().at(0).base.value != 30U)
 		return 13;
-	if (first->productions().at(0).queueIndex != 2)
+	if (first->productions().at(0).technology.value != 70U)
 		return 14;
+	if (first->productions().at(0).queueIndex != 2)
+		return 15;
 
 	std::cout << "M1 strategic snapshot contract: PASS (immutable value-only root categories + research/production)\n";
 	return 0;

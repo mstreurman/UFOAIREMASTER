@@ -32,6 +32,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cp_produce_callbacks.h"
 #include "save/save_produce.h"
 
+#include <limits>
+
+static uint32_t nextProductionRuntimeId = 0;
+
+static uint32_t PR_AllocateRuntimeId (void)
+{
+	if (nextProductionRuntimeId == std::numeric_limits<uint32_t>::max()) {
+		cgi->Com_Error(ERR_DROP, "Production runtime identity exhausted");
+		return std::numeric_limits<uint32_t>::max();
+	}
+	return nextProductionRuntimeId++;
+}
+
 /**
  * @brief Calculates the total frame count (minutes) needed for producing an item for a single worker
  * @param[in] base Pointer to the base the production happen
@@ -210,6 +223,29 @@ technology_t* PR_GetTech (const productionData_t* data)
 	}
 }
 
+uint32_t PR_GetProductionRuntimeId (const production_t* production)
+{
+	return production ? production->runtimeId : std::numeric_limits<uint32_t>::max();
+}
+
+const production_t* PR_GetProductionByRuntimeId (const base_t* base, uint32_t runtimeId)
+{
+	if (!base || runtimeId == std::numeric_limits<uint32_t>::max())
+		return nullptr;
+
+	const production_queue_t* queue = PR_GetProductionForBase(base);
+	for (int i = 0; i < queue->numItems; i++) {
+		if (queue->items[i].runtimeId == runtimeId)
+			return &queue->items[i];
+	}
+	return nullptr;
+}
+
+production_t* PR_GetProductionByRuntimeId (base_t* base, uint32_t runtimeId)
+{
+	return const_cast<production_t*>(PR_GetProductionByRuntimeId(static_cast<const base_t*>(base), runtimeId));
+}
+
 static void PR_ResetUFODisassembly (production_t* prod)
 {
 	/** @todo remove this and make the ufo const */
@@ -266,6 +302,7 @@ production_t* PR_QueueNew (base_t* base, const productionData_t* data, signed in
 
 	PR_UpdateRequiredItemsInBasestorage(base, -amount, &tech->requireForProduction);
 
+	prod->runtimeId = PR_AllocateRuntimeId();
 	PR_SetUFODisassembly(prod);
 
 	queue->numItems++;
@@ -770,6 +807,7 @@ bool PR_LoadXML (xmlNode_t* p)
 			}
 
 			prod->totalFrames = PR_CalculateTotalFrames(base, &prod->data);
+			prod->runtimeId = PR_AllocateRuntimeId();
 
 			pq->numItems++;
 		}

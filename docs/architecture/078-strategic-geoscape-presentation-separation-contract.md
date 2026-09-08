@@ -113,7 +113,11 @@ Where legacy code lacks a naturally persistent ID, the canonical adapter owns a 
 
 A declared strong ID type does not by itself prove that a safe legacy mapping already exists. The identity registry tracks type existence, mapping, publication and mutation readiness separately.
 
-Mutable array/list ordinals are not stable IDs. Production `queueIndex`, base-local `facilityIndex`, and defence `slotIndex` remain location metadata only until `ProductionId`, `FacilityId`, and `DefenceSlotId` mappings are implemented.
+Mutable array/list ordinals are not stable IDs. Production `queueIndex`, base-local `facilityIndex`, and defence `slotIndex` are location metadata rather than persistent identity.
+
+`ProductionId` is implemented as canonical runtime-only metadata on each logical production job. It survives production queue reorder/compaction because the ID moves with the copied queue record; loaded productions receive fresh runtime IDs and the save schema does not persist them. `queueIndex` remains display/order metadata only.
+
+`FacilityId` and `DefenceSlotId` still require their generation-safe mappings before new presentation relies on those mutable ordinals for long-lived mutation.
 
 `TransferManifestId` and `TransferId` have different lifetimes: the former identifies transfer submission/staging context; the latter identifies an active canonical transfer.
 

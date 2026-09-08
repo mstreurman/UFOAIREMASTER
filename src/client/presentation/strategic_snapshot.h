@@ -90,6 +90,7 @@ struct StrategicTechnologyView {
 };
 
 struct StrategicProductionView {
+	canonical::ProductionId id;
 	canonical::BaseId base;
 	canonical::TechnologyId technology;
 	int32_t queueIndex;

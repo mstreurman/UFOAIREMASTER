@@ -120,6 +120,7 @@ extract base-facility build/destroy owners — normalize current base-scoped fac
 map Research + Production immutable publication identities — publish TechnologyId and current (BaseId, queueIndex) queue location/state; keep production mutations fail-closed until a stable ProductionId or explicit queue revision/generation prevents stale-index mutation
 complete M1 canonical identity audit — reserve FacilityId/TransferId/DefenceSlotId, classify current runtime/direct/sidecar/structural/definition/context identities, expand the C++11 identity contract to every declared domain, and lock stale-index migration debt before further owner extraction
 extract Research scientist-assignment owners — qualify exact +/-1 typed scientist changes, canonical max assignment and stop; keep legacy sign-only command normalization/UI refresh and move no-lab popup out of canonical research core
+establish stable ProductionId — add runtime-only canonical production identity that follows logical jobs across queue move/compaction, regenerate identity on load without changing save format, publish ProductionId alongside queueIndex order metadata, and migrate production submit APIs away from queue-index identity while keeping mutation fail-closed
 complete source-derived presentation-action scope + five-way authority classification, including direct input hooks/protocol callsites, before defining the remaining authoritative intent vocabulary
 keep existing consumers behind temporary adapters
 define explicit presentation-facing ownership rather than expose raw canonical pointers
