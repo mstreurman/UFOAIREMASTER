@@ -28,6 +28,7 @@ This directory contains the initial design and architecture baseline for the UFO
 - The canonical UFO:AI BSP/common spatial path remains authoritative; modern map presentation is compiled into a separate source-hash-matched runtime asset per map/RMA tile.
 - The map semantic inventory accounts for all current game/client map entity classes and parser keys, all defined `SURF_*`/`CONTENTS_*` semantics, terrain lookup dependencies, dynamic inline-model routing, radar/RMA dependencies, and the observed campaign save boundary.
 - The complete existing tactical `EV_*` protocol remains preserved during migration; prototype presentation subsets require legacy fallback.
+- Within the current compatibility epoch, canonical campaign saves and inherited tactical client/server wire semantics remain legacy/remaster interchange boundaries; remaster-only presentation/runtime state must not silently fork either format.
 
 ## Normative authority map
 
@@ -59,6 +60,7 @@ Legacy UI/map migration policy     architecture 054
 Legacy renderer/sound migration    architecture 076
 Campaign/cgame coupling            architecture 077
 Strategic/Geoscape separation      architecture 078
+Legacy save/wire compatibility     architecture 094
 Cinematic/video boundary           architecture 079
 Implementation sequencing          architecture 080
 C++ language/toolchain boundary     architecture 092
@@ -196,6 +198,7 @@ Earlier documents remain useful for rationale/history but must not redefine an A
 - `architecture/091-implementation-execution-strategy.md`
 - `architecture/092-cpp26-language-toolchain-and-boundary-contract.md`
 - `architecture/093-presentation-action-authority-and-intent-completeness-contract.md`
+- `architecture/094-legacy-save-and-multiplayer-compatibility-contract.md`
 
 ### Architecture Decision Records
 

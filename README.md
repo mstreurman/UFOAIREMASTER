@@ -49,6 +49,7 @@ The accepted toolchain hardening baseline is equally explicit: new remaster runt
 7. **Legacy backends are migration tools, not permanent products.** OpenGL and the old mixer are removed once their modern replacements have been defaulted, soaked and separately decommissioned.
 8. **Legacy source-content import is not legacy mod compatibility.** Supported maps/models/textures/audio may be imported or converted; old gameplay mods, GUI/Lua ABI, renderer internals and source-patch total conversions are not compatibility constraints.
 9. **Language standard follows architectural ownership.** Retained canonical/legacy targets stay C++11 initially; new remaster runtime targets use strict C++26; shared canonical/remaster headers stay C++11-compatible until the lower side is deliberately migrated.
+10. **Canonical saves and gameplay wire semantics are compatibility boundaries.** Within the current compatibility epoch, remaster-only presentation/runtime state must not fork the inherited campaign save format or tactical client/server protocol; intentional incompatibility requires an explicit version/epoch decision and qualification plan.
 
 See [`docs/architecture/091-implementation-execution-strategy.md`](docs/architecture/091-implementation-execution-strategy.md) for the execution contract.
 
@@ -116,6 +117,8 @@ The active execution order is:
 
 - [x] Canonical source revision pinned.
 - [x] Tactical event protocol inventoried and preserved.
+- [x] Legacy/remaster save-format and tactical-wire compatibility contract made explicit with static ABI guards.
+- [ ] Complete bidirectional classic/remaster cross-binary save and multiplayer interoperability qualification before release claims.
 - [x] Presentation/canonical authority boundary documented.
 - [x] Renderer, RT, UI, audio, asset, replay/cache and platform architectures documented.
 - [x] Runtime display/HDR/audio configurability separated from target-machine optimization.

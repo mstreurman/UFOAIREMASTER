@@ -1,0 +1,12 @@
+epoch	scope	key	expected	owner/change rule
+1	save	SAVE_FILE_VERSION	4	src/client/cgame/campaign/cp_save.h; incompatible change requires explicit epoch/version decision
+1	save	SAVEGAME_EXTENSION	savx	src/client/cgame/campaign/cp_save.h
+1	save	SAVE_ROOTNODE	savegame	src/client/cgame/campaign/save/save.h
+1	save	saveFileHeader_t	version,compressed,subsystems,dummy[13],gameVersion[16],name[32],gameDate[32],realDate[32],xmlSize	src/client/cgame/campaign/cp_save.h
+1	wire	PROTOCOL_VERSION	18	src/common/common.h; incompatible change requires explicit protocol epoch/version decision
+1	wire	svc_ops_e	svc_bad,svc_nop,svc_ping,svc_disconnect,svc_reconnect,svc_print,svc_stufftext,svc_serverdata,svc_configstring,svc_event,svc_oob=0xff	src/common/common.h
+1	wire	clc_ops_e	clc_bad,clc_nop,clc_ack,clc_endround,clc_teaminfo,clc_initactorstates,clc_action,clc_userinfo,clc_stringcmd,clc_oob=svc_oob	src/common/common.h
+1	wire	event_t	EV_NULL,EV_RESET,EV_START,EV_ENDROUND,EV_ENDROUNDANNOUNCE,EV_RESULTS,EV_CENTERVIEW,EV_MOVECAMERA,EV_ENT_APPEAR,EV_ENT_PERISH,EV_ENT_DESTROY,EV_ADD_BRUSH_MODEL,EV_ADD_EDICT,EV_ACTOR_APPEAR,EV_ACTOR_ADD,EV_ACTOR_TURN,EV_ACTOR_MOVE,EV_ACTOR_REACTIONFIRECHANGE,EV_ACTOR_REACTIONFIREADDTARGET,EV_ACTOR_REACTIONFIREREMOVETARGET,EV_ACTOR_REACTIONFIRETARGETUPDATE,EV_ACTOR_REACTIONFIREABORTSHOT,EV_ACTOR_START_SHOOT,EV_ACTOR_SHOOT,EV_ACTOR_SHOOT_HIDDEN,EV_ACTOR_THROW,EV_ACTOR_END_SHOOT,EV_ACTOR_DIE,EV_ACTOR_REVITALISED,EV_ACTOR_STATS,EV_ACTOR_STATECHANGE,EV_ACTOR_RESERVATIONCHANGE,EV_ACTOR_WOUND,EV_INV_ADD,EV_INV_DEL,EV_INV_AMMO,EV_INV_RELOAD,EV_INV_TRANSFER,EV_MODEL_EXPLODE,EV_MODEL_EXPLODE_TRIGGERED,EV_PARTICLE_APPEAR,EV_PARTICLE_SPAWN,EV_SOUND,EV_DOOR_OPEN,EV_DOOR_CLOSE,EV_CLIENT_ACTION,EV_RESET_CLIENT_ACTION,EV_CAMERA_APPEAR,EV_NUM_EVENTS	src/game/q_shared.h
+1	wire	player_action_t	PA_NULL,PA_TURN,PA_MOVE,PA_STATE,PA_SHOOT,PA_USE,PA_INVMOVE,PA_REACT_SELECT,PA_RESERVE_STATE,PA_NUM_EVENTS	src/game/q_shared.h
+1	wire	pa_format	,s,g,s,gbbl,s,bbbbbb,sss,ss	src/game/q_shared.cpp
+1	wire	remaster_lowering	inherited PA_* + clc_endround	src/client/presentation/tactical_intent_legacy_adapter.cpp; no remaster-only gameplay opcode
