@@ -12,7 +12,7 @@ EXPECTED_STRONG_IDS = [
 ]
 REQUIRED_REGISTRY = {
     "EntityId": ("runtime_protocol", "direct_protocol"),
-    "EmployeeId": ("runtime_direct", "natural_mapping_pending"),
+    "EmployeeId": ("runtime_direct", "direct_reconciled_persisted_qualified"),
     "TechnologyId": ("runtime_direct", "direct_published"),
     "ProductionId": ("runtime_direct", "runtime_mapping_implemented"),
     "FacilityId": ("runtime_sidecar_required", "type_added_mapping_missing"),
@@ -97,7 +97,7 @@ def main():
     require("PASS (17 distinct 32-bit domains)" in out, "expanded identity contract failed")
     print("PASS M1 canonical identity completeness: 17 strong 32-bit domains")
     print("PASS missing domains reserved: FacilityId, TransferId, DefenceSlotId")
-    print("PASS identity taxonomy and remaining stale-index debt locked; ProductionId + StoredUfoId mappings published")
+    print("PASS identity taxonomy and remaining stale-index debt locked; ProductionId + StoredUfoId published; EmployeeId mapping qualified")
     print("PASS authority accounting current: strategic 24/34; tactical 13/2")
     return 0
 if __name__ == "__main__":

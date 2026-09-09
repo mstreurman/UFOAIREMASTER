@@ -5,7 +5,7 @@ AircraftId	strong_id	aircraft/UFO lifetime	PHALANX idx persisted; UFO namespace 
 BaseId	strong_id	campaign base slot	base idx persisted	not tactical wire	direct idx	qualified	keep
 InstallationId	strong_id	installation lifetime	installation idx persisted	not tactical wire	direct idx	qualified	keep
 NationId	strong_id	content/runtime definition	saved by script id	not tactical wire	runtime idx reconstructed from content	qualified_runtime_content	not a cross-content-version database key
-EmployeeId	strong_id	employee subset of character UCN	UCN persisted	UCN wire-correlated as short	typed mapping pending	pending_lifetime_proof	prove allocator restoration/non-reuse and wire bound
+EmployeeId	strong_id	employee subset of character UCN	UCN persisted; duplicate loads reject; allocator reconciles to max+1	nonnegative signed-short UCN 0..32767	direct chr.ucn mapping	qualified_persisted_wire_correlation	publish direct EmployeeId when employee snapshots migrate; mutation owners remain pending
 TechnologyId	strong_id	content/runtime technology	saved by research script id	not tactical wire	runtime idx reconstructed from content	qualified_runtime_content	keep runtime/content identity only
 ProductionId	strong_id	logical production job	not serialized; fresh after load	not tactical wire	runtime-only canonical metadata	qualified	keep; queueIndex is location only
 FacilityId	strong_id	logical facility	no stable facility identity persisted	not tactical wire	type reserved; mapping missing	pending_mapping	add generation-safe runtime mapping
@@ -27,7 +27,7 @@ UgvDefinitionKey	static_definition_key	content definition	script/content key	not
 UfoDefinitionKey	static_definition_key	content definition	script/content key	not tactical wire	string key	explicit_definition_key	keep
 SaveSlotKey	named_resource_key	external save resource	filename/resource key	not wire	string key	explicit_resource_key	keep outside entity taxonomy
 ContainedAlienSpecies	aggregate_key	species aggregate	definition/aggregate state	not wire	technology/team-definition aggregate	explicit_aggregate	no per-alien runtime ID
-CharacterUcn	correlation_key	character lifetime	persisted	wire short	raw read-only projection	explicit_correlation_pending_allocator_proof	not tactical entity identity
+CharacterUcn	correlation_key	character lifetime	persisted; duplicate loads reject; generator reconciled after load	nonnegative signed-short 0..32767	raw read-only projection	explicit_correlation_qualified	not tactical EntityId; reject out-of-wire-range values and generation exhaustion
 InventoryContainerRef	structural_reference	inventory topology	save reconstructs by container name	wire ordinal	CID/containerIndex structural value	explicit_structural	keep structural
 InventoryCell	structural_reference	inventory grid coordinate	x/y persisted	wire coordinates	x/y value	explicit_structural	keep structural
 TacticalItemDefinitionIndex	static_definition_key	content definition	save by item script ID	wire objDef idx	definition ordinal	explicit_definition_ordinal	connect to ItemId/content compatibility proof

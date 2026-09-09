@@ -196,7 +196,7 @@ static void GAME_SaveTeamInfo (xmlNode_t* p)
  * @note Called by GAME_LoadTeam to load the team info
  * @sa GAME_SendCurrentTeamSpawningInfo
  */
-static void GAME_LoadTeamInfo (xmlNode_t* p)
+static bool GAME_LoadTeamInfo (xmlNode_t* p)
 {
 	const size_t size = GAME_GetCharacterArraySize();
 
@@ -207,12 +207,22 @@ static void GAME_LoadTeamInfo (xmlNode_t* p)
 	int i = 0;
 	for (xmlNode_t* n = XML_GetNode(p, SAVE_TEAM_CHARACTER); n && i < size; i++, n = XML_GetNextNode(n, p, SAVE_TEAM_CHARACTER)) {
 		character_t* chr = GAME_GetCharacter(i);
-		GAME_LoadCharacter(n, chr);
+		if (!GAME_LoadCharacter(n, chr)) {
+			Com_Printf("Could not load team character %i\n", i);
+			return false;
+		}
+		LIST_Foreach(chrDisplayList, character_t, existing) {
+			if (existing->ucn == chr->ucn) {
+				Com_Printf("Duplicate character UCN %i in team file\n", chr->ucn);
+				return false;
+			}
+		}
 		UI_ExecuteConfunc("team_memberadd %i \"%s\" \"%s\" \"%s\" %i", i, chr->name, chr->path, chr->head, chr->headSkin);
 		LIST_AddPointer(&chrDisplayList, (void*)chr);
 	}
 
 	GAME_UpdateActiveTeamList();
+	return true;
 }
 
 /**
@@ -371,7 +381,11 @@ static bool GAME_LoadTeam (const char* filename)
 		Com_Printf("Error: Failure in loading the xml data! (node '" SAVE_TEAM_NODE "' not found)\n");
 		return false;
 	}
-	GAME_LoadTeamInfo(snode);
+	if (!GAME_LoadTeamInfo(snode)) {
+		mxmlDelete(topNode);
+		GAME_ResetCharacters();
+		return false;
+	}
 
 	snode = XML_GetNode(node, SAVE_TEAM_EQUIPMENT);
 	if (!snode) {
@@ -901,6 +915,11 @@ bool GAME_LoadCharacter (xmlNode_t* p, character_t* chr)
 	if (!R_ModelExists(head) || !R_ModelExists(body)) {
 		if (!Com_GetCharacterModel(chr))
 			return false;
+	}
+
+	if (!CL_ReconcileCharacterUCN(chr->ucn)) {
+		Com_Printf("GAME_LoadCharacter: UCN %i is outside inherited signed-16-bit wire domain\n", chr->ucn);
+		return false;
 	}
 
 	return true;

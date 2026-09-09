@@ -69,10 +69,8 @@ def main():
             f"missing strong lifetime row: {ident}"
         )
 
-    # UCN evidence: prove generation, persistence, employee lookup and wire correlation.
-    # This second-pass gate deliberately does NOT assert that only a guessed set of
-    # files may mention nextUniqueCharacterNumber. Exact allocator restoration and
-    # non-reuse across load is a dedicated follow-up qualification task.
+    # UCN evidence: generation, persistence, load reconciliation, duplicate rejection
+    # and the inherited signed-16-bit wire domain are now qualified together.
     client_h = read("src/client/client.h")
     cl_team = read("src/client/cl_team.cpp")
     game_team = read("src/client/cgame/cl_game_team.cpp")
@@ -84,6 +82,14 @@ def main():
             "client-static UCN allocator field missing")
     require("chr->ucn = cls.nextUniqueCharacterNumber++;" in cl_team,
             "UCN generator changed")
+    require("CL_IsCharacterUCNWireRepresentable(cls.nextUniqueCharacterNumber)" in cl_team,
+            "UCN signed-wire exhaustion guard missing")
+    require("CL_ReconcileCharacterUCN(chr->ucn)" in game_team,
+            "UCN allocator reconciliation missing from character load")
+    require("Duplicate character UCN" in game_team,
+            "standalone team duplicate UCN rejection missing")
+    require("E_GetEmployeeFromChrUCN(e.chr.ucn)" in employee and "Duplicate employee UCN" in employee,
+            "campaign employee duplicate UCN rejection missing")
     require("XML_AddInt(p, SAVE_CHARACTER_UCN, chr->ucn);" in game_team,
             "UCN save path changed")
     require("chr->ucn = XML_GetInt(p, SAVE_CHARACTER_UCN, 0);" in game_team,
@@ -111,8 +117,10 @@ def main():
     require("typedef struct transfer_s" in transfer,
             "transfer type changed")
 
-    require(by["EmployeeId"]["second_pass_status"] == "pending_lifetime_proof",
-            "EmployeeId debt status changed")
+    require(by["EmployeeId"]["second_pass_status"] == "qualified_persisted_wire_correlation",
+            "EmployeeId qualified lifetime status changed")
+    require(by["CharacterUcn"]["second_pass_status"] == "explicit_correlation_qualified",
+            "CharacterUcn qualified correlation status changed")
     require(by["ItemId"]["second_pass_status"] == "pending_definition_qualification",
             "ItemId debt status changed")
     require(by["FacilityId"]["second_pass_status"] == "pending_mapping",
@@ -127,7 +135,7 @@ def main():
     print("    EntityId: hand-written protocol value type")
     print("    StableId aliases: 16/16")
     print("  UCN generation/save/load/wire correlation: explicit")
-    print("  UCN allocator restoration/non-reuse: dedicated follow-up qualification debt")
+    print("  UCN allocator restoration/non-reuse + signed-16-bit wire domain: qualified")
     print("  ItemId content-definition wire ordinal: explicit")
     print("  Facility/Transfer/Defence/Message debt remains pending")
     return 0

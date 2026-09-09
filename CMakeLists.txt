@@ -33,6 +33,7 @@ option(UFOAI_M1_SPATIAL_STATEFUL_TESTS "Inject the M1-only canonical spatial sta
 option(UFOAI_M1_TACTICAL_PUBLICATION_TESTS "Inject the M1-only tactical publication fixture into ufotestall" OFF)
 option(UFOAI_M1_STRATEGIC_INTENT_TESTS "Inject the M1-only strategic typed-intent fixture into ufotestall" OFF)
 option(UFOAI_M1_INTENT_CATALOG_TESTS "Inject the M1-only expanded strategic/tactical intent catalog fixture into ufotestall" OFF)
+option(UFOAI_M1_EMPLOYEE_UCN_TESTS "Inject the M1-only EmployeeId/CharacterUcn qualification fixture into ufotestall" OFF)
 
 # M0.6 defines migration selectors independently from dependency discovery.
 # Every selector defaults to legacy and unwired remaster values fail closed.
@@ -205,6 +206,10 @@ if (UFOAI_M1_INTENT_CATALOG_TESTS AND (DISABLE_TESTS OR DISABLE_GAME))
 	message(FATAL_ERROR "UFOAI_M1_INTENT_CATALOG_TESTS requires tests and the tactical game library")
 endif()
 
+if (UFOAI_M1_EMPLOYEE_UCN_TESTS AND (DISABLE_TESTS OR DISABLE_GAME))
+	message(FATAL_ERROR "UFOAI_M1_EMPLOYEE_UCN_TESTS requires tests and the tactical game library")
+endif()
+
 if (NOT DISABLE_TESTS AND NOT DISABLE_GAME) 
 	add_subdirectory("src/tests")
 	# Canonical test sources compile the production tactical and strategic publication call sites.
@@ -237,6 +242,10 @@ if (NOT DISABLE_TESTS AND NOT DISABLE_GAME)
 	if (UFOAI_M1_INTENT_CATALOG_TESTS)
 		target_sources(ufotestall PRIVATE
 			"${CMAKE_SOURCE_DIR}/tools/remaster/m1-intent-catalog-integration.cpp")
+	endif()
+	if (UFOAI_M1_EMPLOYEE_UCN_TESTS)
+		target_sources(ufotestall PRIVATE
+			"${CMAKE_SOURCE_DIR}/tools/remaster/m1-employee-ucn-integration.cpp")
 	endif()
 endif()
 

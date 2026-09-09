@@ -34,6 +34,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "ui/ui_data.h"
 #include "ui/ui_nodes.h"
 
+#include <cstdint>
+#include <limits>
+
 /** @brief List of currently displayed or equipable characters. */
 linkedList_t* chrDisplayList;
 
@@ -227,6 +230,22 @@ void CL_UpdateCharacterValues (const character_t* chr)
 	GAME_CharacterCvars(chr);
 }
 
+bool CL_IsCharacterUCNWireRepresentable (const int ucn)
+{
+	return ucn >= 0 && ucn <= std::numeric_limits<std::int16_t>::max();
+}
+
+bool CL_ReconcileCharacterUCN (const int ucn)
+{
+	if (!CL_IsCharacterUCNWireRepresentable(ucn))
+		return false;
+
+	if (cls.nextUniqueCharacterNumber <= ucn)
+		cls.nextUniqueCharacterNumber = ucn + 1;
+
+	return true;
+}
+
 /**
  * @brief Generates the skills and inventory for a character and for a 2x2 unit
  * @param[in] chr The employee to create character data for.
@@ -239,7 +258,9 @@ void CL_GenerateCharacter (character_t* chr, const char* teamDefName)
 	/* link inventory */
 	cls.i.destroyInventory(&chr->inv);
 
-	/* get ucn */
+	/* get ucn; inherited tactical wire reads this field as a signed short */
+	if (!CL_IsCharacterUCNWireRepresentable(cls.nextUniqueCharacterNumber))
+		Com_Error(ERR_DROP, "CL_GenerateCharacter: exhausted signed-16-bit UCN space");
 	chr->ucn = cls.nextUniqueCharacterNumber++;
 
 	chr->reservedTus.shotSettings.set(ACTOR_HAND_NOT_SET, -1, nullptr);

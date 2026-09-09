@@ -960,6 +960,11 @@ bool E_LoadXML (xmlNode_t* p)
 				success = false;
 				break;
 			}
+			if (E_GetEmployeeFromChrUCN(e.chr.ucn) != nullptr) {
+				cgi->Com_Printf("Duplicate employee UCN %i in campaign save\n", e.chr.ucn);
+				success = false;
+				break;
+			}
 			if (lastEmployee[emplType] == nullptr)
 				lastEmployee[emplType] = LIST_Add(&ccs.employees[emplType], (void*) &e, sizeof(e));
 			else
