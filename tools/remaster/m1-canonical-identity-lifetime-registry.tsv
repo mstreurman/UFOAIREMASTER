@@ -1,0 +1,36 @@
+identity	kind	runtime_lifetime	save_semantics	wire_semantics	presentation_encoding	second_pass_status	required_action
+EntityId	strong_id	tactical map/entity lifetime	not campaign serialized	protocol entnum	direct protocol value	qualified	keep protocol-owned; stale after map/reset/reuse
+MissionId	strong_id	campaign mission lifetime	mission idx persisted	not tactical wire	direct idx	qualified	keep
+AircraftId	strong_id	aircraft/UFO lifetime	PHALANX idx persisted; UFO namespace rebuilt	not tactical wire	idx plus presentation-only high bit	qualified_runtime_mixed_save	keep high bit out of save/wire
+BaseId	strong_id	campaign base slot	base idx persisted	not tactical wire	direct idx	qualified	keep
+InstallationId	strong_id	installation lifetime	installation idx persisted	not tactical wire	direct idx	qualified	keep
+NationId	strong_id	content/runtime definition	saved by script id	not tactical wire	runtime idx reconstructed from content	qualified_runtime_content	not a cross-content-version database key
+EmployeeId	strong_id	employee subset of character UCN	UCN persisted	UCN wire-correlated as short	typed mapping pending	pending_lifetime_proof	prove allocator restoration/non-reuse and wire bound
+TechnologyId	strong_id	content/runtime technology	saved by research script id	not tactical wire	runtime idx reconstructed from content	qualified_runtime_content	keep runtime/content identity only
+ProductionId	strong_id	logical production job	not serialized; fresh after load	not tactical wire	runtime-only canonical metadata	qualified	keep; queueIndex is location only
+FacilityId	strong_id	logical facility	no stable facility identity persisted	not tactical wire	type reserved; mapping missing	pending_mapping	add generation-safe runtime mapping
+TransferId	strong_id	active transfer	transfer state persisted without active-transfer ID	not tactical wire	type reserved; mapping missing	pending_mapping	add runtime mapping regenerated after load
+DefenceSlotId	strong_id	logical defence slot	slot state stored by topology/position	not tactical wire	type reserved; mapping missing	pending_mapping	prove structural tuple or add runtime mapping
+MessageId	strong_id	strategic publication generation	not serialized	not tactical wire	pointer-keyed runtime sidecar	pending_lifetime_proof	prove/remove address reuse before mutation use
+ItemId	strong_id	content definition	saves use item script IDs	PA_REACT_SELECT uses objDef idx	definition mapping pending	pending_definition_qualification	qualify ordinal + stable content key; no item-instance ID
+StoredUfoId	strong_id	stored-UFO lifetime	idx + allocator state persisted	not tactical wire	direct persisted idx	qualified	keep
+UfoSaleOfferId	strong_id	recovery offer generation	not serialized	not tactical wire	generation sidecar pending	pending_mapping	add generation-safe offer identity
+TransferManifestId	strong_id	transfer submission context	not serialized	not tactical wire	typed submission token	type_only_keep_distinct	do not reuse as active TransferId
+ProductionQueueIndex	structural_reference	current queue location	not identity	not wire	queue/order metadata	explicit_structural	mutations use ProductionId
+AircraftEquipmentSlot	structural_reference	aircraft slot topology	structural/save topology	not tactical wire	owner+slot tuple	explicit_structural	keep structural unless topology audit disproves
+FacilityPlacementCell	structural_reference	base grid coordinate	layout coordinate	not tactical wire	BaseId+col+row	explicit_structural	never substitute for FacilityId
+StrategicPosition	value_reference	value lifetime	not identity	not tactical wire	value type	explicit_value	keep
+AircraftDefinitionKey	static_definition_key	content definition	script/content key	not tactical wire	string key	explicit_definition_key	use for production subject
+FacilityDefinitionKey	static_definition_key	content definition	script/content key	not tactical wire	string key	explicit_definition_key	keep
+InstallationDefinitionKey	static_definition_key	content definition	script/content key	not tactical wire	string key	explicit_definition_key	keep
+UgvDefinitionKey	static_definition_key	content definition	script/content key	not tactical wire	string key	explicit_definition_key	keep
+UfoDefinitionKey	static_definition_key	content definition	script/content key	not tactical wire	string key	explicit_definition_key	keep
+SaveSlotKey	named_resource_key	external save resource	filename/resource key	not wire	string key	explicit_resource_key	keep outside entity taxonomy
+ContainedAlienSpecies	aggregate_key	species aggregate	definition/aggregate state	not wire	technology/team-definition aggregate	explicit_aggregate	no per-alien runtime ID
+CharacterUcn	correlation_key	character lifetime	persisted	wire short	raw read-only projection	explicit_correlation_pending_allocator_proof	not tactical entity identity
+InventoryContainerRef	structural_reference	inventory topology	save reconstructs by container name	wire ordinal	CID/containerIndex structural value	explicit_structural	keep structural
+InventoryCell	structural_reference	inventory grid coordinate	x/y persisted	wire coordinates	x/y value	explicit_structural	keep structural
+TacticalItemDefinitionIndex	static_definition_key	content definition	save by item script ID	wire objDef idx	definition ordinal	explicit_definition_ordinal	connect to ItemId/content compatibility proof
+TacticalGridCell	structural_reference	tactical map coordinate	not identity	wire grid coordinate	x/y/z value	explicit_structural	keep
+TacticalPlayerNumber	protocol_session_reference	connection/match lifetime	not campaign identity	wire/session ordinal	raw session value	explicit_protocol_reference	never campaign identity
+TacticalTeamNumber	protocol_enum	match lifetime	not campaign identity	wire team enum	raw enum value	explicit_protocol_enum	never runtime entity identity
