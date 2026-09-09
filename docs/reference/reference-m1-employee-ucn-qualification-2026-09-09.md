@@ -1,6 +1,7 @@
 # M1 EmployeeId / CharacterUcn allocator and wire qualification
 
-**Baseline:** `7bb19b74289b3ffec024835c335063fee7ba84d7`  
+**Baseline:** `7bb19b74289b3ffec024835c335063fee7ba84d7`
+
 **Date:** 2026-09-09
 
 ## Purpose
