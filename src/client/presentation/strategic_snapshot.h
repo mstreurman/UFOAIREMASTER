@@ -100,6 +100,15 @@ struct StrategicProductionView {
 	int32_t totalFrames;
 };
 
+struct StrategicStoredUfoView {
+	canonical::StoredUfoId id;
+	canonical::InstallationId installation;
+	int32_t status;
+	float condition;
+	bool disassembling;
+	std::string ufoDefinition;
+};
+
 struct StrategicMessageView {
 	canonical::MessageId id;
 	StrategicCampaignTime time;
@@ -132,6 +141,7 @@ public:
 		std::vector<StrategicNationView> nations,
 		std::vector<StrategicTechnologyView> technologies,
 		std::vector<StrategicProductionView> productions,
+		std::vector<StrategicStoredUfoView> storedUfos,
 		std::vector<StrategicMessageView> messages)
 		: publicationSerial_(publicationSerial),
 		  campaignTime_(campaignTime),
@@ -145,6 +155,7 @@ public:
 		  nations_(std::move(nations)),
 		  technologies_(std::move(technologies)),
 		  productions_(std::move(productions)),
+		  storedUfos_(std::move(storedUfos)),
 		  messages_(std::move(messages))
 	{
 	}
@@ -161,6 +172,7 @@ public:
 	const std::vector<StrategicNationView>& nations() const noexcept { return nations_; }
 	const std::vector<StrategicTechnologyView>& technologies() const noexcept { return technologies_; }
 	const std::vector<StrategicProductionView>& productions() const noexcept { return productions_; }
+	const std::vector<StrategicStoredUfoView>& storedUfos() const noexcept { return storedUfos_; }
 	const std::vector<StrategicMessageView>& messages() const noexcept { return messages_; }
 
 private:
@@ -176,6 +188,7 @@ private:
 	std::vector<StrategicNationView> nations_;
 	std::vector<StrategicTechnologyView> technologies_;
 	std::vector<StrategicProductionView> productions_;
+	std::vector<StrategicStoredUfoView> storedUfos_;
 	std::vector<StrategicMessageView> messages_;
 };
 

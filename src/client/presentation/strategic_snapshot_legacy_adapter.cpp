@@ -7,6 +7,7 @@
 #include "../cgame/campaign/cp_campaign.h"
 #include "../cgame/campaign/cp_messages.h"
 #include "../cgame/campaign/cp_missions.h"
+#include "../cgame/campaign/cp_uforecovery.h"
 #include "strategic_snapshot_legacy_adapter.h"
 
 #include <cstdint>
@@ -190,6 +191,20 @@ StrategicProductionView projectProduction(const base_t& base, const production_t
 	return out;
 }
 
+StrategicStoredUfoView projectStoredUfo(const storedUFO_t& ufo)
+{
+	StrategicStoredUfoView out;
+	out.id = indexedId<canonical::StoredUfoId>(ufo.idx);
+	out.installation = ufo.installation
+		? indexedId<canonical::InstallationId>(ufo.installation->idx)
+		: canonical::InstallationId();
+	out.status = static_cast<int32_t>(ufo.status);
+	out.condition = ufo.condition;
+	out.disassembling = ufo.disassembly != nullptr;
+	out.ufoDefinition = valueString(ufo.id);
+	return out;
+}
+
 StrategicMessageView projectMessage(const uiMessageListNodeMessage_t& message)
 {
 	StrategicMessageView out;
@@ -249,6 +264,11 @@ StrategicSnapshot buildCurrentStrategicSnapshot(uint64_t publicationSerial)
 			productions.push_back(projectProduction(*productionBase, queue->items[i]));
 	}
 
+	std::vector<StrategicStoredUfoView> storedUfos;
+	US_Foreach(ufo) {
+		storedUfos.push_back(projectStoredUfo(*ufo));
+	}
+
 	std::vector<StrategicMessageView> messages;
 	for (uiMessageListNodeMessage_t* message = cgi->UI_MessageGetStack(); message; message = message->next) {
 		messages.push_back(projectMessage(*message));
@@ -280,6 +300,7 @@ StrategicSnapshot buildCurrentStrategicSnapshot(uint64_t publicationSerial)
 		std::move(nations),
 		std::move(technologies),
 		std::move(productions),
+		std::move(storedUfos),
 		std::move(messages));
 }
 

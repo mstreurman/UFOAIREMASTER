@@ -20,7 +20,7 @@ REQUIRED_REGISTRY = {
     "DefenceSlotId": ("runtime_sidecar_required", "type_added_mapping_missing"),
     "MessageId": ("runtime_sidecar_current", "pointer_sidecar_existing"),
     "ItemId": ("static_definition", "definition_mapping_pending"),
-    "StoredUfoId": ("runtime_direct", "natural_mapping_pending"),
+    "StoredUfoId": ("runtime_direct", "direct_persisted_qualified"),
     "UfoSaleOfferId": ("runtime_sidecar_required", "stable_mapping_missing"),
     "TransferManifestId": ("submission_context", "typed_token_declared"),
     "AircraftEquipmentSlot": ("structural_reference", "structural_tuple"),
@@ -66,6 +66,14 @@ def main():
             "stable ProductionId publication missing")
     require("int32_t queueIndex;" in view,
             "production queue location/order metadata missing")
+    stored_start = snapshot.find("struct StrategicStoredUfoView")
+    require(stored_start >= 0, "StrategicStoredUfoView missing")
+    stored_end = snapshot.find("};", stored_start)
+    stored_view = snapshot[stored_start:stored_end]
+    require("canonical::StoredUfoId id;" in stored_view,
+            "StoredUfoId publication missing")
+    require("canonical::InstallationId installation;" in stored_view,
+            "StoredUfoId installation projection missing")
     ledger = list(csv.DictReader(
         (ROOT/"tools/remaster/m1-authoritative-intent-coverage.tsv").open(), delimiter="\t"))
     strategic = [r for r in ledger if r["domain"] == "strategic"]
@@ -89,7 +97,7 @@ def main():
     require("PASS (17 distinct 32-bit domains)" in out, "expanded identity contract failed")
     print("PASS M1 canonical identity completeness: 17 strong 32-bit domains")
     print("PASS missing domains reserved: FacilityId, TransferId, DefenceSlotId")
-    print("PASS identity taxonomy and remaining stale-index debt locked; ProductionId mapping published")
+    print("PASS identity taxonomy and remaining stale-index debt locked; ProductionId + StoredUfoId mappings published")
     print("PASS authority accounting current: strategic 24/34; tactical 13/2")
     return 0
 if __name__ == "__main__":

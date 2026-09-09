@@ -45,6 +45,10 @@ static_assert(std::is_same<
 	const std::vector<StrategicProductionView>&>::value,
 	"production publication must be const-only");
 static_assert(std::is_same<
+	decltype(std::declval<const StrategicSnapshot&>().storedUfos()),
+	const std::vector<StrategicStoredUfoView>&>::value,
+	"stored UFO publication must be const-only");
+static_assert(std::is_same<
 	decltype(std::declval<const StrategicSnapshot&>().messages()),
 	const std::vector<StrategicMessageView>&>::value,
 	"message publication must be const-only");
@@ -126,6 +130,14 @@ StrategicSnapshot makeSnapshot(uint64_t serial, int32_t credits, const char* air
 	production.frame = 10;
 	production.totalFrames = 100;
 
+	StrategicStoredUfoView storedUfo;
+	storedUfo.id = ufo::canonical::StoredUfoId(90);
+	storedUfo.installation = ufo::canonical::InstallationId(40);
+	storedUfo.status = 1;
+	storedUfo.condition = 0.75f;
+	storedUfo.disassembling = false;
+	storedUfo.ufoDefinition = "craft_ufo_scout";
+
 	StrategicMessageView message;
 	message.id = ufo::canonical::MessageId(60);
 	message.time = StrategicCampaignTime{7, 123};
@@ -147,6 +159,7 @@ StrategicSnapshot makeSnapshot(uint64_t serial, int32_t credits, const char* air
 		std::vector<StrategicNationView>(1, nation),
 		std::vector<StrategicTechnologyView>(1, technology),
 		std::vector<StrategicProductionView>(1, production),
+		std::vector<StrategicStoredUfoView>(1, storedUfo),
 		std::vector<StrategicMessageView>(1, message));
 }
 
@@ -191,7 +204,13 @@ int main()
 		return 14;
 	if (first->productions().at(0).queueIndex != 2)
 		return 15;
+	if (first->storedUfos().at(0).id.value != 90U)
+		return 16;
+	if (first->storedUfos().at(0).installation.value != 40U)
+		return 17;
+	if (first->storedUfos().at(0).ufoDefinition != "craft_ufo_scout")
+		return 18;
 
-	std::cout << "M1 strategic snapshot contract: PASS (immutable value-only root categories + research/production)\n";
+	std::cout << "M1 strategic snapshot contract: PASS (immutable value-only root categories + research/production/stored-UFO)\n";
 	return 0;
 }

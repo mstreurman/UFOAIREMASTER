@@ -275,6 +275,7 @@ Earlier documents remain useful for rationale/history but must not redefine an A
 - `reference/reference-m1-production-runtime-identity-2026-09-08.md`
 - `reference/reference-m1-production-owner-extraction-2026-09-08.md`
 - `reference/reference-m1-production-contract-normalization-2026-09-08.md`
+- `reference/reference-m1-stored-ufo-identity-publication-2026-09-09.md`
 
 ### Public documentation scope
 

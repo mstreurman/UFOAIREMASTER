@@ -123,6 +123,7 @@ extract Research scientist-assignment owners — qualify exact +/-1 typed scient
 establish stable ProductionId — add runtime-only canonical production identity that follows logical jobs across queue move/compaction, regenerate identity on load without changing save format, publish ProductionId alongside queueIndex order metadata, and migrate production submit APIs away from queue-index identity while keeping mutation fail-closed
 extract stable-ID production owners — qualify Decrease/MoveUp/MoveDown/Stop through execution-time `(BaseId, ProductionId)` resolution; stale IDs reject after queue compaction; retain IncreaseProduction and SetProductionAmount fail-closed pending contract normalization
 normalize final production contracts — split legacy prod_inc into existing-job IncreaseProduction and fail-closed CreateProduction, define SetProductionAmount as an absolute target, and qualify all existing-job production mutations through stable ProductionId
+qualify StoredUfoId — prove persisted monotonic stored-UFO identity across linked-list removal/save/load, harden duplicate/counter load behavior, and publish immutable stored-UFO subject state while keeping CreateProduction fail-closed
 complete source-derived presentation-action scope + five-way authority classification, including direct input hooks/protocol callsites, before defining the remaining authoritative intent vocabulary
 keep existing consumers behind temporary adapters
 define explicit presentation-facing ownership rather than expose raw canonical pointers

@@ -25,7 +25,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../cl_shared.h"
 #include "../../ui/ui_dataids.h"
 #include "cp_campaign.h"
+#include "cp_uforecovery.h"
 #include "cp_xvi.h"
+
+#include <limits>
 #include "save/save_statistics.h"
 
 #define MAX_STATS_BUFFER 2048
@@ -196,6 +199,13 @@ bool STATS_LoadXML (xmlNode_t* parent)
 	ccs.campaignStats.ufosDetected = cgi->XML_GetInt(stats, SAVE_STATS_UFOSDETECTED, 0);
 	ccs.campaignStats.alienBasesBuilt = cgi->XML_GetInt(stats, SAVE_STATS_ALIENBASESBUILT, 0);
 	ccs.campaignStats.ufosStored = cgi->XML_GetInt(stats, SAVE_STATS_UFOSSTORED, 0);
+	US_Foreach(ufo) {
+		if (ufo->idx >= ccs.campaignStats.ufosStored) {
+			ccs.campaignStats.ufosStored = ufo->idx == std::numeric_limits<int>::max()
+				? std::numeric_limits<int>::max()
+				: ufo->idx + 1;
+		}
+	}
 	ccs.campaignStats.aircraftHad = cgi->XML_GetInt(stats, SAVE_STATS_AIRCRAFTHAD, 0);
 
 	/* freeing the memory below this node */

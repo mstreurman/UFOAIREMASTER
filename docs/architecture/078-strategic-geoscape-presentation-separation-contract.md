@@ -121,6 +121,8 @@ Production mutation owners resolve `(BaseId, ProductionId)` against the current 
 
 Legacy `prod_inc` was found to contain two context-dependent authoritative semantics. The typed contract therefore splits existing-job `IncreaseProduction` from `CreateProduction`; the latter is a distinct fail-closed action until production-subject identity/publication is qualified.
 
+`StoredUfoId` maps directly to persisted `storedUFO_t::idx`. Stored UFOs are linked-list objects, removal does not renumber survivors, the ID and its monotonic allocator state are saved, duplicate IDs are rejected on load, and the allocator is reconciled after load before new recovery can allocate another identity. Immutable strategic publication exposes `StoredUfoId` plus value-only UFO-yard/status/condition/definition state. This qualifies the stored-UFO subject identity but does not by itself authorize `CreateProduction`.
+
 `FacilityId` and `DefenceSlotId` still require their generation-safe mappings before new presentation relies on those mutable ordinals for long-lived mutation.
 
 `TransferManifestId` and `TransferId` have different lifetimes: the former identifies transfer submission/staging context; the latter identifies an active canonical transfer.

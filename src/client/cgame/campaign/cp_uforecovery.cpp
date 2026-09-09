@@ -36,6 +36,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "save/save_uforecovery.h"
 #include "cp_component.h"
 
+#include <limits>
+
 /*==================================
 Backend functions
 ==================================*/
@@ -111,6 +113,12 @@ storedUFO_t* US_StoreUFO (const aircraft_t* ufoTemplate, installation_t* install
 
 	if (installation->ufoCapacity.cur >= installation->ufoCapacity.max) {
 		cgi->Com_DPrintf(DEBUG_CLIENT, "US_StoreUFO: Installation is full with UFOs.\n");
+		return nullptr;
+	}
+
+	if (ccs.campaignStats.ufosStored < 0
+	 || ccs.campaignStats.ufosStored == std::numeric_limits<int>::max()) {
+		cgi->Com_Printf("Stored UFO identity exhausted.\n");
 		return nullptr;
 	}
 
@@ -340,6 +348,10 @@ bool US_LoadXML (xmlNode_t* p)
 		ufo.idx = cgi->XML_GetInt(snode, SAVE_UFORECOVERY_UFOIDX, -1);
 		if (ufo.idx < 0) {
 			cgi->Com_Printf("Invalid or no IDX defined for stored UFO.\n");
+			continue;
+		}
+		if (US_GetStoredUFOByIDX(ufo.idx)) {
+			cgi->Com_Printf("Duplicate stored UFO IDX %i.\n", ufo.idx);
 			continue;
 		}
 		/* ufo->status */

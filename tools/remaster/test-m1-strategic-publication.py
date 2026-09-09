@@ -52,7 +52,7 @@ def audit(root: Path) -> None:
     public = strip_comments(snapshot + "\n" + (root / "src/client/presentation/strategic_publication.h").read_text(encoding="utf-8"))
     for token in (
         "ccs_t", "mission_t", "aircraft_t", "base_t", "installation_t", "nation_t",
-        "technology_t", "production_t", "production_queue_t",
+        "technology_t", "production_t", "production_queue_t", "storedUFO_t",
         "uiMessageListNodeMessage_t", "linkedList_t", "uiNode_t", "DateTime", "cgi->",
         "Vk", "JPH::", "ALuint",
     ):
@@ -61,12 +61,13 @@ def audit(root: Path) -> None:
     for token in (
         "StrategicMissionView", "StrategicAircraftView", "StrategicBaseView",
         "StrategicInstallationView", "StrategicNationView", "StrategicTechnologyView",
-        "StrategicProductionView", "StrategicMessageView", "StrategicSelectionView",
+        "StrategicProductionView", "StrategicStoredUfoView", "StrategicMessageView", "StrategicSelectionView",
         "std::vector<StrategicMissionView>", "std::vector<StrategicTechnologyView>",
-        "std::vector<StrategicProductionView>", "std::vector<StrategicMessageView>",
+        "std::vector<StrategicProductionView>", "std::vector<StrategicStoredUfoView>", "std::vector<StrategicMessageView>",
         "const std::vector<StrategicMissionView>& missions() const",
         "const std::vector<StrategicTechnologyView>& technologies() const",
         "const std::vector<StrategicProductionView>& productions() const",
+        "const std::vector<StrategicStoredUfoView>& storedUfos() const",
     ):
         require(token in snapshot, f"strategic snapshot contract missing: {token}")
 
@@ -89,6 +90,8 @@ def audit(root: Path) -> None:
         "PR_GetProductionForBase(productionBase)", "PR_GetTech(&production.data)",
         "PR_GetProductionRuntimeId(&production)",
         "std::vector<StrategicProductionView> productions",
+        "US_Foreach(ufo)", "projectStoredUfo(*ufo)",
+        "std::vector<StrategicStoredUfoView> storedUfos",
     ):
         require(token in adapter, f"legacy strategic projection missing required mapping: {token}")
 
