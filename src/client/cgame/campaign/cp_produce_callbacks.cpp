@@ -622,42 +622,33 @@ static void PR_ProductionIncrease_f (void)
 
 	if (selectedProduction) {
 		prod = selectedProduction;
+		const int beforeAmount = prod->amount;
+		const int attemptedAmount = std::max(0, std::min(amount, MAX_PRODUCTION_AMOUNT - beforeAmount));
+		const uint32_t runtimeId = PR_GetProductionRuntimeId(prod);
+		const productionMutationResult_t result = PR_TryIncreaseProduction(base, runtimeId, amount);
 
-		/* We can disassembly UFOs only one-by-one. */
-		if (PR_IsDisassembly(prod))
-			return;
-
-		if (PR_IsAircraft(prod)) {
-			/* Don't allow to queue more aircraft if there is no free space. */
-			if (CAP_GetFreeCapacity(base, AIR_GetHangarCapacityType(prod->data.data.aircraft)) <= 0) {
-				CP_Popup(_("Hangars not ready"), _("You cannot queue aircraft.\nNo free space in hangars.\n"));
-				cgi->Cvar_SetValue("mn_production_amount", prod->amount);
-				return;
-			}
-		}
-
-		/* amount limit per one production */
-		if (prod->amount + amount > MAX_PRODUCTION_AMOUNT) {
-			amount = std::max(0, MAX_PRODUCTION_AMOUNT - prod->amount);
-		}
-		if (amount == 0) {
+		if (result == PR_MUTATION_NO_HANGAR_CAPACITY) {
+			CP_Popup(_("Hangars not ready"), _("You cannot queue aircraft.\nNo free space in hangars.\n"));
 			cgi->Cvar_SetValue("mn_production_amount", prod->amount);
 			return;
 		}
-
-		tech = PR_GetTech(&prod->data);
-		assert(tech);
-
-		producibleAmount = PR_RequirementsMet(amount, &tech->requireForProduction, base);
-		if (producibleAmount == 0) {
+		if (result == PR_MUTATION_NO_MATERIALS) {
 			CP_Popup(_("Not enough materials"), _("You don't have the materials needed for producing more of this item.\n"));
 			cgi->Cvar_SetValue("mn_production_amount", prod->amount);
 			return;
-		} else if (amount != producibleAmount) {
-			CP_Popup(_("Not enough material!"), _("You don't have enough material to produce all (%i) additional items. Only %i could be added."), amount, producibleAmount);
+		}
+		if (!PR_IsMutationApplied(result)) {
+			cgi->Cvar_SetValue("mn_production_amount", prod->amount);
+			return;
 		}
 
-		PR_IncreaseProduction(prod, producibleAmount);
+		prod = PR_GetProductionByRuntimeId(base, runtimeId);
+		if (!prod)
+			return;
+		const int addedAmount = prod->amount - beforeAmount;
+		if (result == PR_MUTATION_APPLIED_PARTIAL) {
+			CP_Popup(_("Not enough material!"), _("You don't have enough material to produce all (%i) additional items. Only %i could be added."), attemptedAmount, addedAmount);
+		}
 		cgi->Cvar_SetValue("mn_production_amount", prod->amount);
 	} else {
 		const char* name = nullptr;

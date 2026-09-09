@@ -196,10 +196,17 @@ StrategicIntentSubmission submitHireOrFireEmployee(canonical::BaseId base, canon
     return submit(v);
 }
 
-StrategicIntentSubmission submitIncreaseProduction(canonical::BaseId base, int32_t subjectKind, canonical::ItemId item, canonical::StoredUfoId storedUfo, const char* aircraftDefinition, canonical::ProductionId production, int32_t amount)
+StrategicIntentSubmission submitIncreaseProduction(canonical::BaseId base, canonical::ProductionId production, int32_t amount)
 {
     StrategicIntent v = make(StrategicIntentKind::IncreaseProduction);
-    v.base = base; v.value0 = subjectKind; v.item = item; v.storedUfo = storedUfo; v.production = production; v.value1 = amount; copyBounded(v.key0, aircraftDefinition);
+    v.base = base; v.production = production; v.value0 = amount;
+    return submit(v);
+}
+
+StrategicIntentSubmission submitCreateProduction(canonical::BaseId base, int32_t subjectKind, canonical::ItemId item, canonical::StoredUfoId storedUfo, const char* aircraftDefinition, int32_t amount)
+{
+    StrategicIntent v = make(StrategicIntentKind::CreateProduction);
+    v.base = base; v.value0 = subjectKind; v.item = item; v.storedUfo = storedUfo; v.value1 = amount; copyBounded(v.key0, aircraftDefinition);
     return submit(v);
 }
 

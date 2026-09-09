@@ -69,6 +69,7 @@ enum class StrategicIntentKind : uint8_t {
     StopResearch = 57,
     StoreRecoveredUfo = 58,
     TransferStoredUfo = 59,
+    CreateProduction = 60,
 };
 enum class StrategicIntentDisposition : uint8_t { Applied = 1, RejectedByCanonical = 2 };
 struct StrategicIntent {
@@ -134,7 +135,8 @@ StrategicIntentSubmission submitDestroyStoredUfo(canonical::StoredUfoId storedUf
 StrategicIntentSubmission submitEquipAircraftItem(canonical::AircraftId aircraft, int32_t slotType, int32_t slotIndex, int32_t zone, canonical::ItemId item);
 StrategicIntentSubmission submitEquipBaseDefenceItem(canonical::BaseId base, canonical::InstallationId installation, int32_t defenceType, int32_t slotIndex, canonical::ItemId item);
 StrategicIntentSubmission submitHireOrFireEmployee(canonical::BaseId base, canonical::EmployeeId employee, bool hire);
-StrategicIntentSubmission submitIncreaseProduction(canonical::BaseId base, int32_t subjectKind, canonical::ItemId item, canonical::StoredUfoId storedUfo, const char* aircraftDefinition, canonical::ProductionId production, int32_t amount);
+StrategicIntentSubmission submitIncreaseProduction(canonical::BaseId base, canonical::ProductionId production, int32_t amount);
+StrategicIntentSubmission submitCreateProduction(canonical::BaseId base, int32_t subjectKind, canonical::ItemId item, canonical::StoredUfoId storedUfo, const char* aircraftDefinition, int32_t amount);
 StrategicIntentSubmission submitKillContainedAlien(canonical::BaseId base, canonical::TechnologyId technology);
 StrategicIntentSubmission submitKillContainedAliens(canonical::BaseId base);
 StrategicIntentSubmission submitLoadGame(const char* slot);

@@ -78,9 +78,9 @@ The accepted migration roadmap is [`docs/architecture/080-implementation-migrati
 M0 is sealed. M1 is actively extracting presentation-facing authority without replacing canonical game rules. The current boundary state is mechanically inventoried and qualified:
 
 ```text
-strategic authoritative semantics: 57 total
-  canonical-applied:               22
-  fail-closed pending owners:      35
+strategic authoritative semantics: 58 total
+  canonical-applied:               24
+  fail-closed pending owners:      34
 
 tactical authoritative semantics:  15 total
   forwarded to server authority:   13
@@ -95,12 +95,12 @@ The active execution order is:
 1. formalize canonical spatial wrappers and tests — **complete**;
 2. introduce immutable tactical/strategic publication seams — **complete**;
 3. establish C++11-compatible strong presentation identities and C++26 remaster consumers — **complete foundation**;
-4. complete the source-derived presentation action inventory and five-way authority classification — **complete: 57 strategic + 15 tactical authoritative semantics**;
+4. complete the source-derived presentation action inventory and five-way authority classification — **complete, with one later semantic split: 58 strategic + 15 tactical authoritative semantics**;
 5. introduce typed intent dispatch without changing canonical rules — **complete contract/catalog foundation**;
-6. extract canonical strategic owners from legacy callbacks — **22 strategic semantics qualified so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, facility build/destroy, Research assign/max/stop, and Production decrease/move/stop;
+6. extract canonical strategic owners from legacy callbacks — **24 strategic semantics qualified so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, facility build/destroy, Research assign/max/stop, and all existing-job Production amount/move/stop operations;
 7. publish Research + Production immutable state — **complete**, including `TechnologyId`, stable runtime `ProductionId`, and snapshot-local queue order/state;
 8. complete the canonical identity audit — **complete contract pass**, with 17 strong 32-bit domains; stable Production identity is now implemented while Facility, Transfer, Defence and other runtime mappings remain explicit debt;
-9. Research owner extraction and stable runtime `ProductionId` are **complete**; Production Decrease/MoveUp/MoveDown/Stop owners are **complete**, with Increase/SetAmount contract normalization next;
+9. Research owner extraction and stable runtime `ProductionId` are **complete**; all existing-job Production owners are **complete**; `CreateProduction` is now explicitly split and remains fail-closed pending subject identity/publication;
 10. migrate the remaining employee/team, market, stored-UFO/recovery, transfer, defence, save/load and mission-start authority families behind typed IDs and canonical owners;
 11. keep ambiguous or misclassified semantics fail-closed until their canonical contract is proven;
 12. once M1 boundary exit criteria are satisfied, bring up the SDL3/Vulkan production platform path;
@@ -187,12 +187,12 @@ The active execution order is:
   - [x] Establish the C++11-compatible strategic intent/result value contract.
   - [x] Establish the bounded strict-C++26 intent/result transport with monotonic sequence IDs.
   - [x] Complete the source-derived presentation-action scope and five-way authority classification.
-  - [x] Seal typed catalog coverage at **57 strategic authoritative semantics + 15 tactical semantics**.
+  - [x] Seal typed catalog coverage, then correct one discovered context-dependent conflation: **58 strategic authoritative semantics + 15 tactical semantics** (`CreateProduction` split from legacy `prod_inc`).
   - [x] Preserve the presentation authority guard: no command/cvar fallback in strategic/tactical intent adapters.
   - [x] Forward **13/15 tactical semantics** through the existing server protocol; keep AbortMission and Reload fail-closed until request helpers prove protocol emission.
-  - [x] Qualify **22/57 strategic semantics** through campaign-owned canonical owners: campaign time lapse; aircraft mission/return/start/stop/destination/pursuit/homebase; base build/rename; installation build/rename/destroy; facility build/destroy; Research assign/max/stop; Production decrease/move-up/move-down/stop.
-  - [x] Keep the remaining **35 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted or corrected.
-  - [ ] Normalize `IncreaseProduction` and `SetProductionAmount`, then continue the sealed catalog; facility/defence long-lived mutation still requires stable identity.
+  - [x] Qualify **24/58 strategic semantics** through campaign-owned canonical owners: campaign time lapse; aircraft mission/return/start/stop/destination/pursuit/homebase; base build/rename; installation build/rename/destroy; facility build/destroy; Research assign/max/stop; all existing-job Production decrease/increase/set-amount/move/stop operations.
+  - [x] Keep the remaining **34 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted or corrected.
+  - [ ] Qualify production-subject identity/publication before bridging `CreateProduction`, then continue the catalog; facility/defence long-lived mutation still requires stable identity.
 - [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
 
 ### Renderer and presentation

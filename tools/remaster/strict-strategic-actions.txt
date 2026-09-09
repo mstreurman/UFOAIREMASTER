@@ -9,6 +9,7 @@ BuyAircraft
 BuyItem
 BuyUGV
 ChangeAircraftHomebase
+CreateProduction
 DecreaseProduction
 DeequipEmployee
 DeleteEmployee

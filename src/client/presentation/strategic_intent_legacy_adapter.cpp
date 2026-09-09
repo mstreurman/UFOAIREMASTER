@@ -137,6 +137,20 @@ void applyPendingStrategicIntents() {
             if(b&&in.production.isValid()&&PR_TryStopProduction(b,in.production.value)==PR_MUTATION_APPLIED)
                 out.disposition=StrategicIntentDisposition::Applied;
             break; }
+        case StrategicIntentKind::IncreaseProduction: {
+            base_t* b=resolveBase(in.base);
+            const productionMutationResult_t result=b&&in.production.isValid()
+                ? PR_TryIncreaseProduction(b,in.production.value,in.value0) : PR_MUTATION_INVALID_PRODUCTION;
+            if(PR_IsMutationApplied(result)) out.disposition=StrategicIntentDisposition::Applied;
+            production_t* prod=b&&in.production.isValid()?PR_GetProductionByRuntimeId(b,in.production.value):nullptr;
+            out.canonicalValue=prod?prod->amount:-1; break; }
+        case StrategicIntentKind::SetProductionAmount: {
+            base_t* b=resolveBase(in.base);
+            const productionMutationResult_t result=b&&in.production.isValid()
+                ? PR_TrySetProductionAmount(b,in.production.value,in.value0) : PR_MUTATION_INVALID_PRODUCTION;
+            if(PR_IsMutationApplied(result)) out.disposition=StrategicIntentDisposition::Applied;
+            production_t* prod=b&&in.production.isValid()?PR_GetProductionByRuntimeId(b,in.production.value):nullptr;
+            out.canonicalValue=prod?prod->amount:-1; break; }
 
         case StrategicIntentKind::BuildBase: {
             vec2_t pos; base_t* b=nullptr; const char* name=resolveBoundedText(in.text);
@@ -205,7 +219,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::EquipAircraftItem:
         case StrategicIntentKind::EquipBaseDefenceItem:
         case StrategicIntentKind::HireOrFireEmployee:
-        case StrategicIntentKind::IncreaseProduction:
         case StrategicIntentKind::KillContainedAlien:
         case StrategicIntentKind::KillContainedAliens:
         case StrategicIntentKind::LoadGame:
@@ -222,11 +235,11 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::SetAirDefenceTarget:
         case StrategicIntentKind::SetAutoSellPolicy:
         case StrategicIntentKind::SetEmployeeSkin:
-        case StrategicIntentKind::SetProductionAmount:
         case StrategicIntentKind::StartMission:
         case StrategicIntentKind::StartTransfer:
         case StrategicIntentKind::StoreRecoveredUfo:
         case StrategicIntentKind::TransferStoredUfo:
+        case StrategicIntentKind::CreateProduction:
             break;
         }
         intent::legacy::publishStrategicIntentResult(out);

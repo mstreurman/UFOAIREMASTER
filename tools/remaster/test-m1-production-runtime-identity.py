@@ -103,7 +103,8 @@ try:
 
     signatures = [
         "submitDecreaseProduction(canonical::BaseId base, canonical::ProductionId production, int32_t amount)",
-        "submitIncreaseProduction(canonical::BaseId base, int32_t subjectKind, canonical::ItemId item, canonical::StoredUfoId storedUfo, const char* aircraftDefinition, canonical::ProductionId production, int32_t amount)",
+        "submitIncreaseProduction(canonical::BaseId base, canonical::ProductionId production, int32_t amount)",
+        "submitCreateProduction(canonical::BaseId base, int32_t subjectKind, canonical::ItemId item, canonical::StoredUfoId storedUfo, const char* aircraftDefinition, int32_t amount)",
         "submitMoveProductionDown(canonical::BaseId base, canonical::ProductionId production)",
         "submitMoveProductionUp(canonical::BaseId base, canonical::ProductionId production)",
         "submitSetProductionAmount(canonical::BaseId base, canonical::ProductionId production, int32_t amount)",
@@ -142,30 +143,30 @@ try:
         raise AssertionError("ProductionId registry mapping_status must be runtime_mapping_implemented")
     if prod["publication_status"] != "published":
         raise AssertionError("ProductionId registry must be published")
-    if prod["intent_status"] != "partial_owner_qualified":
-        raise AssertionError("ProductionId intent status must reflect qualified existing-job owner subset")
+    if prod["intent_status"] != "existing_job_owners_qualified":
+        raise AssertionError("ProductionId intent status must reflect all existing-job owners qualified")
 
     coverage = list(csv.DictReader(
         (ROOT/"tools/remaster/m1-authoritative-intent-coverage.tsv").open(encoding="utf-8"),
         delimiter="\t"))
     strategic = {r["semantic_action"]: r for r in coverage if r["domain"] == "strategic"}
-    for name in ("DecreaseProduction","MoveProductionDown","MoveProductionUp","StopProduction"):
+    for name in ("DecreaseProduction","MoveProductionDown","MoveProductionUp","StopProduction",
+                 "IncreaseProduction","SetProductionAmount"):
         if strategic[name]["authority_bridge"] != "canonical_applied":
-            raise AssertionError(f"{name}: stable-ID production owner must be canonical_applied")
-    for name in ("IncreaseProduction","SetProductionAmount"):
-        if strategic[name]["authority_bridge"] != "owner_extraction_pending_fail_closed":
-            raise AssertionError(f"{name}: normalized production contract remains pending")
+            raise AssertionError(f"{name}: existing-job production owner must be canonical_applied")
+    if strategic["CreateProduction"]["authority_bridge"] != "owner_extraction_pending_fail_closed":
+        raise AssertionError("CreateProduction must remain fail-closed")
 
-    if sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) != 22:
-        raise AssertionError("strategic applied accounting must be 22")
-    if sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) != 35:
-        raise AssertionError("strategic pending accounting must be 35")
+    if sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) != 24:
+        raise AssertionError("strategic applied accounting must be 24")
+    if sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) != 34:
+        raise AssertionError("strategic pending accounting must be 34")
 
     print("PASS M1 stable ProductionId: runtime identity survives queue copy/compaction semantics")
     print("PASS ProductionId is published with queueIndex retained as order metadata")
     print("PASS production submit APIs use ProductionId rather than queueIndex identity")
     print("PASS ProductionId is runtime-only and regenerated on load; save schema unchanged")
-    print("PASS ProductionId now drives four canonical existing-job owners; Increase/SetAmount remain fail-closed")
+    print("PASS ProductionId now drives all six existing-job production owners; CreateProduction remains separate/fail-closed")
 except AssertionError as exc:
     print("FAIL M1 stable ProductionId: " + str(exc), file=sys.stderr)
     raise SystemExit(1)

@@ -550,6 +550,49 @@ int PR_IncreaseProduction (production_t* prod, int amount)
 	return amount;
 }
 
+bool PR_IsMutationApplied (productionMutationResult_t result)
+{
+	return result == PR_MUTATION_APPLIED || result == PR_MUTATION_APPLIED_PARTIAL;
+}
+
+/**
+ * @brief Increase an existing logical production job selected by stable runtime identity.
+ */
+productionMutationResult_t PR_TryIncreaseProduction (base_t* base, uint32_t runtimeId, int amount)
+{
+	if (!base)
+		return PR_MUTATION_INVALID_BASE;
+	if (amount <= 0)
+		return PR_MUTATION_INVALID_AMOUNT;
+
+	production_t* prod = PR_GetProductionByRuntimeId(base, runtimeId);
+	if (!prod)
+		return PR_MUTATION_INVALID_PRODUCTION;
+	if (PR_IsDisassembly(prod))
+		return PR_MUTATION_NOT_INCREASABLE;
+
+	if (PR_IsAircraft(prod)
+	 && CAP_GetFreeCapacity(base, AIR_GetHangarCapacityType(prod->data.data.aircraft)) <= 0)
+		return PR_MUTATION_NO_HANGAR_CAPACITY;
+
+	amount = std::max(0, std::min(amount, MAX_PRODUCTION_AMOUNT - prod->amount));
+	if (amount == 0)
+		return PR_MUTATION_NO_CHANGE;
+
+	const technology_t* tech = PR_GetTech(&prod->data);
+	if (!tech)
+		return PR_MUTATION_INVALID_PRODUCTION;
+
+	const int producibleAmount = PR_RequirementsMet(amount, &tech->requireForProduction, base);
+	if (producibleAmount <= 0)
+		return PR_MUTATION_NO_MATERIALS;
+
+	if (PR_IncreaseProduction(prod, producibleAmount) <= 0)
+		return PR_MUTATION_NO_MATERIALS;
+
+	return producibleAmount < amount ? PR_MUTATION_APPLIED_PARTIAL : PR_MUTATION_APPLIED;
+}
+
 /**
  * @brief decreases production amount
  * @param[in,out] prod Pointer to the production
@@ -608,6 +651,26 @@ productionMutationResult_t PR_TryDecreaseProduction (base_t* base, uint32_t runt
 		return PR_MUTATION_NOT_DECREASABLE;
 
 	return PR_DecreaseProduction(prod, amount) > 0 ? PR_MUTATION_APPLIED : PR_MUTATION_NOT_DECREASABLE;
+}
+
+productionMutationResult_t PR_TrySetProductionAmount (base_t* base, uint32_t runtimeId, int targetAmount)
+{
+	if (!base)
+		return PR_MUTATION_INVALID_BASE;
+	if (targetAmount < 0)
+		return PR_MUTATION_INVALID_AMOUNT;
+
+	production_t* prod = PR_GetProductionByRuntimeId(base, runtimeId);
+	if (!prod)
+		return PR_MUTATION_INVALID_PRODUCTION;
+	if (targetAmount == prod->amount)
+		return PR_MUTATION_NO_CHANGE;
+	if (targetAmount == 0)
+		return PR_TryStopProduction(base, runtimeId);
+	if (targetAmount < prod->amount)
+		return PR_TryDecreaseProduction(base, runtimeId, prod->amount - targetAmount);
+
+	return PR_TryIncreaseProduction(base, runtimeId, targetAmount - prod->amount);
 }
 
 static productionMutationResult_t PR_TryMoveProductionCanonical (base_t* base, uint32_t runtimeId, int offset)

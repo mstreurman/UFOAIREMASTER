@@ -82,9 +82,11 @@ try:
         if strategic[name]["authority_bridge"]!="canonical_applied": raise AssertionError(name+" not applied")
         if strategic[name]["owner_source"]!="src/client/cgame/campaign/cp_produce.cpp": raise AssertionError(name+" wrong owner")
     for name in ("IncreaseProduction","SetProductionAmount"):
-        if strategic[name]["authority_bridge"]!="owner_extraction_pending_fail_closed": raise AssertionError(name+" must remain pending")
-    if sum(r["authority_bridge"]=="canonical_applied" for r in strategic.values())!=22: raise AssertionError("applied must be 22")
-    if sum(r["authority_bridge"]=="owner_extraction_pending_fail_closed" for r in strategic.values())!=35: raise AssertionError("pending must be 35")
+        if strategic[name]["authority_bridge"]!="canonical_applied": raise AssertionError(name+" normalized existing-job owner must be applied")
+    if strategic["CreateProduction"]["authority_bridge"]!="owner_extraction_pending_fail_closed":
+        raise AssertionError("CreateProduction must remain fail-closed")
+    if sum(r["authority_bridge"]=="canonical_applied" for r in strategic.values())!=24: raise AssertionError("applied must be 24")
+    if sum(r["authority_bridge"]=="owner_extraction_pending_fail_closed" for r in strategic.values())!=34: raise AssertionError("pending must be 34")
 
     cxx=shutil.which("g++")
     if not cxx: raise AssertionError("g++ not found")
@@ -97,8 +99,8 @@ try:
     print("PASS M1 production owners: Decrease + MoveUp + MoveDown + Stop")
     print("PASS canonical owners re-resolve ProductionId at execution time and contain no UI/command/cvar fallback")
     print("PASS stale two-intent contract: deleted ProductionId rejects after compaction; neighbor identity preserved")
-    print("PASS IncreaseProduction + SetProductionAmount remain fail-closed pending contract normalization")
-    print("PASS bridge accounting: strategic 22 applied / 35 fail-closed; tactical unchanged 13/2")
+    print("PASS later normalization qualifies IncreaseProduction + SetProductionAmount; CreateProduction remains fail-closed")
+    print("PASS bridge accounting: strategic 24 applied / 34 fail-closed; tactical unchanged 13/2")
 except AssertionError as exc:
     print("FAIL M1 production owner extraction: "+str(exc),file=sys.stderr)
     raise SystemExit(1)

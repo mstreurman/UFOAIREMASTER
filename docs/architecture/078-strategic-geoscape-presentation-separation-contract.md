@@ -117,7 +117,9 @@ Mutable array/list ordinals are not stable IDs. Production `queueIndex`, base-lo
 
 `ProductionId` is implemented as canonical runtime-only metadata on each logical production job. It survives production queue reorder/compaction because the ID moves with the copied queue record; loaded productions receive fresh runtime IDs and the save schema does not persist them. `queueIndex` remains display/order metadata only.
 
-Production mutation owners resolve `(BaseId, ProductionId)` against the current canonical queue at execution time. A missing/stale ID rejects; it is never reinterpreted as the object currently occupying an old `queueIndex`. Decrease/MoveUp/MoveDown/Stop use this contract; Increase/SetAmount remain fail-closed until their semantic contracts are normalized.
+Production mutation owners resolve `(BaseId, ProductionId)` against the current canonical queue at execution time. A missing/stale ID rejects; it is never reinterpreted as the object currently occupying an old `queueIndex`. Decrease/MoveUp/MoveDown/Stop/Increase/SetAmount use this contract.
+
+Legacy `prod_inc` was found to contain two context-dependent authoritative semantics. The typed contract therefore splits existing-job `IncreaseProduction` from `CreateProduction`; the latter is a distinct fail-closed action until production-subject identity/publication is qualified.
 
 `FacilityId` and `DefenceSlotId` still require their generation-safe mappings before new presentation relies on those mutable ordinals for long-lived mutation.
 

@@ -102,6 +102,11 @@ typedef enum productionMutationResult_s {
 	PR_MUTATION_INVALID_PRODUCTION,
 	PR_MUTATION_INVALID_AMOUNT,
 	PR_MUTATION_NOT_DECREASABLE,
+	PR_MUTATION_NOT_INCREASABLE,
+	PR_MUTATION_NO_HANGAR_CAPACITY,
+	PR_MUTATION_NO_MATERIALS,
+	PR_MUTATION_NO_CHANGE,
+	PR_MUTATION_APPLIED_PARTIAL,
 	PR_MUTATION_QUEUE_BOUNDARY
 } productionMutationResult_t;
 
@@ -122,7 +127,10 @@ const production_t* PR_GetProductionByRuntimeId(const struct base_s* base, uint3
 int PR_IncreaseProduction(production_t* prod, int amount);
 int PR_DecreaseProduction(production_t* prod, int amount);
 
+bool PR_IsMutationApplied(productionMutationResult_t result);
+productionMutationResult_t PR_TryIncreaseProduction(struct base_s* base, uint32_t runtimeId, int amount);
 productionMutationResult_t PR_TryDecreaseProduction(struct base_s* base, uint32_t runtimeId, int amount);
+productionMutationResult_t PR_TrySetProductionAmount(struct base_s* base, uint32_t runtimeId, int targetAmount);
 productionMutationResult_t PR_TryMoveProductionUp(struct base_s* base, uint32_t runtimeId);
 productionMutationResult_t PR_TryMoveProductionDown(struct base_s* base, uint32_t runtimeId);
 productionMutationResult_t PR_TryStopProduction(struct base_s* base, uint32_t runtimeId);
