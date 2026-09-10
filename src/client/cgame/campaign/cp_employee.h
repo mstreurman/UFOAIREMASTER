@@ -162,5 +162,23 @@ void E_InitialEmployees(const struct campaign_s* campaign);
 bool E_MoveIntoNewBase(Employee* employee, base_t* newBase);
 void E_RemoveInventoryFromStorage(Employee* employee);
 
+typedef enum employeeMutationResult_s {
+	EMPLOYEE_MUTATION_APPLIED = 0,
+	EMPLOYEE_MUTATION_NO_CHANGE,
+	EMPLOYEE_MUTATION_INVALID_EMPLOYEE,
+	EMPLOYEE_MUTATION_INVALID_BASE,
+	EMPLOYEE_MUTATION_TRANSFER_ACTIVE,
+	EMPLOYEE_MUTATION_AWAY_FROM_BASE,
+	EMPLOYEE_MUTATION_WRONG_BASE,
+	EMPLOYEE_MUTATION_NO_CAPACITY,
+	EMPLOYEE_MUTATION_INVALID_NAME,
+	EMPLOYEE_MUTATION_REJECTED
+} employeeMutationResult_t;
+
+bool E_IsMutationAccepted(employeeMutationResult_t result);
+employeeMutationResult_t E_TrySetHired(base_t* base, int employeeUcn, bool hire);
+employeeMutationResult_t E_TryDeleteEmployee(int employeeUcn);
+employeeMutationResult_t E_TryRenameEmployee(int employeeUcn, const char* name);
+
 void E_InitStartup(void);
 void E_Shutdown(void);

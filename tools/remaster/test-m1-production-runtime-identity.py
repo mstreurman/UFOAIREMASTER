@@ -157,10 +157,10 @@ try:
     if strategic["CreateProduction"]["authority_bridge"] != "canonical_applied":
         raise AssertionError("CreateProduction must be canonical_applied")
 
-    if sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) != 25:
-        raise AssertionError("strategic applied accounting must be 25")
-    if sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) != 33:
-        raise AssertionError("strategic pending accounting must be 33")
+    if sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) != 31:
+        raise AssertionError("strategic applied accounting must be 31")
+    if sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) != 27:
+        raise AssertionError("strategic pending accounting must be 27")
 
     print("PASS M1 stable ProductionId: runtime identity survives queue copy/compaction semantics")
     print("PASS ProductionId is published with queueIndex retained as order metadata")

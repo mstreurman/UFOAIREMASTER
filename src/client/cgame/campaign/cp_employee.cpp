@@ -1048,3 +1048,94 @@ void E_Shutdown (void)
 	E_ShutdownCallbacks();
 	cgi->Cmd_TableRemoveList(debugEmployeeCmds);
 }
+
+/**
+ * @brief Report whether an employee owner accepted the requested canonical state.
+ */
+bool E_IsMutationAccepted (employeeMutationResult_t result)
+{
+	return result == EMPLOYEE_MUTATION_APPLIED || result == EMPLOYEE_MUTATION_NO_CHANGE;
+}
+
+/**
+ * @brief Set the desired hire state after re-resolving the persisted EmployeeId/UCN.
+ *
+ * The inherited quarters check is intentionally preserved even for robots because
+ * E_HireEmployee historically applies that check before its type-specific capacity
+ * mutation. Presentation feedback remains outside this owner.
+ */
+employeeMutationResult_t E_TrySetHired (base_t* base, int employeeUcn, bool hire)
+{
+	if (!base)
+		return EMPLOYEE_MUTATION_INVALID_BASE;
+
+	Employee* employee = E_GetEmployeeFromChrUCN(employeeUcn);
+	if (!employee)
+		return EMPLOYEE_MUTATION_INVALID_EMPLOYEE;
+	if (employee->transfer)
+		return EMPLOYEE_MUTATION_TRANSFER_ACTIVE;
+
+	if (hire) {
+		if (employee->isHired())
+			return employee->isHiredInBase(base)
+				? EMPLOYEE_MUTATION_NO_CHANGE
+				: EMPLOYEE_MUTATION_WRONG_BASE;
+
+		/* Preflight the exact legacy gate so the canonical owner never reaches
+		 * E_HireEmployee's popup-producing rejection path. */
+		if (CAP_GetFreeCapacity(base, CAP_EMPLOYEES) <= 0)
+			return EMPLOYEE_MUTATION_NO_CAPACITY;
+		return E_HireEmployee(base, employee)
+			? EMPLOYEE_MUTATION_APPLIED
+			: EMPLOYEE_MUTATION_REJECTED;
+	}
+
+	if (!employee->isHired())
+		return EMPLOYEE_MUTATION_NO_CHANGE;
+	if (!employee->isHiredInBase(base))
+		return EMPLOYEE_MUTATION_WRONG_BASE;
+	if (employee->isAwayFromBase())
+		return EMPLOYEE_MUTATION_AWAY_FROM_BASE;
+	return employee->unhire()
+		? EMPLOYEE_MUTATION_APPLIED
+		: EMPLOYEE_MUTATION_REJECTED;
+}
+
+/**
+ * @brief Remove an employee from the global campaign list by stable EmployeeId/UCN.
+ *
+ * Transfer is rejected before E_DeleteEmployee because that lower-level helper
+ * historically force-clears transfer while deleting a hired employee. The legacy
+ * employee list does not expose transferred employees for deletion.
+ */
+employeeMutationResult_t E_TryDeleteEmployee (int employeeUcn)
+{
+	Employee* employee = E_GetEmployeeFromChrUCN(employeeUcn);
+	if (!employee)
+		return EMPLOYEE_MUTATION_INVALID_EMPLOYEE;
+	if (employee->transfer)
+		return EMPLOYEE_MUTATION_TRANSFER_ACTIVE;
+	if (employee->isHired() && employee->isAwayFromBase())
+		return EMPLOYEE_MUTATION_AWAY_FROM_BASE;
+
+	if (employee->isHired() && !employee->unhire())
+		return EMPLOYEE_MUTATION_REJECTED;
+	return E_DeleteEmployee(employee)
+		? EMPLOYEE_MUTATION_APPLIED
+		: EMPLOYEE_MUTATION_REJECTED;
+}
+
+/**
+ * @brief Rename an employee after re-resolving EmployeeId/UCN.
+ */
+employeeMutationResult_t E_TryRenameEmployee (int employeeUcn, const char* name)
+{
+	Employee* employee = E_GetEmployeeFromChrUCN(employeeUcn);
+	if (!employee)
+		return EMPLOYEE_MUTATION_INVALID_EMPLOYEE;
+	if (!name || !Com_IsValidName(name))
+		return EMPLOYEE_MUTATION_INVALID_NAME;
+
+	Q_strncpyz(employee->chr.name, name, sizeof(employee->chr.name));
+	return EMPLOYEE_MUTATION_APPLIED;
+}

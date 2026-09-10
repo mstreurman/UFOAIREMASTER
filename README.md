@@ -80,8 +80,8 @@ M0 is sealed. M1 is actively extracting presentation-facing authority without re
 
 ```text
 strategic authoritative semantics: 58 total
-  canonical-applied:               25
-  fail-closed pending owners:      33
+  canonical-applied:               31
+  fail-closed pending owners:      27
 
 tactical authoritative semantics:  15 total
   forwarded to server authority:   13
@@ -98,11 +98,11 @@ The active execution order is:
 3. establish C++11-compatible strong presentation identities and C++26 remaster consumers — **complete foundation**;
 4. complete the source-derived presentation action inventory and five-way authority classification — **complete, with one later semantic split: 58 strategic + 15 tactical authoritative semantics**;
 5. introduce typed intent dispatch without changing canonical rules — **complete contract/catalog foundation**;
-6. extract canonical strategic owners from legacy callbacks — **25 strategic semantics qualified so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, facility build/destroy, Research assign/max/stop, and all existing-job Production amount/move/stop operations;
-7. publish Research + Production immutable state — **complete**, including `TechnologyId`, stable runtime `ProductionId`, and snapshot-local queue order/state;
-8. complete the canonical identity audit — **complete contract pass**, with 17 strong 32-bit domains; stable Production and persisted StoredUfo identity are now implemented/published while Facility, Transfer, Defence and other runtime mappings remain explicit debt;
+6. extract canonical strategic owners from legacy callbacks — **31 strategic semantics qualified so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, facility build/destroy, Research assign/max/stop, Production create/amount/move/stop operations, and the six Employee/Team assign/de-equip/delete/hire-fire/rename/skin operations;
+7. publish Research + Production + Employee immutable state — **complete**, including `TechnologyId`, stable runtime `ProductionId`, persisted `EmployeeId`, and snapshot-local queue/order plus immutable employee state;
+8. complete the canonical identity audit — **complete contract pass**, with 17 strong 32-bit domains; stable Production, persisted StoredUfo, and persisted Employee identities are now implemented/published while Facility, Transfer, Defence and other runtime mappings remain explicit debt;
 9. Research owner extraction, all existing-job Production owners, and `CreateProduction` are **complete**; ItemId / aircraft-definition / StoredUfo production subjects are qualified and the legacy/remaster create paths converge on the campaign owner;
-10. migrate the remaining employee/team, market, stored-UFO/recovery, transfer, defence, save/load and mission-start authority families behind typed IDs and canonical owners;
+10. migrate the remaining market, stored-UFO/recovery, transfer, defence, save/load and mission-start authority families behind typed IDs and canonical owners;
 11. keep ambiguous or misclassified semantics fail-closed until their canonical contract is proven;
 12. once M1 boundary exit criteria are satisfied, bring up the SDL3/Vulkan production platform path;
 13. implement frame contexts, allocator and production descriptor-heap runtime;
@@ -169,6 +169,7 @@ The active execution order is:
   - [x] Reserve `FacilityId`, `TransferId` and `DefenceSlotId` while keeping their legacy mappings explicitly pending rather than fabricating stable identity from mutable indices.
   - [x] Implement runtime-only `ProductionId` in canonical production state so logical jobs retain identity across queue reorder/compaction and loaded jobs receive fresh non-persisted IDs.
   - [x] Qualify persisted `StoredUfoId` directly from `storedUFO_t::idx`, including duplicate-load rejection and allocator reconciliation so removed/stale IDs are never reused.
+  - [x] Qualify persisted `EmployeeId` directly from `character_t::ucn`, including duplicate-load rejection, allocator reconciliation, and preservation of the inherited nonnegative signed-16-bit wire domain.
   - [x] Keep canonical identity domains value-only, C++11-compatible and free of implicit integer or cross-domain conversions.
 - [x] Publish immutable tactical snapshots/events without raw canonical pointers.
   - [x] Publish only after canonical client-mirror event mutation, with one monotonic sequence and scheduled presentation time.
@@ -176,10 +177,11 @@ The active execution order is:
   - [x] Qualify canonical value projection, ordered publication and immutable/copyable public value types in the dedicated 3-test M1 lane.
 - [x] Publish immutable strategic snapshots/view data without raw canonical pointers.
   - [x] Publish one immutable generation after canonical Geoscape frame updates on Main.
-  - [x] Project campaign time/credits/selection plus missions, aircraft/UFOs, bases, installations, nations, technologies, production queue state and messages as owning value data.
+  - [x] Project campaign time/credits/selection plus missions, aircraft/UFOs, bases, installations, nations, technologies, employees, production queue state and messages as owning value data.
   - [x] Publish `TechnologyId` directly from canonical technology identity.
   - [x] Publish stable runtime `ProductionId` for each logical production job while retaining `queueIndex` strictly as current location/order metadata.
   - [x] Publish persisted `StoredUfoId` with immutable UFO-yard/status/condition/disassembly/definition state and no raw canonical pointers.
+  - [x] Publish persisted `EmployeeId` with immutable base/aircraft/type/body-skin/hired/transfer/name state and no raw canonical pointers.
   - [x] Confine campaign/message pointers and message identity mapping to the legacy adapter; reset mapping on new game/load/shutdown.
   - [x] Qualify public pointer isolation, publication ordering, canonical preservation and both production client builds.
 - [x] Establish the split C++ language/toolchain boundary before expanding the new runtime.
@@ -195,8 +197,8 @@ The active execution order is:
   - [x] Seal typed catalog coverage, then correct one discovered context-dependent conflation: **58 strategic authoritative semantics + 15 tactical semantics** (`CreateProduction` split from legacy `prod_inc`).
   - [x] Preserve the presentation authority guard: no command/cvar fallback in strategic/tactical intent adapters.
   - [x] Forward **13/15 tactical semantics** through the existing server protocol; keep AbortMission and Reload fail-closed until request helpers prove protocol emission.
-  - [x] Qualify **25/58 strategic semantics** through campaign-owned canonical owners: campaign time lapse; aircraft mission/return/start/stop/destination/pursuit/homebase; base build/rename; installation build/rename/destroy; facility build/destroy; Research assign/max/stop; all existing-job Production decrease/increase/set-amount/move/stop operations.
-  - [x] Keep the remaining **33 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted or corrected.
+  - [x] Qualify **31/58 strategic semantics** through campaign-owned canonical owners: campaign time lapse; aircraft mission/return/start/stop/destination/pursuit/homebase; base build/rename; installation build/rename/destroy; facility build/destroy; Research assign/max/stop; Production create/decrease/increase/set-amount/move/stop; Employee/Team assign/de-equip/delete/hire-fire/rename/skin.
+  - [x] Keep the remaining **27 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted or corrected.
   - [x] Complete ItemId + aircraft + StoredUfo production-subject qualification and bridge `CreateProduction` through the canonical campaign owner; facility/defence long-lived mutation still requires stable identity.
 - [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
 

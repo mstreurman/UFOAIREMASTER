@@ -125,6 +125,17 @@ struct StrategicStoredUfoView {
 	std::string ufoDefinition;
 };
 
+struct StrategicEmployeeView {
+	canonical::EmployeeId id;
+	canonical::BaseId base;
+	canonical::AircraftId aircraft;
+	int32_t type;
+	int32_t bodySkin;
+	bool hired;
+	bool transfer;
+	std::string name;
+};
+
 struct StrategicMessageView {
 	canonical::MessageId id;
 	StrategicCampaignTime time;
@@ -160,7 +171,8 @@ public:
 		std::vector<StrategicStoredUfoView> storedUfos,
 		std::vector<StrategicMessageView> messages,
 		std::vector<StrategicItemDefinitionView> itemDefinitions = std::vector<StrategicItemDefinitionView>(),
-		std::vector<StrategicAircraftDefinitionView> aircraftDefinitions = std::vector<StrategicAircraftDefinitionView>())
+		std::vector<StrategicAircraftDefinitionView> aircraftDefinitions = std::vector<StrategicAircraftDefinitionView>(),
+		std::vector<StrategicEmployeeView> employees = std::vector<StrategicEmployeeView>())
 		: publicationSerial_(publicationSerial),
 		  campaignTime_(campaignTime),
 		  credits_(credits),
@@ -176,7 +188,8 @@ public:
 		  storedUfos_(std::move(storedUfos)),
 		  messages_(std::move(messages)),
 		  itemDefinitions_(std::move(itemDefinitions)),
-		  aircraftDefinitions_(std::move(aircraftDefinitions))
+		  aircraftDefinitions_(std::move(aircraftDefinitions)),
+		  employees_(std::move(employees))
 	{
 	}
 
@@ -196,6 +209,7 @@ public:
 	const std::vector<StrategicMessageView>& messages() const noexcept { return messages_; }
 	const std::vector<StrategicItemDefinitionView>& itemDefinitions() const noexcept { return itemDefinitions_; }
 	const std::vector<StrategicAircraftDefinitionView>& aircraftDefinitions() const noexcept { return aircraftDefinitions_; }
+	const std::vector<StrategicEmployeeView>& employees() const noexcept { return employees_; }
 
 private:
 	uint64_t publicationSerial_;
@@ -214,6 +228,7 @@ private:
 	std::vector<StrategicMessageView> messages_;
 	std::vector<StrategicItemDefinitionView> itemDefinitions_;
 	std::vector<StrategicAircraftDefinitionView> aircraftDefinitions_;
+	std::vector<StrategicEmployeeView> employees_;
 };
 
 } // namespace presentation

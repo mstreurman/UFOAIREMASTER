@@ -101,9 +101,9 @@ def main():
     with (ROOT/"tools/remaster/m1-authoritative-intent-coverage.tsv").open() as f:
         ledger = list(csv.DictReader(f, delimiter="\t"))
     strategic = [r for r in ledger if r["domain"] == "strategic"]
-    require(sum(r["authority_bridge"] == "canonical_applied" for r in strategic) == 25,
+    require(sum(r["authority_bridge"] == "canonical_applied" for r in strategic) == 31,
             "strategic applied accounting changed")
-    require(sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic) == 33,
+    require(sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic) == 27,
             "strategic fail-closed accounting changed")
 
     cxx = shutil.which("g++")
@@ -126,7 +126,7 @@ def main():
     print("  aircraft subject: published script-definition key")
     print("  disassembly subject: StoredUfoId")
     print("  CreateProduction: canonical campaign owner qualified")
-    print("  authority accounting unchanged: strategic 25/33; tactical 13/2")
+    print("  current authority accounting: strategic 31/27; tactical 13/2")
     return 0
 
 if __name__ == "__main__":

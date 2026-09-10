@@ -40,8 +40,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 static void CP_TEAM_AssignSoldierByUCN_f (void)
 {
-	/* check syntax */
-	if (cgi->Cmd_Argc() < 1 ) {
+	if (cgi->Cmd_Argc() < 1) {
 		cgi->Com_Printf("Usage: %s <ucn>\n", cgi->Cmd_Argv(0));
 		return;
 	}
@@ -51,6 +50,8 @@ static void CP_TEAM_AssignSoldierByUCN_f (void)
 		return;
 
 	const base_t* base = B_GetCurrentSelectedBase();
+	if (!base)
+		return;
 	const employeeType_t employeeType = EMPL_SOLDIER;
 	aircraft_t* aircraft = base->aircraftCurrent;
 	if (!aircraft)
@@ -60,14 +61,10 @@ static void CP_TEAM_AssignSoldierByUCN_f (void)
 	if (!employee)
 		cgi->Com_Error(ERR_DROP, "CP_TEAM_SelectActorByUCN_f: No employee with UCN %i", ucn);
 
-	if (AIR_IsEmployeeInAircraft(employee, aircraft)) {
-		AIR_RemoveEmployee(employee, aircraft);
-	} else {
-		if (employee->isPilot())
-			AIR_SetPilot(aircraft, employee);
-		else
-			AIR_AddToAircraftTeam(aircraft, employee);
-	}
+	const bool assigned = AIR_IsEmployeeInAircraft(employee, aircraft) != nullptr;
+	const teamMutationResult_t result = CP_TEAM_TrySetAircraftAssignment(ucn, aircraft->idx, !assigned);
+	if (!CP_TEAM_IsMutationAccepted(result))
+		return;
 
 	CP_UpdateActorAircraftVar(aircraft, employeeType);
 	cgi->Cvar_SetValue("cpteam_size", AIR_GetTeamSize(aircraft));
@@ -114,14 +111,12 @@ static void CP_TEAM_SelectActorByUCN_f (void)
  */
 static void CP_TEAM_DeEquipActor_f (void)
 {
-	/* check syntax */
 	if (cgi->Cmd_Argc() < 1) {
 		cgi->Com_Printf("Usage: %s <ucn>\n", cgi->Cmd_Argv(0));
 		return;
 	}
 
 	base_t* base = B_GetCurrentSelectedBase();
-
 	if (!base)
 		return;
 
@@ -135,17 +130,15 @@ static void CP_TEAM_DeEquipActor_f (void)
 	if (!employee)
 		cgi->Com_Error(ERR_DROP, "CP_TEAM_DeEquipActor_f: No employee with UCN %i", ucn);
 
-	character_t* chr = &employee->chr;
+	equipDef_t unused;
+	const teamMutationResult_t result = CP_TEAM_TryDeequipEmployee(base, ucn, &unused);
+	if (!CP_TEAM_IsMutationAccepted(result))
+		return;
 
-	cgi->INV_DestroyInventory(&chr->inv);
-
-	CP_CleanTempInventory(base);
-	equipDef_t unused = base->storage;
-	CP_CleanupTeam(base, &unused);
+	/* Preserve the legacy equipment-screen cleanup outside canonical authority. */
+	cgi->INV_DestroyInventory(&base->bEquipment);
 	cgi->UI_ContainerNodeUpdateEquipment(&base->bEquipment, &unused);
-
-	/* set info cvars */
-	cgi->CL_UpdateCharacterValues(chr);
+	cgi->CL_UpdateCharacterValues(&employee->chr);
 }
 
 #ifdef DEBUG
@@ -347,21 +340,20 @@ static void CP_TEAM_FillBDEFEmployeeList_f (void)
  */
 static void CP_TEAM_ChangeSkin_f (void)
 {
-	if (cgi->Cmd_Argc() < 3 ) {
+	if (cgi->Cmd_Argc() < 3) {
 		cgi->Com_Printf("Usage: %s <ucn> <bodyskinidx>\n", cgi->Cmd_Argv(0));
 		return;
 	}
 	const int ucn = atoi(cgi->Cmd_Argv(1));
 	const int bodySkinIdx = atoi(cgi->Cmd_Argv(2));
 
-	Employee* soldier = E_GetEmployeeFromChrUCN(ucn);
-	if (soldier == nullptr || !soldier->isSoldier()) {
+	const teamMutationResult_t result = CP_TEAM_TrySetEmployeeSkin(ucn, bodySkinIdx);
+	if (!CP_TEAM_IsMutationAccepted(result)) {
 		cgi->Com_Printf("Invalid soldier UCN: %i\n", ucn);
 		return;
 	}
 
 	cgi->Cvar_SetValue("mn_body_skin", bodySkinIdx);
-	soldier->chr.bodySkin = bodySkinIdx;
 }
 
 static const cmdList_t teamCallbacks[] = {

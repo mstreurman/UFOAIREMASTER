@@ -321,3 +321,115 @@ void CP_UpdateActorAircraftVar (aircraft_t* aircraft, employeeType_t employeeTyp
 		cgi->Cvar_Set("mn_pilot_head_skin", "");
 	}
 }
+
+/**
+ * @brief Report whether a team owner accepted the requested canonical state.
+ */
+bool CP_TEAM_IsMutationAccepted (teamMutationResult_t result)
+{
+	return result == TEAM_MUTATION_APPLIED || result == TEAM_MUTATION_NO_CHANGE;
+}
+
+/**
+ * @brief Set desired soldier/pilot membership on a PHALANX aircraft.
+ *
+ * Both EmployeeId/UCN and aircraft index are re-resolved at execution time.
+ * Assignment to a different aircraft remains rejected instead of silently moving
+ * the employee, matching the legacy team-list eligibility contract.
+ */
+teamMutationResult_t CP_TEAM_TrySetAircraftAssignment (int employeeUcn, int aircraftIdx, bool assigned)
+{
+	Employee* employee = E_GetEmployeeFromChrUCN(employeeUcn);
+	if (!employee)
+		return TEAM_MUTATION_INVALID_EMPLOYEE;
+
+	aircraft_t* aircraft = AIR_AircraftGetFromIDX(aircraftIdx);
+	if (!aircraft || !aircraft->homebase || AIR_IsUFO(aircraft))
+		return TEAM_MUTATION_INVALID_AIRCRAFT;
+	if (!AIR_IsAircraftInBase(aircraft))
+		return TEAM_MUTATION_AIRCRAFT_NOT_IN_BASE;
+	if (!employee->isSoldier() && !employee->isPilot())
+		return TEAM_MUTATION_WRONG_EMPLOYEE_TYPE;
+	if (employee->transfer)
+		return TEAM_MUTATION_TRANSFER_ACTIVE;
+	if (!employee->isHiredInBase(aircraft->homebase))
+		return TEAM_MUTATION_NOT_HIRED_AT_BASE;
+
+	const aircraft_t* assignedAircraft = AIR_IsEmployeeInAircraft(employee, nullptr);
+	if (assigned) {
+		if (assignedAircraft == aircraft)
+			return TEAM_MUTATION_NO_CHANGE;
+		if (assignedAircraft)
+			return TEAM_MUTATION_ASSIGNED_ELSEWHERE;
+
+		if (employee->isPilot()) {
+			if (AIR_GetPilot(aircraft))
+				return TEAM_MUTATION_AIRCRAFT_FULL;
+			return AIR_SetPilot(aircraft, employee)
+				? TEAM_MUTATION_APPLIED
+				: TEAM_MUTATION_REJECTED;
+		}
+		if (AIR_GetTeamSize(aircraft) >= aircraft->maxTeamSize)
+			return TEAM_MUTATION_AIRCRAFT_FULL;
+		return AIR_AddToAircraftTeam(aircraft, employee)
+			? TEAM_MUTATION_APPLIED
+			: TEAM_MUTATION_REJECTED;
+	}
+
+	if (assignedAircraft != aircraft)
+		return TEAM_MUTATION_NO_CHANGE;
+	return AIR_RemoveEmployee(employee, aircraft)
+		? TEAM_MUTATION_APPLIED
+		: TEAM_MUTATION_REJECTED;
+}
+
+/**
+ * @brief De-equip an employee and perform the same base/team cleanup as legacy UI.
+ *
+ * The optional returned equipment value exists only so the legacy callback can
+ * refresh its equipment widget with the same post-cleanup value. Typed presentation
+ * callers pass nullptr and receive no mutable campaign object.
+ */
+teamMutationResult_t CP_TEAM_TryDeequipEmployee (base_t* base, int employeeUcn, equipDef_t* unusedEquipment)
+{
+	if (!base)
+		return TEAM_MUTATION_INVALID_BASE;
+
+	Employee* employee = E_GetEmployeeFromChrUCN(employeeUcn);
+	if (!employee)
+		return TEAM_MUTATION_INVALID_EMPLOYEE;
+	if (employee->transfer)
+		return TEAM_MUTATION_TRANSFER_ACTIVE;
+	if (!employee->isHiredInBase(base))
+		return TEAM_MUTATION_NOT_HIRED_AT_BASE;
+	if (employee->isAwayFromBase())
+		return TEAM_MUTATION_AWAY_FROM_BASE;
+
+	cgi->INV_DestroyInventory(&employee->chr.inv);
+	/* Character temp containers affect canonical loadout cleanup. base->bEquipment
+	 * is legacy equipment-screen scratch and remains callback-owned. */
+	CP_CleanTempInventory(nullptr);
+	equipDef_t unused = base->storage;
+	CP_CleanupTeam(base, &unused);
+	if (unusedEquipment)
+		*unusedEquipment = unused;
+	return TEAM_MUTATION_APPLIED;
+}
+
+/**
+ * @brief Set a soldier body skin after re-resolving EmployeeId/UCN.
+ *
+ * No new range validation is introduced: the legacy callback accepted the parsed
+ * integer verbatim once the employee was known to be a soldier.
+ */
+teamMutationResult_t CP_TEAM_TrySetEmployeeSkin (int employeeUcn, int bodySkin)
+{
+	Employee* employee = E_GetEmployeeFromChrUCN(employeeUcn);
+	if (!employee)
+		return TEAM_MUTATION_INVALID_EMPLOYEE;
+	if (!employee->isSoldier())
+		return TEAM_MUTATION_WRONG_EMPLOYEE_TYPE;
+
+	employee->chr.bodySkin = bodySkin;
+	return TEAM_MUTATION_APPLIED;
+}

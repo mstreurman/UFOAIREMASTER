@@ -10,4 +10,4 @@ python3 tools/remaster/test-m1-research-production-publication-map.py
 python3 tools/remaster/test-m1-production-contract-normalization.py
 
 echo "M1 ItemId + production subject full static qualification: PASS"
-echo "NOTE: CreateProduction is canonical-applied; authority accounting is strategic 25/33, tactical 13/2."
+echo "NOTE: CreateProduction is canonical-applied; current authority accounting is strategic 31/27, tactical 13/2."

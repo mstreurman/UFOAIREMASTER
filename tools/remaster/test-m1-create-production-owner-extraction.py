@@ -81,10 +81,10 @@ try:
         raise AssertionError("CreateProduction ledger not canonical_applied")
     if strategic["CreateProduction"]["owner_source"] != "src/client/cgame/campaign/cp_produce.cpp":
         raise AssertionError("CreateProduction ledger owner is not cp_produce.cpp")
-    if sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) != 25:
-        raise AssertionError("strategic applied accounting must be 25")
-    if sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) != 33:
-        raise AssertionError("strategic pending accounting must be 33")
+    if sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) != 31:
+        raise AssertionError("strategic applied accounting must be 31")
+    if sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) != 27:
+        raise AssertionError("strategic pending accounting must be 27")
     if sum(r["authority_bridge"] == "server_request_forwarded" for r in tactical) != 13:
         raise AssertionError("tactical forwarded accounting must remain 13")
     if sum(r["authority_bridge"] == "client_request_helper_pending_fail_closed" for r in tactical) != 2:
@@ -93,7 +93,7 @@ try:
     print("PASS M1 CreateProduction canonical owner extraction")
     print("PASS item/aircraft/stored-UFO subjects are re-resolved and canonically requalified")
     print("PASS legacy prod_inc and typed remaster intent converge on PR_TryCreateProduction")
-    print("PASS authority accounting: strategic 25/33; tactical 13/2")
+    print("PASS authority accounting: strategic 31/27; tactical 13/2")
 except AssertionError as exc:
     print("FAIL M1 CreateProduction canonical owner extraction: " + str(exc), file=sys.stderr)
     raise SystemExit(1)

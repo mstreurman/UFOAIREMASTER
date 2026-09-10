@@ -252,12 +252,12 @@ def audit_source_contract(root: Path) -> None:
         "EmployeeId canonical registry mapping is not qualified",
     )
     require(
-        identity["EmployeeId"]["publication_status"] == "not_published",
-        "EmployeeId publication must remain pending in this slice",
+        identity["EmployeeId"]["publication_status"] == "published",
+        "EmployeeId must be published by the employee/team owner batch",
     )
     require(
-        identity["EmployeeId"]["intent_status"] == "pending_owner",
-        "employee mutation authority must remain pending in this slice",
+        identity["EmployeeId"]["intent_status"] == "employee_team_owners_qualified",
+        "employee/team mutation authority must be qualified",
     )
 
     lifetime_rows = list(csv.DictReader(
@@ -351,7 +351,7 @@ def main() -> int:
     print("  load allocator reconciliation: monotonic")
     print("  duplicate campaign/team UCN load rejection: locked")
     print("  inherited save version 4 / protocol version 18: unchanged")
-    print("  EmployeeId direct UCN mapping: qualified; publication/owners remain pending")
+    print("  EmployeeId direct UCN mapping: qualified; publication and employee/team owners qualified")
     print("  focused GoogleTests: 2/2")
     return 0
 

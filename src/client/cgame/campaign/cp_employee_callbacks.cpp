@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../ui/ui_dataids.h"
 #include "cp_campaign.h"
 #include "cp_hospital.h" /* HOS_NeedsHealing */
+#include "cp_popup.h"
 #include "cp_employee_callbacks.h"
 #include "cp_employee.h"
 
@@ -174,17 +175,14 @@ static void E_EmployeeList_f (void)
  */
 static void E_ChangeName_f (void)
 {
-	Employee* employee = E_GetEmployeeFromChrUCN(cgi->Cvar_GetInteger("mn_ucn"));
+	const int ucn = cgi->Cvar_GetInteger("mn_ucn");
+	Employee* employee = E_GetEmployeeFromChrUCN(ucn);
 	if (!employee)
 		return;
 
-	/* employee name should not contain " */
-	if (!Com_IsValidName(cgi->Cvar_GetString("mn_name"))) {
+	const employeeMutationResult_t result = E_TryRenameEmployee(ucn, cgi->Cvar_GetString("mn_name"));
+	if (result == EMPLOYEE_MUTATION_INVALID_NAME)
 		cgi->Cvar_ForceSet("mn_name", employee->chr.name);
-		return;
-	}
-
-	Q_strncpyz(employee->chr.name, cgi->Cvar_GetString("mn_name"), sizeof(employee->chr.name));
 }
 
 /**
@@ -193,34 +191,31 @@ static void E_ChangeName_f (void)
  */
 static void E_EmployeeDelete_f (void)
 {
-	/* Check syntax. */
 	if (cgi->Cmd_Argc() < 2) {
 		cgi->Com_Printf("Usage: %s <num>\n", cgi->Cmd_Argv(0));
 		return;
 	}
 
-	/* num - menu index (line in text) */
 	int num = atoi(cgi->Cmd_Argv(1));
-
 	Employee* employee = E_GetEmployeeByMenuIndex(num);
-	/* empty slot selected */
 	if (!employee)
 		return;
 
-	if (employee->isHired()) {
-		if (!employee->unhire()) {
+	const bool wasHired = employee->isHired();
+	const int ucn = employee->chr.ucn;
+	const employeeMutationResult_t result = E_TryDeleteEmployee(ucn);
+	if (!E_IsMutationAccepted(result)) {
+		if (wasHired) {
 			cgi->UI_DisplayNotice(_("Could not fire employee"), 2000, "employees");
 			cgi->Com_DPrintf(DEBUG_CLIENT, "Couldn't fire employee\n");
-			return;
 		}
+		return;
 	}
-	E_DeleteEmployee(employee);
-	cgi->Cbuf_AddText("employee_init %i\n", employeeCategory);
 
+	cgi->Cbuf_AddText("employee_init %i\n", employeeCategory);
 	num = std::max(0, num - 1);
 	cgi->Cbuf_AddText("employee_select %i\n", num);
 	cgi->Cbuf_AddText("hire_select %i\n", num);
-
 	cgi->Cbuf_AddText("employee_update_count\n");
 }
 
@@ -232,47 +227,39 @@ static void E_EmployeeDelete_f (void)
 static void E_EmployeeHire_f (void)
 {
 	base_t* base = B_GetCurrentSelectedBase();
-
 	if (!base)
 		return;
 
-	/* Check syntax. */
 	if (cgi->Cmd_Argc() < 2) {
 		cgi->Com_Printf("Usage: %s <+num>\n", cgi->Cmd_Argv(0));
 		return;
 	}
 
 	const char* arg = cgi->Cmd_Argv(1);
-
 	if (arg[0] == '+')
 		++arg;
-
 	const int num = atoi(arg);
 
 	Employee* employee = E_GetEmployeeByMenuIndex(num);
-	/* empty slot selected */
 	if (!employee)
 		return;
 
-	if (employee->isHired()) {
-		if (!employee->unhire()) {
-			cgi->Com_DPrintf(DEBUG_CLIENT, "Couldn't fire employee\n");
-			cgi->UI_DisplayNotice(_("Could not fire employee"), 2000, "employees");
-		} else {
+	const bool hire = !employee->isHired();
+	const employeeMutationResult_t result = E_TrySetHired(base, employee->chr.ucn, hire);
+	if (result == EMPLOYEE_MUTATION_NO_CAPACITY)
+		CP_Popup(_("Not enough quarters"), _("You don't have enough quarters for your employees.\nBuild more quarters."));
+
+	if (!E_IsMutationAccepted(result)) {
+		cgi->Com_DPrintf(DEBUG_CLIENT, "Couldn't %s employee\n", hire ? "hire" : "fire");
+		cgi->UI_DisplayNotice(hire ? _("Could not hire employee") : _("Could not fire employee"), 2000, "employees");
+		if (hire)
 			cgi->UI_ExecuteConfunc("employeehire %i", num);
-		}
 	} else {
-		if (!E_HireEmployee(base, employee)) {
-			cgi->Com_DPrintf(DEBUG_CLIENT, "Couldn't hire employee\n");
-			cgi->UI_DisplayNotice(_("Could not hire employee"), 2000, "employees");
-			cgi->UI_ExecuteConfunc("employeehire %i", num);
-		} else {
-			cgi->UI_ExecuteConfunc("employeefire %i", num);
-		}
+		cgi->UI_ExecuteConfunc(hire ? "employeefire %i" : "employeehire %i", num);
 	}
+
 	E_EmployeeSelect(employee);
 	cgi->Cbuf_AddText("hire_select %i\n", num);
-
 	E_UpdateGUICount_f();
 }
 

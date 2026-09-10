@@ -10,6 +10,8 @@
 #include "../cl_shared.h"
 #include "../cgame/campaign/cp_aircraft.h"
 #include "../cgame/campaign/cp_campaign.h"
+#include "../cgame/campaign/cp_employee.h"
+#include "../cgame/campaign/cp_team.h"
 #include "../cgame/campaign/cp_geoscape.h"
 #include "../cgame/campaign/cp_missions.h"
 #include "../cgame/campaign/cp_produce.h"
@@ -63,6 +65,10 @@ bool resolveAircraftDestination(const StrategicPosition& position, vec2_t destin
 installation_t* resolveInstallation(canonical::InstallationId id) {
     if (!id.isValid() || id.value > static_cast<uint32_t>(std::numeric_limits<int>::max())) return nullptr;
     return INS_GetByIDX(static_cast<int>(id.value));
+}
+bool resolveEmployeeUcn(canonical::EmployeeId id, int* ucn) {
+    if(!ucn || !id.isValid() || id.value>static_cast<uint32_t>(std::numeric_limits<int>::max())) return false;
+    *ucn=static_cast<int>(id.value); return true;
 }
 template <std::size_t N>
 const char* resolveBoundedText(const char (&text)[N]) {
@@ -216,22 +222,56 @@ void applyPendingStrategicIntents() {
             if(a&&AIR_TryStopAircraft(a)) out.disposition=StrategicIntentDisposition::Applied;
             if(a){out.aircraft=canonical::AircraftId(static_cast<uint32_t>(a->idx));out.canonicalValue=static_cast<int32_t>(a->status);} break; }
 
+        case StrategicIntentKind::AssignEmployeeToAircraft: {
+            int ucn=-1; aircraft_t* a=resolvePhalanxAircraft(in.aircraft);
+            if(resolveEmployeeUcn(in.employee,&ucn)&&a){
+                const teamMutationResult_t result=CP_TEAM_TrySetAircraftAssignment(ucn,a->idx,in.value0!=0);
+                if(CP_TEAM_IsMutationAccepted(result)){out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=in.value0!=0?1:0;}
+            }
+            break; }
+        case StrategicIntentKind::DeequipEmployee: {
+            int ucn=-1; base_t* b=resolveBase(in.base);
+            if(resolveEmployeeUcn(in.employee,&ucn)&&b&&CP_TEAM_IsMutationAccepted(CP_TEAM_TryDeequipEmployee(b,ucn,nullptr))){
+                out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=ucn;
+            }
+            break; }
+        case StrategicIntentKind::DeleteEmployee: {
+            int ucn=-1;
+            if(resolveEmployeeUcn(in.employee,&ucn)&&E_IsMutationAccepted(E_TryDeleteEmployee(ucn))){
+                out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=ucn;
+            }
+            break; }
+        case StrategicIntentKind::HireOrFireEmployee: {
+            int ucn=-1; base_t* b=resolveBase(in.base);
+            if(resolveEmployeeUcn(in.employee,&ucn)&&b&&E_IsMutationAccepted(E_TrySetHired(b,ucn,in.value0!=0))){
+                out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=in.value0!=0?1:0;
+            }
+            break; }
+        case StrategicIntentKind::RenameEmployee: {
+            int ucn=-1; const char* name=resolveBoundedText(in.text);
+            if(resolveEmployeeUcn(in.employee,&ucn)&&name&&E_IsMutationAccepted(E_TryRenameEmployee(ucn,name))){
+                out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=ucn;
+            }
+            break; }
+        case StrategicIntentKind::SetEmployeeSkin: {
+            int ucn=-1;
+            if(resolveEmployeeUcn(in.employee,&ucn)&&CP_TEAM_IsMutationAccepted(CP_TEAM_TrySetEmployeeSkin(ucn,in.value0))){
+                out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=in.value0;
+            }
+            break; }
+
         /* Strict-authority catalog is transport-complete, but these actions stay
          * rejected until callback-owned validation/mutation is moved into its
          * canonical campaign subsystem. No command-string fallback is allowed. */
         case StrategicIntentKind::AcceptUfoSaleOffer:
-        case StrategicIntentKind::AssignEmployeeToAircraft:
         case StrategicIntentKind::AutoResolveMission:
         case StrategicIntentKind::BuyAircraft:
         case StrategicIntentKind::BuyItem:
         case StrategicIntentKind::BuyUGV:
-        case StrategicIntentKind::DeequipEmployee:
-        case StrategicIntentKind::DeleteEmployee:
         case StrategicIntentKind::DestroyAntimatterFacility:
         case StrategicIntentKind::DestroyStoredUfo:
         case StrategicIntentKind::EquipAircraftItem:
         case StrategicIntentKind::EquipBaseDefenceItem:
-        case StrategicIntentKind::HireOrFireEmployee:
         case StrategicIntentKind::KillContainedAlien:
         case StrategicIntentKind::KillContainedAliens:
         case StrategicIntentKind::LoadGame:
@@ -239,7 +279,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::RemoveAircraftItem:
         case StrategicIntentKind::RemoveBaseDefenceItem:
         case StrategicIntentKind::RenameAircraft:
-        case StrategicIntentKind::RenameEmployee:
         case StrategicIntentKind::SaveGame:
         case StrategicIntentKind::SellAircraft:
         case StrategicIntentKind::SellItem:
@@ -247,7 +286,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::SetAirDefenceAutoFire:
         case StrategicIntentKind::SetAirDefenceTarget:
         case StrategicIntentKind::SetAutoSellPolicy:
-        case StrategicIntentKind::SetEmployeeSkin:
         case StrategicIntentKind::StartMission:
         case StrategicIntentKind::StartTransfer:
         case StrategicIntentKind::StoreRecoveredUfo:

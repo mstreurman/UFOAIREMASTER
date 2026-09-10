@@ -5,6 +5,7 @@
 
 #include "../cl_shared.h"
 #include "../cgame/campaign/cp_campaign.h"
+#include "../cgame/campaign/cp_employee.h"
 #include "../cgame/campaign/cp_messages.h"
 #include "../cgame/campaign/cp_missions.h"
 #include "../cgame/campaign/cp_uforecovery.h"
@@ -248,6 +249,23 @@ StrategicStoredUfoView projectStoredUfo(const storedUFO_t& ufo)
 	return out;
 }
 
+StrategicEmployeeView projectEmployee(const Employee& employee)
+{
+	StrategicEmployeeView out;
+	out.id = indexedId<canonical::EmployeeId>(employee.chr.ucn);
+	out.base = employee.baseHired
+		? indexedId<canonical::BaseId>(employee.baseHired->idx)
+		: canonical::BaseId();
+	const aircraft_t* assignedAircraft = AIR_IsEmployeeInAircraft(&employee, nullptr);
+	out.aircraft = aircraftId(assignedAircraft, false);
+	out.type = static_cast<int32_t>(employee.getType());
+	out.bodySkin = employee.chr.bodySkin;
+	out.hired = employee.isHired();
+	out.transfer = employee.transfer;
+	out.name = valueString(employee.chr.name);
+	return out;
+}
+
 StrategicMessageView projectMessage(const uiMessageListNodeMessage_t& message)
 {
 	StrategicMessageView out;
@@ -320,6 +338,13 @@ StrategicSnapshot buildCurrentStrategicSnapshot(uint64_t publicationSerial)
 		storedUfos.push_back(projectStoredUfo(*ufo));
 	}
 
+	std::vector<StrategicEmployeeView> employees;
+	for (int type = 0; type < MAX_EMPL; ++type) {
+		E_Foreach(type, employee) {
+			employees.push_back(projectEmployee(*employee));
+		}
+	}
+
 	std::vector<StrategicMessageView> messages;
 	for (uiMessageListNodeMessage_t* message = cgi->UI_MessageGetStack(); message; message = message->next) {
 		messages.push_back(projectMessage(*message));
@@ -354,7 +379,8 @@ StrategicSnapshot buildCurrentStrategicSnapshot(uint64_t publicationSerial)
 		std::move(storedUfos),
 		std::move(messages),
 		std::move(itemDefinitions),
-		std::move(aircraftDefinitions));
+		std::move(aircraftDefinitions),
+		std::move(employees));
 }
 
 void resetStrategicSnapshotAdapter()

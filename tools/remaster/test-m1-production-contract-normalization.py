@@ -174,10 +174,10 @@ try:
     if strategic["CreateProduction"]["owner_source"] != "src/client/cgame/campaign/cp_produce.cpp":
         raise AssertionError("CreateProduction must be owned by cp_produce.cpp")
 
-    if sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) != 25:
-        raise AssertionError("strategic applied accounting must be 25")
-    if sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) != 33:
-        raise AssertionError("strategic pending accounting must be 33")
+    if sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) != 31:
+        raise AssertionError("strategic applied accounting must be 31")
+    if sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) != 27:
+        raise AssertionError("strategic pending accounting must be 27")
 
     cxx = shutil.which("g++")
     if not cxx:
@@ -195,7 +195,7 @@ try:
     print("PASS legacy prod_inc semantic split: CreateProduction action 60 now routes through its canonical campaign owner")
     print("PASS normalized C++11 intent signatures compile without renumbering existing ABI values")
     print("PASS canonical increase/set owners re-resolve ProductionId and contain no UI/command/cvar dispatch")
-    print("PASS bridge accounting: 58 strategic semantics; 25 applied / 33 fail-closed; tactical 13/2")
+    print("PASS bridge accounting: 58 strategic semantics; 31 applied / 27 fail-closed; tactical 13/2")
 except AssertionError as exc:
     print("FAIL M1 production contract normalization: " + str(exc), file=sys.stderr)
     raise SystemExit(1)

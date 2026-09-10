@@ -31,3 +31,24 @@ void CP_CleanupAircraftTeam(aircraft_t* aircraft, equipDef_t* ed);
 void CP_CleanupTeam(base_t* base, equipDef_t* ed);
 void CP_SetEquipContainer(character_t* chr);
 void CP_AddWeaponAmmo(equipDef_t* ed, Item* item);
+
+typedef enum teamMutationResult_s {
+	TEAM_MUTATION_APPLIED = 0,
+	TEAM_MUTATION_NO_CHANGE,
+	TEAM_MUTATION_INVALID_EMPLOYEE,
+	TEAM_MUTATION_INVALID_AIRCRAFT,
+	TEAM_MUTATION_INVALID_BASE,
+	TEAM_MUTATION_WRONG_EMPLOYEE_TYPE,
+	TEAM_MUTATION_NOT_HIRED_AT_BASE,
+	TEAM_MUTATION_TRANSFER_ACTIVE,
+	TEAM_MUTATION_AWAY_FROM_BASE,
+	TEAM_MUTATION_AIRCRAFT_NOT_IN_BASE,
+	TEAM_MUTATION_ASSIGNED_ELSEWHERE,
+	TEAM_MUTATION_AIRCRAFT_FULL,
+	TEAM_MUTATION_REJECTED
+} teamMutationResult_t;
+
+bool CP_TEAM_IsMutationAccepted(teamMutationResult_t result);
+teamMutationResult_t CP_TEAM_TrySetAircraftAssignment(int employeeUcn, int aircraftIdx, bool assigned);
+teamMutationResult_t CP_TEAM_TryDeequipEmployee(base_t* base, int employeeUcn, equipDef_t* unusedEquipment);
+teamMutationResult_t CP_TEAM_TrySetEmployeeSkin(int employeeUcn, int bodySkin);

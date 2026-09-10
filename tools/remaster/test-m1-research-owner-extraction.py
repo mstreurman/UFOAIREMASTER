@@ -152,11 +152,11 @@ try:
         if strategic[name]['owner_source']!='src/client/cgame/campaign/cp_research.cpp':
             raise AssertionError(f'{name}: wrong owner_source')
 
-    if sum(r['authority_bridge']=='canonical_applied' for r in strategic.values()) != 25:
-        raise AssertionError('strategic applied accounting must be 25')
+    if sum(r['authority_bridge']=='canonical_applied' for r in strategic.values()) != 31:
+        raise AssertionError('strategic applied accounting must be 31')
     if sum(r['authority_bridge']=='owner_extraction_pending_fail_closed'
-           for r in strategic.values()) != 33:
-        raise AssertionError('strategic pending accounting must be 33')
+           for r in strategic.values()) != 27:
+        raise AssertionError('strategic pending accounting must be 27')
 
     for name in ('DecreaseProduction','MoveProductionDown','MoveProductionUp','StopProduction',
                  'IncreaseProduction','SetProductionAmount'):
@@ -168,7 +168,7 @@ try:
     print('PASS M1 Research owner extraction: AssignResearch + MaxAssignResearch + StopResearch')
     print('PASS typed AssignResearch accepts exactly one-scientist +/-1 mutations; legacy callback preserves sign-only behavior')
     print('PASS research canonical owners contain no UI/popup/command/cvar dispatch; no-lab popup remains legacy-callback-only')
-    print('PASS bridge accounting: strategic 25 applied / 33 fail-closed; research and all production owners qualified')
+    print('PASS bridge accounting: strategic 31 applied / 27 fail-closed; research and all production owners qualified')
 except AssertionError as exc:
     print('FAIL M1 Research owner extraction: '+str(exc),file=sys.stderr)
     raise SystemExit(1)
