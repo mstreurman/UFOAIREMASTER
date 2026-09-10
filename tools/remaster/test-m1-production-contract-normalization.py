@@ -128,9 +128,9 @@ try:
         "PR_MUTATION_NO_HANGAR_CAPACITY",
         "PR_MUTATION_NO_MATERIALS",
         "PR_MUTATION_APPLIED_PARTIAL",
-        "PR_QueueNew(base, &selectedData, producibleAmount)",
+        "PR_TryCreateProduction(base, selectedData.type,",
     ], "legacy increase callback")
-    # Creation stays legacy-only; existing-job mutation must no longer call low-level increase directly.
+    # Creation and existing-job mutation both route through campaign-owned production helpers.
     selected = inc_cb[inc_cb.find("if (selectedProduction)"):inc_cb.find("} else {")]
     forbid(selected, ["PR_IncreaseProduction("], "legacy selected-job increase branch")
 
@@ -152,8 +152,8 @@ try:
     if fail_start < 0:
         raise AssertionError("fail-closed block missing")
     fail = adapter[fail_start:]
-    if "case StrategicIntentKind::CreateProduction:" not in fail:
-        raise AssertionError("CreateProduction must remain fail-closed")
+    if "case StrategicIntentKind::CreateProduction:" in fail:
+        raise AssertionError("CreateProduction must not remain fail-closed")
     for name in ("IncreaseProduction", "SetProductionAmount"):
         if f"case StrategicIntentKind::{name}:" in fail:
             raise AssertionError(f"{name}: must not remain in fail-closed block")
@@ -169,13 +169,15 @@ try:
             raise AssertionError(f"{name}: must be canonical_applied")
         if strategic[name]["owner_source"] != "src/client/cgame/campaign/cp_produce.cpp":
             raise AssertionError(f"{name}: wrong owner source")
-    if strategic["CreateProduction"]["authority_bridge"] != "owner_extraction_pending_fail_closed":
-        raise AssertionError("CreateProduction must remain fail-closed")
+    if strategic["CreateProduction"]["authority_bridge"] != "canonical_applied":
+        raise AssertionError("CreateProduction must be canonical_applied")
+    if strategic["CreateProduction"]["owner_source"] != "src/client/cgame/campaign/cp_produce.cpp":
+        raise AssertionError("CreateProduction must be owned by cp_produce.cpp")
 
-    if sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) != 24:
-        raise AssertionError("strategic applied accounting must be 24")
-    if sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) != 34:
-        raise AssertionError("strategic pending accounting must be 34")
+    if sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) != 25:
+        raise AssertionError("strategic applied accounting must be 25")
+    if sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) != 33:
+        raise AssertionError("strategic pending accounting must be 33")
 
     cxx = shutil.which("g++")
     if not cxx:
@@ -190,10 +192,10 @@ try:
     ])
 
     print("PASS M1 production contract normalization: Increase existing + absolute SetAmount")
-    print("PASS legacy prod_inc semantic split: CreateProduction appended as action 60 and remains fail-closed")
+    print("PASS legacy prod_inc semantic split: CreateProduction action 60 now routes through its canonical campaign owner")
     print("PASS normalized C++11 intent signatures compile without renumbering existing ABI values")
     print("PASS canonical increase/set owners re-resolve ProductionId and contain no UI/command/cvar dispatch")
-    print("PASS bridge accounting: 58 strategic semantics; 24 applied / 34 fail-closed; tactical 13/2")
+    print("PASS bridge accounting: 58 strategic semantics; 25 applied / 33 fail-closed; tactical 13/2")
 except AssertionError as exc:
     print("FAIL M1 production contract normalization: " + str(exc), file=sys.stderr)
     raise SystemExit(1)

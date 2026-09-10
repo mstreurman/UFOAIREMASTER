@@ -607,9 +607,7 @@ static void PR_ProductionIncrease_f (void)
 {
 	production_t* prod;
 	base_t* base = B_GetCurrentSelectedBase();
-	technology_t* tech = nullptr;
 	int amount = 1;
-	int producibleAmount;
 
 	if (!base)
 		return;
@@ -651,40 +649,52 @@ static void PR_ProductionIncrease_f (void)
 		}
 		cgi->Cvar_SetValue("mn_production_amount", prod->amount);
 	} else {
-		const char* name = nullptr;
-
-		tech = PR_GetTech(&selectedData);
-		name = PR_GetName(&selectedData);
-
-		producibleAmount = PR_RequirementsMet(amount, &tech->requireForProduction, base);
-		if (producibleAmount == 0) {
-			CP_Popup(_("Not enough materials"), _("You don't have the materials needed for producing this item.\n"));
+		int itemIndex = -1;
+		int storedUfoIndex = -1;
+		const char* aircraftDefinition = "";
+		switch (selectedData.type) {
+		case PRODUCTION_TYPE_ITEM:
+			if (!selectedData.data.item)
+				return;
+			itemIndex = selectedData.data.item->idx;
+			break;
+		case PRODUCTION_TYPE_AIRCRAFT:
+			if (!selectedData.data.aircraft)
+				return;
+			aircraftDefinition = selectedData.data.aircraft->id;
+			break;
+		case PRODUCTION_TYPE_DISASSEMBLY:
+			if (!selectedData.data.ufo)
+				return;
+			storedUfoIndex = selectedData.data.ufo->idx;
+			break;
+		default:
 			return;
-		} else if (amount != producibleAmount) {
-			CP_Popup(_("Not enough material!"), _("You don't have enough material to produce all (%i) items. Production will continue with a reduced (%i) number."), amount, producibleAmount);
 		}
-		/** @todo
-		 *  -) need to popup something like: "You need the following items in order to produce more of ITEM:   x of ITEM, x of ITEM, etc..."
-		 *     This info should also be displayed in the item-info.
-		 *  -) can can (if possible) change the 'amount' to a vlalue that _can_ be produced (i.e. the maximum amount possible).*/
 
-		if (PR_IsAircraftData(&selectedData) && CAP_GetFreeCapacity(base, AIR_GetHangarCapacityType(selectedData.data.aircraft)) <= 0) {
+		const productionMutationResult_t result = PR_TryCreateProduction(base, selectedData.type,
+			itemIndex, aircraftDefinition, storedUfoIndex, amount, &prod);
+		if (result == PR_MUTATION_NO_HANGAR_CAPACITY) {
 			CP_Popup(_("Hangars not ready"), _("You cannot queue aircraft.\nNo free space in hangars.\n"));
 			return;
 		}
-
-		/* add production */
-		prod = PR_QueueNew(base, &selectedData, producibleAmount);
-
-		/** @todo this popup hides any previous popup, like popup created in PR_QueueNew */
-		if (!prod)
+		if (result == PR_MUTATION_NO_MATERIALS) {
+			CP_Popup(_("Not enough materials"), _("You don't have the materials needed for producing this item.\n"));
 			return;
+		}
+		if (!PR_IsMutationApplied(result) || !prod)
+			return;
+		if (result == PR_MUTATION_APPLIED_PARTIAL) {
+			CP_Popup(_("Not enough material!"), _("You don't have enough material to produce all (%i) items. Production will continue with a reduced (%i) number."), amount, prod->amount);
+		}
 
 		/* Now we select the item we just created. */
 		selectedProduction = prod;
 		cgi->UI_ExecuteConfunc("prod_selectline %i", selectedProduction->idx);
 
 		/* messages */
+		technology_t* tech = PR_GetTech(&prod->data);
+		const char* name = PR_GetName(&prod->data);
 		Com_sprintf(cp_messageBuffer, sizeof(cp_messageBuffer), _("Work begun on %s"), _(name));
 		MSO_CheckAddNewMessage(NT_PRODUCTION_STARTED, _("Production started"), cp_messageBuffer, MSG_PRODUCTION, tech);
 	}

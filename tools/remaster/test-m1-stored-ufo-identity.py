@@ -142,25 +142,25 @@ try:
         raise AssertionError("StoredUfoId mapping must be direct_persisted_qualified")
     if stored["publication_status"] != "published":
         raise AssertionError("StoredUfoId must be published")
-    if stored["intent_status"] != "create_subject_ready_fail_closed":
-        raise AssertionError("StoredUfoId intent status must remain subject-ready but fail-closed")
+    if stored["intent_status"] != "create_production_owner_qualified":
+        raise AssertionError("StoredUfoId intent status must reflect the qualified CreateProduction owner")
 
     coverage = list(csv.DictReader(
         (ROOT/"tools/remaster/m1-authoritative-intent-coverage.tsv").open(encoding="utf-8"),
         delimiter="\t"))
     strategic = {r["semantic_action"]: r for r in coverage if r["domain"] == "strategic"}
-    if strategic["CreateProduction"]["authority_bridge"] != "owner_extraction_pending_fail_closed":
-        raise AssertionError("CreateProduction must remain fail-closed in StoredUfoId slice")
-    if sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) != 24:
-        raise AssertionError("strategic applied accounting must remain 24")
-    if sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) != 34:
-        raise AssertionError("strategic fail-closed accounting must remain 34")
+    if strategic["CreateProduction"]["authority_bridge"] != "canonical_applied":
+        raise AssertionError("CreateProduction must be canonical_applied after owner extraction")
+    if sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) != 25:
+        raise AssertionError("strategic applied accounting must be 25")
+    if sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) != 33:
+        raise AssertionError("strategic fail-closed accounting must be 33")
 
     print("PASS M1 StoredUfoId: monotonic linked-list identity with direct lookup and no removal compaction")
     print("PASS StoredUfoId save/load: object ID + allocator state persist; duplicate IDs reject; counter reconciles after load")
     print("PASS immutable stored-UFO publication: StoredUfoId + InstallationId + status/condition/definition, no raw pointers")
-    print("PASS CreateProduction remains fail-closed pending ItemId/aircraft subject qualification")
-    print("PASS authority accounting unchanged: strategic 24/34; tactical 13/2")
+    print("PASS CreateProduction is canonical-applied with ItemId/aircraft/StoredUfoId subject qualification")
+    print("PASS authority accounting current: strategic 25/33; tactical 13/2")
 except AssertionError as exc:
     print("FAIL M1 StoredUfoId qualification: " + str(exc), file=sys.stderr)
     raise SystemExit(1)

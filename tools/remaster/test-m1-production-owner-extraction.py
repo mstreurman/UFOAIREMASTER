@@ -83,10 +83,12 @@ try:
         if strategic[name]["owner_source"]!="src/client/cgame/campaign/cp_produce.cpp": raise AssertionError(name+" wrong owner")
     for name in ("IncreaseProduction","SetProductionAmount"):
         if strategic[name]["authority_bridge"]!="canonical_applied": raise AssertionError(name+" normalized existing-job owner must be applied")
-    if strategic["CreateProduction"]["authority_bridge"]!="owner_extraction_pending_fail_closed":
-        raise AssertionError("CreateProduction must remain fail-closed")
-    if sum(r["authority_bridge"]=="canonical_applied" for r in strategic.values())!=24: raise AssertionError("applied must be 24")
-    if sum(r["authority_bridge"]=="owner_extraction_pending_fail_closed" for r in strategic.values())!=34: raise AssertionError("pending must be 34")
+    if strategic["CreateProduction"]["authority_bridge"]!="canonical_applied":
+        raise AssertionError("CreateProduction must be canonical_applied")
+    if strategic["CreateProduction"]["owner_source"]!="src/client/cgame/campaign/cp_produce.cpp":
+        raise AssertionError("CreateProduction wrong owner")
+    if sum(r["authority_bridge"]=="canonical_applied" for r in strategic.values())!=25: raise AssertionError("applied must be 25")
+    if sum(r["authority_bridge"]=="owner_extraction_pending_fail_closed" for r in strategic.values())!=33: raise AssertionError("pending must be 33")
 
     cxx=shutil.which("g++")
     if not cxx: raise AssertionError("g++ not found")
@@ -99,8 +101,8 @@ try:
     print("PASS M1 production owners: Decrease + MoveUp + MoveDown + Stop")
     print("PASS canonical owners re-resolve ProductionId at execution time and contain no UI/command/cvar fallback")
     print("PASS stale two-intent contract: deleted ProductionId rejects after compaction; neighbor identity preserved")
-    print("PASS later normalization qualifies IncreaseProduction + SetProductionAmount; CreateProduction remains fail-closed")
-    print("PASS bridge accounting: strategic 24 applied / 34 fail-closed; tactical unchanged 13/2")
+    print("PASS later normalization qualifies IncreaseProduction + SetProductionAmount; CreateProduction now uses the canonical create owner")
+    print("PASS bridge accounting: strategic 25 applied / 33 fail-closed; tactical unchanged 13/2")
 except AssertionError as exc:
     print("FAIL M1 production owner extraction: "+str(exc),file=sys.stderr)
     raise SystemExit(1)

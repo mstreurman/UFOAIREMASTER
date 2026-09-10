@@ -80,8 +80,8 @@ M0 is sealed. M1 is actively extracting presentation-facing authority without re
 
 ```text
 strategic authoritative semantics: 58 total
-  canonical-applied:               24
-  fail-closed pending owners:      34
+  canonical-applied:               25
+  fail-closed pending owners:      33
 
 tactical authoritative semantics:  15 total
   forwarded to server authority:   13
@@ -98,10 +98,10 @@ The active execution order is:
 3. establish C++11-compatible strong presentation identities and C++26 remaster consumers — **complete foundation**;
 4. complete the source-derived presentation action inventory and five-way authority classification — **complete, with one later semantic split: 58 strategic + 15 tactical authoritative semantics**;
 5. introduce typed intent dispatch without changing canonical rules — **complete contract/catalog foundation**;
-6. extract canonical strategic owners from legacy callbacks — **24 strategic semantics qualified so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, facility build/destroy, Research assign/max/stop, and all existing-job Production amount/move/stop operations;
+6. extract canonical strategic owners from legacy callbacks — **25 strategic semantics qualified so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, facility build/destroy, Research assign/max/stop, and all existing-job Production amount/move/stop operations;
 7. publish Research + Production immutable state — **complete**, including `TechnologyId`, stable runtime `ProductionId`, and snapshot-local queue order/state;
 8. complete the canonical identity audit — **complete contract pass**, with 17 strong 32-bit domains; stable Production and persisted StoredUfo identity are now implemented/published while Facility, Transfer, Defence and other runtime mappings remain explicit debt;
-9. Research owner extraction and all existing-job Production owners are **complete**; `StoredUfoId` qualification/publication is **complete**; `CreateProduction` remains fail-closed pending ItemId/aircraft subject qualification;
+9. Research owner extraction, all existing-job Production owners, and `CreateProduction` are **complete**; ItemId / aircraft-definition / StoredUfo production subjects are qualified and the legacy/remaster create paths converge on the campaign owner;
 10. migrate the remaining employee/team, market, stored-UFO/recovery, transfer, defence, save/load and mission-start authority families behind typed IDs and canonical owners;
 11. keep ambiguous or misclassified semantics fail-closed until their canonical contract is proven;
 12. once M1 boundary exit criteria are satisfied, bring up the SDL3/Vulkan production platform path;
@@ -195,9 +195,9 @@ The active execution order is:
   - [x] Seal typed catalog coverage, then correct one discovered context-dependent conflation: **58 strategic authoritative semantics + 15 tactical semantics** (`CreateProduction` split from legacy `prod_inc`).
   - [x] Preserve the presentation authority guard: no command/cvar fallback in strategic/tactical intent adapters.
   - [x] Forward **13/15 tactical semantics** through the existing server protocol; keep AbortMission and Reload fail-closed until request helpers prove protocol emission.
-  - [x] Qualify **24/58 strategic semantics** through campaign-owned canonical owners: campaign time lapse; aircraft mission/return/start/stop/destination/pursuit/homebase; base build/rename; installation build/rename/destroy; facility build/destroy; Research assign/max/stop; all existing-job Production decrease/increase/set-amount/move/stop operations.
-  - [x] Keep the remaining **34 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted or corrected.
-  - [ ] Complete ItemId + aircraft production-subject qualification before bridging `CreateProduction`; StoredUfoId is now qualified/published, while facility/defence long-lived mutation still requires stable identity.
+  - [x] Qualify **25/58 strategic semantics** through campaign-owned canonical owners: campaign time lapse; aircraft mission/return/start/stop/destination/pursuit/homebase; base build/rename; installation build/rename/destroy; facility build/destroy; Research assign/max/stop; all existing-job Production decrease/increase/set-amount/move/stop operations.
+  - [x] Keep the remaining **33 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted or corrected.
+  - [x] Complete ItemId + aircraft + StoredUfo production-subject qualification and bridge `CreateProduction` through the canonical campaign owner; facility/defence long-lived mutation still requires stable identity.
 - [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
 
 ### Renderer and presentation

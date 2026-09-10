@@ -107,7 +107,12 @@ typedef enum productionMutationResult_s {
 	PR_MUTATION_NO_MATERIALS,
 	PR_MUTATION_NO_CHANGE,
 	PR_MUTATION_APPLIED_PARTIAL,
-	PR_MUTATION_QUEUE_BOUNDARY
+	PR_MUTATION_QUEUE_BOUNDARY,
+	PR_MUTATION_INVALID_SUBJECT,
+	PR_MUTATION_UNSUPPORTED_SUBJECT,
+	PR_MUTATION_NOT_PRODUCIBLE,
+	PR_MUTATION_ALREADY_DISASSEMBLING,
+	PR_MUTATION_QUEUE_FULL
 } productionMutationResult_t;
 
 #define PR_GetProductionForBase(base) (&((base)->productions))
@@ -128,6 +133,7 @@ int PR_IncreaseProduction(production_t* prod, int amount);
 int PR_DecreaseProduction(production_t* prod, int amount);
 
 bool PR_IsMutationApplied(productionMutationResult_t result);
+productionMutationResult_t PR_TryCreateProduction(struct base_s* base, productionType_t subjectType, int itemIndex, const char* aircraftDefinition, int storedUfoIndex, int amount, production_t** createdProduction);
 productionMutationResult_t PR_TryIncreaseProduction(struct base_s* base, uint32_t runtimeId, int amount);
 productionMutationResult_t PR_TryDecreaseProduction(struct base_s* base, uint32_t runtimeId, int amount);
 productionMutationResult_t PR_TrySetProductionAmount(struct base_s* base, uint32_t runtimeId, int targetAmount);

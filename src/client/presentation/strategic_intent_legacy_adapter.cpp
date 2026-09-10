@@ -152,6 +152,19 @@ void applyPendingStrategicIntents() {
             production_t* prod=b&&in.production.isValid()?PR_GetProductionByRuntimeId(b,in.production.value):nullptr;
             out.canonicalValue=prod?prod->amount:-1; break; }
 
+        case StrategicIntentKind::CreateProduction: {
+            base_t* b=resolveBase(in.base); const char* aircraftDefinition=resolveBoundedText(in.key0);
+            int itemIndex=-1, storedUfoIndex=-1; bool subjectIdsValid=true;
+            if(in.item.isValid()){if(in.item.value>static_cast<uint32_t>(std::numeric_limits<int>::max()))subjectIdsValid=false;else itemIndex=static_cast<int>(in.item.value);}
+            if(in.storedUfo.isValid()){if(in.storedUfo.value>static_cast<uint32_t>(std::numeric_limits<int>::max()))subjectIdsValid=false;else storedUfoIndex=static_cast<int>(in.storedUfo.value);}
+            production_t* created=nullptr;
+            if(b&&aircraftDefinition&&subjectIdsValid&&in.value0>=static_cast<int32_t>(PRODUCTION_TYPE_ITEM)&&in.value0<static_cast<int32_t>(PRODUCTION_TYPE_MAX)){
+                const productionMutationResult_t result=PR_TryCreateProduction(b,static_cast<productionType_t>(in.value0),itemIndex,aircraftDefinition,storedUfoIndex,in.value1,&created);
+                if(PR_IsMutationApplied(result))out.disposition=StrategicIntentDisposition::Applied;
+            }
+            out.canonicalValue=created?created->amount:-1; break; }
+
+
         case StrategicIntentKind::BuildBase: {
             vec2_t pos; base_t* b=nullptr; const char* name=resolveBoundedText(in.text);
             if(name&&resolveStrategicPosition2(in.position,pos)&&B_TryBuildBase(pos,name,&b)==B_BUILD_APPLIED){out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=b?b->idx:-1;}
@@ -239,7 +252,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::StartTransfer:
         case StrategicIntentKind::StoreRecoveredUfo:
         case StrategicIntentKind::TransferStoredUfo:
-        case StrategicIntentKind::CreateProduction:
             break;
         }
         intent::legacy::publishStrategicIntentResult(out);

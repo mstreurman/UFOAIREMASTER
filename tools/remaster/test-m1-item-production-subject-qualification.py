@@ -77,8 +77,8 @@ def main():
         "typed CreateProduction signature changed",
     )
     fail = intent_adapter[intent_adapter.find("case StrategicIntentKind::AcceptUfoSaleOffer:"):]
-    require("case StrategicIntentKind::CreateProduction:" in fail,
-            "CreateProduction must remain fail-closed")
+    require("case StrategicIntentKind::CreateProduction:" not in fail,
+            "CreateProduction must not remain fail-closed after owner extraction")
 
     with (ROOT/"tools/remaster/m1-canonical-identity-registry.tsv").open() as f:
         rows = list(csv.DictReader(f, delimiter="\t"))
@@ -89,8 +89,8 @@ def main():
             "ItemId catalog not published")
     require(by["AircraftDefinitionKey"]["publication_status"] == "published_definition_catalog",
             "aircraft definition catalog not published")
-    require(by["ItemId"]["intent_status"] == "pending_owner",
-            "ItemId owner must remain pending")
+    require(by["ItemId"]["intent_status"] == "create_production_owner_qualified",
+            "ItemId CreateProduction owner qualification missing")
 
     with (ROOT/"tools/remaster/m1-canonical-identity-lifetime-registry.tsv").open() as f:
         rows = list(csv.DictReader(f, delimiter="\t"))
@@ -101,9 +101,9 @@ def main():
     with (ROOT/"tools/remaster/m1-authoritative-intent-coverage.tsv").open() as f:
         ledger = list(csv.DictReader(f, delimiter="\t"))
     strategic = [r for r in ledger if r["domain"] == "strategic"]
-    require(sum(r["authority_bridge"] == "canonical_applied" for r in strategic) == 24,
+    require(sum(r["authority_bridge"] == "canonical_applied" for r in strategic) == 25,
             "strategic applied accounting changed")
-    require(sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic) == 34,
+    require(sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic) == 33,
             "strategic fail-closed accounting changed")
 
     cxx = shutil.which("g++")
@@ -125,8 +125,8 @@ def main():
     print("  ItemId: current-content objDef ordinal + stable script-key catalog")
     print("  aircraft subject: published script-definition key")
     print("  disassembly subject: StoredUfoId")
-    print("  CreateProduction: still fail-closed")
-    print("  authority accounting unchanged: strategic 24/34; tactical 13/2")
+    print("  CreateProduction: canonical campaign owner qualified")
+    print("  authority accounting unchanged: strategic 25/33; tactical 13/2")
     return 0
 
 if __name__ == "__main__":

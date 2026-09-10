@@ -143,8 +143,8 @@ try:
         raise AssertionError("ProductionId registry mapping_status must be runtime_mapping_implemented")
     if prod["publication_status"] != "published":
         raise AssertionError("ProductionId registry must be published")
-    if prod["intent_status"] != "existing_job_owners_qualified":
-        raise AssertionError("ProductionId intent status must reflect all existing-job owners qualified")
+    if prod["intent_status"] != "production_owners_qualified":
+        raise AssertionError("ProductionId intent status must reflect all production owners qualified")
 
     coverage = list(csv.DictReader(
         (ROOT/"tools/remaster/m1-authoritative-intent-coverage.tsv").open(encoding="utf-8"),
@@ -154,19 +154,19 @@ try:
                  "IncreaseProduction","SetProductionAmount"):
         if strategic[name]["authority_bridge"] != "canonical_applied":
             raise AssertionError(f"{name}: existing-job production owner must be canonical_applied")
-    if strategic["CreateProduction"]["authority_bridge"] != "owner_extraction_pending_fail_closed":
-        raise AssertionError("CreateProduction must remain fail-closed")
+    if strategic["CreateProduction"]["authority_bridge"] != "canonical_applied":
+        raise AssertionError("CreateProduction must be canonical_applied")
 
-    if sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) != 24:
-        raise AssertionError("strategic applied accounting must be 24")
-    if sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) != 34:
-        raise AssertionError("strategic pending accounting must be 34")
+    if sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) != 25:
+        raise AssertionError("strategic applied accounting must be 25")
+    if sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) != 33:
+        raise AssertionError("strategic pending accounting must be 33")
 
     print("PASS M1 stable ProductionId: runtime identity survives queue copy/compaction semantics")
     print("PASS ProductionId is published with queueIndex retained as order metadata")
     print("PASS production submit APIs use ProductionId rather than queueIndex identity")
     print("PASS ProductionId is runtime-only and regenerated on load; save schema unchanged")
-    print("PASS ProductionId now drives all six existing-job production owners; CreateProduction remains separate/fail-closed")
+    print("PASS ProductionId drives all six existing-job production owners; CreateProduction uses the qualified canonical create owner")
 except AssertionError as exc:
     print("FAIL M1 stable ProductionId: " + str(exc), file=sys.stderr)
     raise SystemExit(1)

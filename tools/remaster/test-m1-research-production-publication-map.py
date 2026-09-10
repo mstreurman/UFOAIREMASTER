@@ -95,13 +95,15 @@ try:
                  "IncreaseProduction", "SetProductionAmount"}:
         if strategic[name]["authority_bridge"] != "canonical_applied":
             raise AssertionError(f"{name}: existing-job production owner must be canonical_applied")
-    if strategic["CreateProduction"]["authority_bridge"] != "owner_extraction_pending_fail_closed":
-        raise AssertionError("CreateProduction must remain fail-closed pending canonical owner extraction")
+    if strategic["CreateProduction"]["authority_bridge"] != "canonical_applied":
+        raise AssertionError("CreateProduction canonical owner extraction missing")
+    if strategic["CreateProduction"]["owner_source"] != "src/client/cgame/campaign/cp_produce.cpp":
+        raise AssertionError("CreateProduction owner source changed")
 
     print("PASS M1 Research + Production publication map: TechnologyId + stable ProductionId + typed subjects + current queue order")
     print("PASS immutable technology and production views expose no raw canonical pointers")
     print("PASS ProductionId is canonical runtime identity; queueIndex remains snapshot-local order metadata")
-    print("PASS all six existing-job production owners applied; CreateProduction remains fail-closed")
+    print("PASS all six existing-job production owners plus CreateProduction are canonical-applied")
 except AssertionError as exc:
     print("FAIL M1 Research + Production publication map: " + str(exc), file=sys.stderr)
     raise SystemExit(1)

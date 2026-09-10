@@ -27,7 +27,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../cl_shared.h"
 #include "cp_campaign.h"
 #include "cp_capacity.h"
+#include "cp_aircraft.h"
 #include "cp_ufo.h"
+#include "cp_uforecovery.h"
 #include "cp_produce.h"
 #include "cp_produce_callbacks.h"
 #include "save/save_produce.h"
@@ -554,6 +556,99 @@ bool PR_IsMutationApplied (productionMutationResult_t result)
 {
 	return result == PR_MUTATION_APPLIED || result == PR_MUTATION_APPLIED_PARTIAL;
 }
+
+/**
+ * @brief Create a new logical production job from a canonically re-resolved subject.
+ * @note Presentation identities are converted to native campaign identifiers before
+ * reaching this function; irrelevant subject fields must remain unset.
+ */
+productionMutationResult_t PR_TryCreateProduction (base_t* base, productionType_t subjectType,
+		int itemIndex, const char* aircraftDefinition, int storedUfoIndex, int amount,
+		production_t** createdProduction)
+{
+	if (createdProduction)
+		*createdProduction = nullptr;
+	if (!base)
+		return PR_MUTATION_INVALID_BASE;
+	if (amount <= 0)
+		return PR_MUTATION_INVALID_AMOUNT;
+
+	const bool hasAircraftDefinition = aircraftDefinition && aircraftDefinition[0] != '\0';
+	productionData_t data = {};
+	data.type = PRODUCTION_TYPE_MAX;
+
+	switch (subjectType) {
+	case PRODUCTION_TYPE_ITEM: {
+		if (itemIndex < 0 || itemIndex >= cgi->csi->numODs || storedUfoIndex >= 0 || hasAircraftDefinition)
+			return PR_MUTATION_INVALID_SUBJECT;
+		const objDef_t* item = INVSH_GetItemByIDX(itemIndex);
+		if (!item || item->idx != itemIndex || item->isVirtual)
+			return PR_MUTATION_INVALID_SUBJECT;
+		const technology_t* tech = RS_GetTechForItem(item);
+		if (!tech || !RS_IsResearched_ptr(tech) || !PR_ItemIsProduceable(item) || tech->produceTime < 0)
+			return PR_MUTATION_NOT_PRODUCIBLE;
+		PR_SetData(&data, PRODUCTION_TYPE_ITEM, item);
+		break;
+	}
+	case PRODUCTION_TYPE_AIRCRAFT: {
+		if (itemIndex >= 0 || storedUfoIndex >= 0 || !hasAircraftDefinition)
+			return PR_MUTATION_INVALID_SUBJECT;
+		const aircraft_t* aircraft = AIR_GetAircraftSilent(aircraftDefinition);
+		if (!aircraft || AIR_IsUFO(aircraft) || !aircraft->tech)
+			return PR_MUTATION_INVALID_SUBJECT;
+		if (!RS_IsResearched_ptr(aircraft->tech) || aircraft->tech->produceTime < 0)
+			return PR_MUTATION_NOT_PRODUCIBLE;
+		if (CAP_GetFreeCapacity(base, AIR_GetHangarCapacityType(aircraft)) <= 0)
+			return PR_MUTATION_NO_HANGAR_CAPACITY;
+		PR_SetData(&data, PRODUCTION_TYPE_AIRCRAFT, aircraft);
+		break;
+	}
+	case PRODUCTION_TYPE_DISASSEMBLY: {
+		if (itemIndex >= 0 || storedUfoIndex < 0 || hasAircraftDefinition)
+			return PR_MUTATION_INVALID_SUBJECT;
+		storedUFO_t* ufo = US_GetStoredUFOByIDX(storedUfoIndex);
+		if (!ufo || ufo->idx != storedUfoIndex || !ufo->ufoTemplate || !ufo->comp || !ufo->installation)
+			return PR_MUTATION_INVALID_SUBJECT;
+		if (ufo->status != SUFO_STORED)
+			return PR_MUTATION_NOT_PRODUCIBLE;
+		if (ufo->disassembly)
+			return PR_MUTATION_ALREADY_DISASSEMBLING;
+		if (!ufo->ufoTemplate->tech || !RS_IsResearched_ptr(ufo->ufoTemplate->tech))
+			return PR_MUTATION_NOT_PRODUCIBLE;
+		PR_SetData(&data, PRODUCTION_TYPE_DISASSEMBLY, ufo);
+		break;
+	}
+	default:
+		return PR_MUTATION_UNSUPPORTED_SUBJECT;
+	}
+
+	int queueAmount = subjectType == PRODUCTION_TYPE_DISASSEMBLY ? 1 : amount;
+	bool ownerLimitedAmount = false;
+	if (subjectType != PRODUCTION_TYPE_DISASSEMBLY && queueAmount > MAX_PRODUCTION_AMOUNT) {
+		queueAmount = MAX_PRODUCTION_AMOUNT;
+		ownerLimitedAmount = true;
+	}
+
+	const technology_t* tech = PR_GetTech(&data);
+	if (!tech)
+		return PR_MUTATION_INVALID_SUBJECT;
+	const int producibleAmount = PR_RequirementsMet(queueAmount, &tech->requireForProduction, base);
+	if (producibleAmount <= 0)
+		return PR_MUTATION_NO_MATERIALS;
+	if (PR_GetProductionForBase(base)->numItems >= MAX_PRODUCTIONS)
+		return PR_MUTATION_QUEUE_FULL;
+
+	production_t* production = PR_QueueNew(base, &data, producibleAmount);
+	if (!production)
+		return PR_MUTATION_INVALID_PRODUCTION;
+	if (createdProduction)
+		*createdProduction = production;
+
+	if (ownerLimitedAmount || producibleAmount < queueAmount)
+		return PR_MUTATION_APPLIED_PARTIAL;
+	return PR_MUTATION_APPLIED;
+}
+
 
 /**
  * @brief Increase an existing logical production job selected by stable runtime identity.
