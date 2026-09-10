@@ -41,9 +41,16 @@ try:
         "bool researchable;",
         "bool collected;",
         "const std::vector<StrategicTechnologyView>& technologies() const",
+        "struct StrategicItemDefinitionView",
+        "const std::vector<StrategicItemDefinitionView>& itemDefinitions() const",
+        "struct StrategicAircraftDefinitionView",
+        "const std::vector<StrategicAircraftDefinitionView>& aircraftDefinitions() const",
         "struct StrategicProductionView",
         "canonical::ProductionId id;",
         "canonical::TechnologyId technology;",
+        "canonical::ItemId item;",
+        "canonical::StoredUfoId storedUfo;",
+        "std::string aircraftDefinition;",
         "int32_t queueIndex;",
         "const std::vector<StrategicProductionView>& productions() const",
     ], "strategic snapshot")
@@ -57,8 +64,13 @@ try:
         "indexedId<canonical::TechnologyId>(technology.idx)",
         "std::vector<StrategicTechnologyView> technologies;",
         "RS_GetTechByIDX(i)",
+        "StrategicItemDefinitionView projectItemDefinition(",
+        "StrategicAircraftDefinitionView projectAircraftDefinition(",
         "StrategicProductionView projectProduction(",
         "canonical::ProductionId(PR_GetProductionRuntimeId(&production))",
+        "indexedId<canonical::ItemId>(production.data.data.item->idx)",
+        "valueString(production.data.data.aircraft->id)",
+        "indexedId<canonical::StoredUfoId>(production.data.data.ufo->idx)",
         "indexedId<canonical::BaseId>(base.idx)",
         "production.idx",
         "PR_GetTech(&production.data)",
@@ -84,9 +96,9 @@ try:
         if strategic[name]["authority_bridge"] != "canonical_applied":
             raise AssertionError(f"{name}: existing-job production owner must be canonical_applied")
     if strategic["CreateProduction"]["authority_bridge"] != "owner_extraction_pending_fail_closed":
-        raise AssertionError("CreateProduction must remain fail-closed pending subject publication")
+        raise AssertionError("CreateProduction must remain fail-closed pending canonical owner extraction")
 
-    print("PASS M1 Research + Production publication map: TechnologyId + stable ProductionId + current queue order")
+    print("PASS M1 Research + Production publication map: TechnologyId + stable ProductionId + typed subjects + current queue order")
     print("PASS immutable technology and production views expose no raw canonical pointers")
     print("PASS ProductionId is canonical runtime identity; queueIndex remains snapshot-local order metadata")
     print("PASS all six existing-job production owners applied; CreateProduction remains fail-closed")

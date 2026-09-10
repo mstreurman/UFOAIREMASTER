@@ -89,10 +89,26 @@ struct StrategicTechnologyView {
 	std::string name;
 };
 
+struct StrategicItemDefinitionView {
+	canonical::ItemId id;
+	canonical::TechnologyId technology;
+	std::string scriptId;
+	std::string name;
+};
+
+struct StrategicAircraftDefinitionView {
+	canonical::TechnologyId technology;
+	std::string scriptId;
+	std::string name;
+};
+
 struct StrategicProductionView {
 	canonical::ProductionId id;
 	canonical::BaseId base;
 	canonical::TechnologyId technology;
+	canonical::ItemId item;
+	canonical::StoredUfoId storedUfo;
+	std::string aircraftDefinition;
 	int32_t queueIndex;
 	int32_t type;
 	int32_t amount;
@@ -142,7 +158,9 @@ public:
 		std::vector<StrategicTechnologyView> technologies,
 		std::vector<StrategicProductionView> productions,
 		std::vector<StrategicStoredUfoView> storedUfos,
-		std::vector<StrategicMessageView> messages)
+		std::vector<StrategicMessageView> messages,
+		std::vector<StrategicItemDefinitionView> itemDefinitions = std::vector<StrategicItemDefinitionView>(),
+		std::vector<StrategicAircraftDefinitionView> aircraftDefinitions = std::vector<StrategicAircraftDefinitionView>())
 		: publicationSerial_(publicationSerial),
 		  campaignTime_(campaignTime),
 		  credits_(credits),
@@ -156,7 +174,9 @@ public:
 		  technologies_(std::move(technologies)),
 		  productions_(std::move(productions)),
 		  storedUfos_(std::move(storedUfos)),
-		  messages_(std::move(messages))
+		  messages_(std::move(messages)),
+		  itemDefinitions_(std::move(itemDefinitions)),
+		  aircraftDefinitions_(std::move(aircraftDefinitions))
 	{
 	}
 
@@ -174,6 +194,8 @@ public:
 	const std::vector<StrategicProductionView>& productions() const noexcept { return productions_; }
 	const std::vector<StrategicStoredUfoView>& storedUfos() const noexcept { return storedUfos_; }
 	const std::vector<StrategicMessageView>& messages() const noexcept { return messages_; }
+	const std::vector<StrategicItemDefinitionView>& itemDefinitions() const noexcept { return itemDefinitions_; }
+	const std::vector<StrategicAircraftDefinitionView>& aircraftDefinitions() const noexcept { return aircraftDefinitions_; }
 
 private:
 	uint64_t publicationSerial_;
@@ -190,6 +212,8 @@ private:
 	std::vector<StrategicProductionView> productions_;
 	std::vector<StrategicStoredUfoView> storedUfos_;
 	std::vector<StrategicMessageView> messages_;
+	std::vector<StrategicItemDefinitionView> itemDefinitions_;
+	std::vector<StrategicAircraftDefinitionView> aircraftDefinitions_;
 };
 
 } // namespace presentation

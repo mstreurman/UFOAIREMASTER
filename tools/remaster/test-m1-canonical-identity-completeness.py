@@ -19,7 +19,7 @@ REQUIRED_REGISTRY = {
     "TransferId": ("runtime_sidecar_required", "type_added_mapping_missing"),
     "DefenceSlotId": ("runtime_sidecar_required", "type_added_mapping_missing"),
     "MessageId": ("runtime_sidecar_current", "pointer_sidecar_existing"),
-    "ItemId": ("static_definition", "definition_mapping_pending"),
+    "ItemId": ("static_definition", "runtime_content_ordinal_qualified"),
     "StoredUfoId": ("runtime_direct", "direct_persisted_qualified"),
     "UfoSaleOfferId": ("runtime_sidecar_required", "stable_mapping_missing"),
     "TransferManifestId": ("submission_context", "typed_token_declared"),
@@ -64,8 +64,18 @@ def main():
     view = snapshot[start:end]
     require("canonical::ProductionId id;" in view,
             "stable ProductionId publication missing")
+    require("canonical::ItemId item;" in view,
+            "production ItemId subject publication missing")
+    require("canonical::StoredUfoId storedUfo;" in view,
+            "production StoredUfoId subject publication missing")
+    require("std::string aircraftDefinition;" in view,
+            "production aircraft definition subject publication missing")
     require("int32_t queueIndex;" in view,
             "production queue location/order metadata missing")
+    require("struct StrategicItemDefinitionView" in snapshot,
+            "ItemId definition catalog view missing")
+    require("struct StrategicAircraftDefinitionView" in snapshot,
+            "aircraft definition catalog view missing")
     stored_start = snapshot.find("struct StrategicStoredUfoView")
     require(stored_start >= 0, "StrategicStoredUfoView missing")
     stored_end = snapshot.find("};", stored_start)
@@ -97,7 +107,7 @@ def main():
     require("PASS (17 distinct 32-bit domains)" in out, "expanded identity contract failed")
     print("PASS M1 canonical identity completeness: 17 strong 32-bit domains")
     print("PASS missing domains reserved: FacilityId, TransferId, DefenceSlotId")
-    print("PASS identity taxonomy and remaining stale-index debt locked; ProductionId + StoredUfoId published; EmployeeId mapping qualified")
+    print("PASS identity taxonomy locked; ProductionId + StoredUfoId published; EmployeeId + ItemId mappings qualified")
     print("PASS authority accounting current: strategic 24/34; tactical 13/2")
     return 0
 if __name__ == "__main__":

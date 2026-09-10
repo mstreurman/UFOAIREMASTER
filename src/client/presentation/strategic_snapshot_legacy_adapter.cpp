@@ -174,6 +174,30 @@ StrategicTechnologyView projectTechnology(const technology_t& technology)
 	return out;
 }
 
+StrategicItemDefinitionView projectItemDefinition(const objDef_t& item)
+{
+	StrategicItemDefinitionView out;
+	out.id = indexedId<canonical::ItemId>(item.idx);
+	const technology_t* technology = RS_GetTechForItem(&item);
+	out.technology = technology
+		? indexedId<canonical::TechnologyId>(technology->idx)
+		: canonical::TechnologyId();
+	out.scriptId = valueString(item.id);
+	out.name = valueString(item.name);
+	return out;
+}
+
+StrategicAircraftDefinitionView projectAircraftDefinition(const aircraft_t& aircraft)
+{
+	StrategicAircraftDefinitionView out;
+	out.technology = aircraft.tech
+		? indexedId<canonical::TechnologyId>(aircraft.tech->idx)
+		: canonical::TechnologyId();
+	out.scriptId = valueString(aircraft.id);
+	out.name = valueString(aircraft.name);
+	return out;
+}
+
 StrategicProductionView projectProduction(const base_t& base, const production_t& production)
 {
 	StrategicProductionView out;
@@ -183,6 +207,25 @@ StrategicProductionView projectProduction(const base_t& base, const production_t
 	out.technology = technology
 		? indexedId<canonical::TechnologyId>(technology->idx)
 		: canonical::TechnologyId();
+	out.item = canonical::ItemId();
+	out.storedUfo = canonical::StoredUfoId();
+	out.aircraftDefinition.clear();
+	switch (production.data.type) {
+	case PRODUCTION_TYPE_ITEM:
+		if (production.data.data.item)
+			out.item = indexedId<canonical::ItemId>(production.data.data.item->idx);
+		break;
+	case PRODUCTION_TYPE_AIRCRAFT:
+		if (production.data.data.aircraft)
+			out.aircraftDefinition = valueString(production.data.data.aircraft->id);
+		break;
+	case PRODUCTION_TYPE_DISASSEMBLY:
+		if (production.data.data.ufo)
+			out.storedUfo = indexedId<canonical::StoredUfoId>(production.data.data.ufo->idx);
+		break;
+	default:
+		break;
+	}
 	out.queueIndex = production.idx;
 	out.type = static_cast<int32_t>(production.data.type);
 	out.amount = production.amount;
@@ -256,6 +299,14 @@ StrategicSnapshot buildCurrentStrategicSnapshot(uint64_t publicationSerial)
 			technologies.push_back(projectTechnology(*technology));
 	}
 
+	std::vector<StrategicItemDefinitionView> itemDefinitions;
+	for (int i = 0; i < cgi->csi->numODs; ++i)
+		itemDefinitions.push_back(projectItemDefinition(cgi->csi->ods[i]));
+
+	std::vector<StrategicAircraftDefinitionView> aircraftDefinitions;
+	for (int i = 0; i < ccs.numAircraftTemplates; ++i)
+		aircraftDefinitions.push_back(projectAircraftDefinition(ccs.aircraftTemplates[i]));
+
 	std::vector<StrategicProductionView> productions;
 	base_t* productionBase = nullptr;
 	while ((productionBase = B_GetNext(productionBase)) != nullptr) {
@@ -301,7 +352,9 @@ StrategicSnapshot buildCurrentStrategicSnapshot(uint64_t publicationSerial)
 		std::move(technologies),
 		std::move(productions),
 		std::move(storedUfos),
-		std::move(messages));
+		std::move(messages),
+		std::move(itemDefinitions),
+		std::move(aircraftDefinitions));
 }
 
 void resetStrategicSnapshotAdapter()

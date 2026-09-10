@@ -109,6 +109,18 @@ def main():
             "reaction-fire typed lowering changed")
     require("INVSH_GetItemByIDX(objIdx)" in g_client,
             "reaction-fire objDef ordinal resolution changed")
+    scripts = read("src/common/scripts.cpp")
+    produce = read("src/client/cgame/campaign/cp_produce.cpp")
+    snapshot = read("src/client/presentation/strategic_snapshot.h")
+    snapshot_adapter = read("src/client/presentation/strategic_snapshot_legacy_adapter.cpp")
+    require("od->idx = csi.numODs - 1;" in scripts,
+            "ItemId canonical content ordinal assignment changed")
+    require("SAVE_PRODUCE_ITEMID, prod->data.data.item->id" in produce and "PR_SetData(&prod->data, PRODUCTION_TYPE_ITEM, INVSH_GetItemByID(s1));" in produce,
+            "item production script-key save/load changed")
+    require("struct StrategicItemDefinitionView" in snapshot and "canonical::ItemId item;" in snapshot,
+            "ItemId/production subject publication missing")
+    require("indexedId<canonical::ItemId>(item.idx)" in snapshot_adapter,
+            "ItemId definition projection changed")
 
     base = read("src/client/cgame/campaign/cp_base.h")
     transfer = read("src/client/cgame/campaign/cp_transfer.h")
@@ -121,8 +133,8 @@ def main():
             "EmployeeId qualified lifetime status changed")
     require(by["CharacterUcn"]["second_pass_status"] == "explicit_correlation_qualified",
             "CharacterUcn qualified correlation status changed")
-    require(by["ItemId"]["second_pass_status"] == "pending_definition_qualification",
-            "ItemId debt status changed")
+    require(by["ItemId"]["second_pass_status"] == "qualified_runtime_content_ordinal",
+            "ItemId qualified lifetime status changed")
     require(by["FacilityId"]["second_pass_status"] == "pending_mapping",
             "FacilityId debt status changed")
     require(by["TransferId"]["second_pass_status"] == "pending_mapping",
@@ -136,7 +148,7 @@ def main():
     print("    StableId aliases: 16/16")
     print("  UCN generation/save/load/wire correlation: explicit")
     print("  UCN allocator restoration/non-reuse + signed-16-bit wire domain: qualified")
-    print("  ItemId content-definition wire ordinal: explicit")
+    print("  ItemId current-content ordinal + stable script key: qualified")
     print("  Facility/Transfer/Defence/Message debt remains pending")
     return 0
 
