@@ -15,7 +15,6 @@ from typing import Iterable
 
 CANONICAL_REVISION = "763173ed036ebbee32c2a7bf6aefa19748df89ff"
 M0_4_REVISION = "20e035758fa12ac8c7ee2fe71632eb3ed733dcc3"
-M0_3_MANIFEST_B3 = "aa42dc88f980845c94fab1d6ff992657f935f25c13ac418c16aa25f3baa5d305"
 M0_4_EVIDENCE_B3 = "0bcf17b95ab6cccffab75f059c9ff919fe098e424fb02a8f579af7b1b0617d8e"
 
 SCOPE_REL = Path("tools/remaster/m0-canonical-reference-scope.json")
@@ -24,6 +23,7 @@ SIDECAR_REL = Path("docs/reference/reference-m0-canonical-regression.b3")
 M0_4_EVIDENCE_REL = Path("docs/reference/reference-m0-legacy-build-launch-smoke.txt")
 M0_4_SIDECAR_REL = Path("docs/reference/reference-m0-legacy-build-launch-smoke.b3")
 M0_3_CAPTURE_REL = Path("tools/remaster/capture-m0-manifest.py")
+M0_3_MANIFEST_SIDECAR_REL = Path("docs/reference/reference-m0-environment-manifest.b3")
 CMAKE_PRESETS_REL = Path("CMakePresets.json")
 TEST_CMAKE_REL = Path("src/tests/CMakeLists.txt")
 TEST_MAIN_REL = Path("src/tests/test_all.cpp")
@@ -141,8 +141,13 @@ def verify_m0_3(root: Path) -> None:
         print(proc.stdout, end="" if proc.stdout.endswith("\n") else "\n")
     if proc.returncode != 0:
         raise GateError("M0.3 reference environment verification failed")
-    if M0_3_MANIFEST_B3 not in (proc.stdout or ""):
-        raise GateError("M0.3 verifier passed with an unexpected manifest identity")
+    sidecar = root / M0_3_MANIFEST_SIDECAR_REL
+    if not sidecar.is_file():
+        raise GateError(f"M0.3 reference environment sidecar is missing: {M0_3_MANIFEST_SIDECAR_REL}")
+    manifest_b3 = sidecar_digest(sidecar)
+    if not re.fullmatch(r"[0-9a-f]{64}", manifest_b3):
+        raise GateError(f"invalid M0.3 reference environment manifest BLAKE3: {manifest_b3!r}")
+    print(f"M0.3 current reference manifest identity: {manifest_b3}")
 
 
 def verify_m0_4(root: Path) -> None:
@@ -483,7 +488,7 @@ def evidence_bytes(root: Path, *, gtest_nevra: str, gtest_pkg_version: str,
         "schema.version=1",
         f"source.canonical_revision={CANONICAL_REVISION}",
         f"baseline.m0_4_revision={M0_4_REVISION}",
-        f"environment.m0_manifest_blake3_256={M0_3_MANIFEST_B3}",
+        f"environment.m0_manifest_blake3_256={sidecar_digest(root / M0_3_MANIFEST_SIDECAR_REL)}",
         f"baseline.m0_4_evidence_blake3_256={M0_4_EVIDENCE_B3}",
     ]
     for label, path in input_paths:

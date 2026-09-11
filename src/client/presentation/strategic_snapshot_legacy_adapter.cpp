@@ -127,6 +127,18 @@ StrategicBaseView projectBase(const base_t& base)
 	return out;
 }
 
+StrategicFacilityView projectFacility(const base_t& base, const building_t& facility)
+{
+	StrategicFacilityView out;
+	out.id = canonical::FacilityId(B_GetFacilityRuntimeId(&facility));
+	out.base = indexedId<canonical::BaseId>(base.idx);
+	out.column = static_cast<int32_t>(facility.pos[0]);
+	out.row = static_cast<int32_t>(facility.pos[1]);
+	out.status = static_cast<int32_t>(facility.buildingStatus);
+	out.definition = valueString(facility.id);
+	return out;
+}
+
 StrategicInstallationView projectInstallation(const installation_t& installation)
 {
 	StrategicInstallationView out;
@@ -300,6 +312,14 @@ StrategicSnapshot buildCurrentStrategicSnapshot(uint64_t publicationSerial)
 		bases.push_back(projectBase(ccs.bases[i]));
 	}
 
+	std::vector<StrategicFacilityView> facilities;
+	base_t* facilityBase = nullptr;
+	while ((facilityBase = B_GetNext(facilityBase)) != nullptr) {
+		building_t* facility = nullptr;
+		while ((facility = B_GetNextBuilding(facilityBase, facility)) != nullptr)
+			facilities.push_back(projectFacility(*facilityBase, *facility));
+	}
+
 	std::vector<StrategicInstallationView> installations;
 	INS_Foreach(installation) {
 		installations.push_back(projectInstallation(*installation));
@@ -380,7 +400,8 @@ StrategicSnapshot buildCurrentStrategicSnapshot(uint64_t publicationSerial)
 		std::move(messages),
 		std::move(itemDefinitions),
 		std::move(aircraftDefinitions),
-		std::move(employees));
+		std::move(employees),
+		std::move(facilities));
 }
 
 void resetStrategicSnapshotAdapter()

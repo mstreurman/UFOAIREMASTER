@@ -106,7 +106,11 @@ void applyPendingStrategicIntents() {
             out.aircraft=selectedAircraftId(); out.canonicalValue=out.aircraft.isValid()?static_cast<int32_t>(out.aircraft.value):-1; break; }
         case StrategicIntentKind::SendAircraftToMission: {
             aircraft_t* a=resolvePhalanxAircraft(in.aircraft); mission_t* m=resolveMission(in.mission);
-            if(a&&m&&AIR_SendAircraftToMission(a,m)) out.disposition=StrategicIntentDisposition::Applied;
+            if(a&&m) {
+                const aircraftMissionSendResult_t result=AIR_TrySendAircraftToMission(a,m);
+                if(result==AIR_MISSION_SEND_APPLIED || result==AIR_MISSION_SEND_BASE_ATTACK_READY)
+                    out.disposition=StrategicIntentDisposition::Applied;
+            }
             if(a){out.aircraft=canonical::AircraftId(static_cast<uint32_t>(a->idx));out.canonicalValue=static_cast<int32_t>(a->status);} if(m)out.mission=canonical::MissionId(static_cast<uint32_t>(m->idx)); break; }
         case StrategicIntentKind::ReturnAircraftToBase: {
             aircraft_t* a=resolvePhalanxAircraft(in.aircraft); if(a&&AIR_IsAircraftOnGeoscape(a)){AIR_AircraftReturnToBase(a);if(a->status==AIR_RETURNING)out.disposition=StrategicIntentDisposition::Applied;}
@@ -190,7 +194,12 @@ void applyPendingStrategicIntents() {
             break; }
         case StrategicIntentKind::DestroyFacility: {
             base_t* b=resolveBase(in.base);
-            if(b&&B_TryDestroyFacility(b,in.value0)==B_FACILITY_DESTROY_APPLIED){out.disposition=StrategicIntentDisposition::Applied;out.canonicalValue=in.value0;}
+            building_t* facility=b&&in.facility.isValid()?B_GetFacilityByRuntimeId(b,in.facility.value):nullptr;
+            const int facilityIndex=facility?facility->idx:-1;
+            if(facility&&B_TryDestroyFacilityById(b,in.facility.value)==B_FACILITY_DESTROY_APPLIED){
+                out.disposition=StrategicIntentDisposition::Applied;
+                out.canonicalValue=facilityIndex;
+            }
             break; }
         case StrategicIntentKind::BuildInstallation: {
             vec2_t pos; installation_t* installation=nullptr; const char* definition=resolveBoundedText(in.key0); const char* name=resolveBoundedText(in.text);

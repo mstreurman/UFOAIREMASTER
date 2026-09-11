@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../../shared/shared.h"
 #include "../../DateTime.h"
 
+#include <cstdint>
+
 /** @brief All possible building status. */
 typedef enum {
 	B_STATUS_NOT_SET,				/**< not build yet */
@@ -71,7 +73,8 @@ typedef enum {
 
 /** @brief A building with all it's data. */
 typedef struct building_s {
-	int idx;						/**< Index in in the base buildings list. */
+	int idx;						/**< Current compacting index in the base buildings list. */
+	uint32_t runtimeId;				/**< Stable runtime facility identity; reconstructed after load, never serialized. */
 	struct building_s* tpl;			/**< Self link in "buildingTemplates" list. */
 	struct base_s* base;			/**< The base this building is located in. */
 

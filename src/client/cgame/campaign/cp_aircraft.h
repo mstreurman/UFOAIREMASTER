@@ -82,9 +82,18 @@ typedef enum {
 typedef enum {
 	AIR_PURSUIT_APPLIED,
 	AIR_PURSUIT_INVALID_TARGET,
+	AIR_PURSUIT_NOT_INTERCEPTABLE,
 	AIR_PURSUIT_NO_COMMAND_CENTRE,
 	AIR_PURSUIT_REJECTED
 } aircraftPursuitResult_t;
+
+typedef enum {
+	AIR_MISSION_SEND_APPLIED,
+	AIR_MISSION_SEND_BASE_ATTACK_READY,
+	AIR_MISSION_SEND_INVALID_TARGET,
+	AIR_MISSION_SEND_NO_TEAM,
+	AIR_MISSION_SEND_NO_FUEL
+} aircraftMissionSendResult_t;
 
 
 #define MAX_AIRCRAFTSLOT 8
@@ -261,6 +270,7 @@ bool AIR_AircraftHasEnoughFuel(const aircraft_t* aircraft, const vec2_t destinat
 bool AIR_AircraftHasEnoughFuelOneWay(const aircraft_t* aircraft, const vec2_t destination);
 
 void AIR_AircraftReturnToBase(aircraft_t* aircraft);
+aircraftMissionSendResult_t AIR_TrySendAircraftToMission(aircraft_t* aircraft, struct mission_s* mission);
 bool AIR_SendAircraftToMission(aircraft_t* aircraft, struct mission_s* mission);
 
 void AIR_AircraftsNotifyMissionRemoved(const struct mission_s* mission);

@@ -55,6 +55,15 @@ struct StrategicBaseView {
 	std::string name;
 };
 
+struct StrategicFacilityView {
+	canonical::FacilityId id;
+	canonical::BaseId base;
+	int32_t column;
+	int32_t row;
+	int32_t status;
+	std::string definition;
+};
+
 struct StrategicInstallationView {
 	canonical::InstallationId id;
 	StrategicPosition position;
@@ -172,7 +181,8 @@ public:
 		std::vector<StrategicMessageView> messages,
 		std::vector<StrategicItemDefinitionView> itemDefinitions = std::vector<StrategicItemDefinitionView>(),
 		std::vector<StrategicAircraftDefinitionView> aircraftDefinitions = std::vector<StrategicAircraftDefinitionView>(),
-		std::vector<StrategicEmployeeView> employees = std::vector<StrategicEmployeeView>())
+		std::vector<StrategicEmployeeView> employees = std::vector<StrategicEmployeeView>(),
+		std::vector<StrategicFacilityView> facilities = std::vector<StrategicFacilityView>())
 		: publicationSerial_(publicationSerial),
 		  campaignTime_(campaignTime),
 		  credits_(credits),
@@ -189,7 +199,8 @@ public:
 		  messages_(std::move(messages)),
 		  itemDefinitions_(std::move(itemDefinitions)),
 		  aircraftDefinitions_(std::move(aircraftDefinitions)),
-		  employees_(std::move(employees))
+		  employees_(std::move(employees)),
+		  facilities_(std::move(facilities))
 	{
 	}
 
@@ -210,6 +221,7 @@ public:
 	const std::vector<StrategicItemDefinitionView>& itemDefinitions() const noexcept { return itemDefinitions_; }
 	const std::vector<StrategicAircraftDefinitionView>& aircraftDefinitions() const noexcept { return aircraftDefinitions_; }
 	const std::vector<StrategicEmployeeView>& employees() const noexcept { return employees_; }
+	const std::vector<StrategicFacilityView>& facilities() const noexcept { return facilities_; }
 
 private:
 	uint64_t publicationSerial_;
@@ -229,6 +241,7 @@ private:
 	std::vector<StrategicItemDefinitionView> itemDefinitions_;
 	std::vector<StrategicAircraftDefinitionView> aircraftDefinitions_;
 	std::vector<StrategicEmployeeView> employees_;
+	std::vector<StrategicFacilityView> facilities_;
 };
 
 } // namespace presentation

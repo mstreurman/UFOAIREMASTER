@@ -43,11 +43,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "aliencontainment.h"
 #include "itemcargo.h"
 
+#include <limits>
+
 #define B_GetBuildingByIDX(baseIdx, buildingIdx) (&ccs.buildings[(baseIdx)][(buildingIdx)])
 #define B_GetBuildingIDX(base, building) ((ptrdiff_t)((building) - ccs.buildings[base->idx]))
 #define B_GetBaseIDX(base) ((ptrdiff_t)((base) - ccs.bases))
 
 static void B_InitialEquipment(aircraft_t* aircraft, const equipDef_t* ed);
+
+static uint32_t nextFacilityRuntimeId = 0;
+
+static uint32_t B_AllocateFacilityRuntimeId (void)
+{
+	if (nextFacilityRuntimeId == std::numeric_limits<uint32_t>::max()) {
+		cgi->Com_Error(ERR_DROP, "Facility runtime identity space exhausted\n");
+		return std::numeric_limits<uint32_t>::max();
+	}
+	return nextFacilityRuntimeId++;
+}
 
 /**
  * @brief Returns the neighbourhood of a building
@@ -1363,6 +1376,7 @@ building_t* B_BuildBuilding (base_t* base, const building_t* buildingTemplate, i
 	/* self-link to building-list in base */
 	buildingNew->idx = B_GetBuildingIDX(base, buildingNew);
 	buildingNew->base = base;
+	buildingNew->runtimeId = B_AllocateFacilityRuntimeId();
 	buildingNew->pos[0] = col;
 	buildingNew->pos[1] = row;
 
@@ -1421,12 +1435,31 @@ building_t* B_GetBuildingByIDXSafe (const base_t* base, int facilityIndex)
 	return B_GetBuildingByIDX(baseIdx, facilityIndex);
 }
 
+uint32_t B_GetFacilityRuntimeId (const building_t* building)
+{
+	return building ? building->runtimeId : std::numeric_limits<uint32_t>::max();
+}
+
+building_t* B_GetFacilityByRuntimeId (base_t* base, uint32_t runtimeId)
+{
+	if (!base || runtimeId == std::numeric_limits<uint32_t>::max())
+		return nullptr;
+
+	building_t* building = nullptr;
+	while ((building = B_GetNextBuilding(base, building)) != nullptr) {
+		if (building->runtimeId == runtimeId)
+			return building;
+	}
+	return nullptr;
+}
+
 /**
  * @brief Canonical owner for building one base facility at a grid location.
  *
- * This intentionally preserves the mutation callback's rules. Research and
- * max-count filtering remain presentation/list-selection behavior until a later
- * source-derived rule says they are mutation-time canonical eligibility gates.
+ * Legacy construction presentation filters mandatory-only definitions, research
+ * state and per-template limits before submission. Typed presentation can bypass
+ * those lists, so the canonical owner must recheck the same gameplay eligibility
+ * at execution time.
  */
 facilityBuildResult_t B_TryBuildFacility (base_t* base, const char* facilityDefinition, int col, int row, building_t** builtFacility)
 {
@@ -1436,8 +1469,15 @@ facilityBuildResult_t B_TryBuildFacility (base_t* base, const char* facilityDefi
 		return B_FACILITY_BUILD_INVALID_BASE;
 
 	building_t* buildingTemplate = facilityDefinition ? B_GetBuildingTemplateSilent(facilityDefinition) : nullptr;
-	if (!buildingTemplate)
+	if (!buildingTemplate || !buildingTemplate->tech)
 		return B_FACILITY_BUILD_INVALID_DEFINITION;
+	if (buildingTemplate->mandatory)
+		return B_FACILITY_BUILD_MANDATORY_ONLY;
+	if (!RS_IsResearched_ptr(buildingTemplate->tech))
+		return B_FACILITY_BUILD_RESEARCH_REQUIRED;
+	if (buildingTemplate->maxCount >= 0
+			&& B_GetNumberOfBuildingsInBaseByTemplate(base, buildingTemplate) >= buildingTemplate->maxCount)
+		return B_FACILITY_BUILD_LIMIT_REACHED;
 	if (col < 0 || row < 0 || col >= BASE_SIZE || row >= BASE_SIZE)
 		return B_FACILITY_BUILD_INVALID_POSITION;
 	if (col + int(buildingTemplate->size[0]) > BASE_SIZE || row + int(buildingTemplate->size[1]) > BASE_SIZE)
@@ -1476,6 +1516,16 @@ facilityDestroyResult_t B_CheckDestroyFacility (base_t* base, int facilityIndex)
 	return B_FACILITY_DESTROY_READY;
 }
 
+facilityDestroyResult_t B_CheckDestroyFacilityById (base_t* base, uint32_t runtimeId)
+{
+	if (!base)
+		return B_FACILITY_DESTROY_INVALID_BASE;
+	building_t* building = B_GetFacilityByRuntimeId(base, runtimeId);
+	if (!building)
+		return B_FACILITY_DESTROY_INVALID_FACILITY;
+	return B_CheckDestroyFacility(base, building->idx);
+}
+
 /**
  * @brief Canonical owner for an already-confirmed facility destruction intent.
  */
@@ -1487,6 +1537,22 @@ facilityDestroyResult_t B_TryDestroyFacility (base_t* base, int facilityIndex)
 
 	building_t* building = B_GetBuildingByIDXSafe(base, facilityIndex);
 	if (!building || !B_BuildingDestroy(building))
+		return B_FACILITY_DESTROY_REJECTED;
+	return B_FACILITY_DESTROY_APPLIED;
+}
+
+facilityDestroyResult_t B_TryDestroyFacilityById (base_t* base, uint32_t runtimeId)
+{
+	if (!base)
+		return B_FACILITY_DESTROY_INVALID_BASE;
+	building_t* building = B_GetFacilityByRuntimeId(base, runtimeId);
+	if (!building)
+		return B_FACILITY_DESTROY_INVALID_FACILITY;
+
+	const facilityDestroyResult_t check = B_CheckDestroyFacility(base, building->idx);
+	if (check != B_FACILITY_DESTROY_READY)
+		return check;
+	if (!B_BuildingDestroy(building))
 		return B_FACILITY_DESTROY_REJECTED;
 	return B_FACILITY_DESTROY_APPLIED;
 }
@@ -2650,6 +2716,7 @@ bool B_LoadXML (xmlNode_t* parent)
 				return false;
 			}
 			building->base = b;
+			building->runtimeId = B_AllocateFacilityRuntimeId();
 
 			str = cgi->XML_GetString(snode, SAVE_BASES_BUILDINGSTATUS);
 			if (!cgi->Com_GetConstIntFromNamespace(SAVE_BUILDINGSTATUS_NAMESPACE, str, (int*) &building->buildingStatus)) {

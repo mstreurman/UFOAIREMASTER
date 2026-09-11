@@ -154,10 +154,10 @@ StrategicIntentSubmission submitDestroyAntimatterFacility(canonical::BaseId base
     return submit(v);
 }
 
-StrategicIntentSubmission submitDestroyFacility(canonical::BaseId base, int32_t facilityIndex)
+StrategicIntentSubmission submitDestroyFacility(canonical::BaseId base, canonical::FacilityId facility)
 {
     StrategicIntent v = make(StrategicIntentKind::DestroyFacility);
-    v.base = base; v.value0 = facilityIndex;
+    v.base = base; v.facility = facility;
     return submit(v);
 }
 

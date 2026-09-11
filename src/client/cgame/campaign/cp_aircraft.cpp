@@ -535,7 +535,7 @@ aircraftStartResult_t AIR_TryStartAircraft (aircraft_t* aircraft)
  */
 bool AIR_TryStopAircraft (aircraft_t* aircraft)
 {
-	if (!aircraft)
+	if (!aircraft || !AIR_IsAircraftOnGeoscape(aircraft))
 		return false;
 
 	aircraft->status = AIR_IDLE;
@@ -1208,6 +1208,40 @@ aircraft_t* AIR_AircraftGetFromIDX (int aircraftIdx)
 }
 
 /**
+ * @brief Canonical owner for sending an aircraft to a mission without presentation side effects.
+ */
+aircraftMissionSendResult_t AIR_TrySendAircraftToMission (aircraft_t* aircraft, mission_t* mission)
+{
+	if (!aircraft || !aircraft->homebase || !mission)
+		return AIR_MISSION_SEND_INVALID_TARGET;
+
+	if (AIR_GetTeamSize(aircraft) == 0)
+		return AIR_MISSION_SEND_NO_TEAM;
+
+	const bool inBase = AIR_IsAircraftInBase(aircraft);
+	if (inBase)
+		AII_ReloadAircraftWeapons(aircraft);
+
+	GEO_SetInterceptorAircraft(aircraft);
+
+	if (B_IsUnderAttack(aircraft->homebase) && inBase) {
+		aircraft->mission = mission;
+		mission->active = true;
+		return AIR_MISSION_SEND_BASE_ATTACK_READY;
+	}
+
+	if (!AIR_AircraftHasEnoughFuel(aircraft, mission->pos))
+		return AIR_MISSION_SEND_NO_FUEL;
+
+	GEO_CalcLine(aircraft->pos, mission->pos, &aircraft->route);
+	aircraft->status = AIR_MISSION;
+	aircraft->time = 0;
+	aircraft->point = 0;
+	aircraft->mission = mission;
+	return AIR_MISSION_SEND_APPLIED;
+}
+
+/**
  * @brief Sends the specified aircraft to specified mission.
  * @param[in] aircraft Pointer to aircraft to send to mission.
  * @param[in] mission Pointer to given mission.
@@ -1215,44 +1249,23 @@ aircraft_t* AIR_AircraftGetFromIDX (int aircraftIdx)
  */
 bool AIR_SendAircraftToMission (aircraft_t* aircraft, mission_t* mission)
 {
-	if (!aircraft || !mission)
-		return false;
-
-	if (AIR_GetTeamSize(aircraft) == 0) {
-		CP_Popup(_("Notice"), _("Assign one or more soldiers to this aircraft first."));
-		return false;
-	}
-
-	/* if aircraft was in base */
-	if (AIR_IsAircraftInBase(aircraft)) {
-		/* reload its ammunition */
-		AII_ReloadAircraftWeapons(aircraft);
-	}
-
-	/* ensure interceptAircraft is set correctly */
-	GEO_SetInterceptorAircraft(aircraft);
-
-	/* if mission is a base-attack and aircraft already in base, launch
-	 * mission immediately */
-	if (B_IsUnderAttack(aircraft->homebase) && AIR_IsAircraftInBase(aircraft)) {
-		aircraft->mission = mission;
-		mission->active = true;
+	const aircraftMissionSendResult_t result = AIR_TrySendAircraftToMission(aircraft, mission);
+	switch (result) {
+	case AIR_MISSION_SEND_APPLIED:
+		return true;
+	case AIR_MISSION_SEND_BASE_ATTACK_READY:
 		cgi->UI_PushWindow("popup_baseattack");
 		return true;
-	}
-
-	if (!AIR_AircraftHasEnoughFuel(aircraft, mission->pos)) {
+	case AIR_MISSION_SEND_NO_TEAM:
+		CP_Popup(_("Notice"), _("Assign one or more soldiers to this aircraft first."));
+		return false;
+	case AIR_MISSION_SEND_NO_FUEL:
 		MS_AddNewMessage(_("Notice"), _("Insufficient fuel."));
 		return false;
+	case AIR_MISSION_SEND_INVALID_TARGET:
+	default:
+		return false;
 	}
-
-	GEO_CalcLine(aircraft->pos, mission->pos, &aircraft->route);
-	aircraft->status = AIR_MISSION;
-	aircraft->time = 0;
-	aircraft->point = 0;
-	aircraft->mission = mission;
-
-	return true;
 }
 
 /**
@@ -1997,7 +2010,8 @@ aircraftPursuitResult_t AIR_TryPursueUFO (aircraft_t* aircraft, aircraft_t* ufo)
 {
 	if (!aircraft || !aircraft->homebase || !ufo || !AIR_IsUFO(ufo))
 		return AIR_PURSUIT_INVALID_TARGET;
-
+	if (!AIR_CanIntercept(aircraft))
+		return AIR_PURSUIT_NOT_INTERCEPTABLE;
 	if (!B_GetBuildingStatus(aircraft->homebase, B_COMMAND))
 		return AIR_PURSUIT_NO_COMMAND_CENTRE;
 

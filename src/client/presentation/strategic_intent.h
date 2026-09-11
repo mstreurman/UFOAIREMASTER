@@ -83,6 +83,7 @@ struct StrategicIntent {
     canonical::AircraftId aircraft;
     canonical::AircraftId targetAircraft;
     canonical::BaseId base;
+    canonical::FacilityId facility;
     canonical::InstallationId installation;
     canonical::NationId nation;
     canonical::EmployeeId employee;
@@ -129,7 +130,7 @@ StrategicIntentSubmission submitDecreaseProduction(canonical::BaseId base, canon
 StrategicIntentSubmission submitDeequipEmployee(canonical::BaseId base, canonical::EmployeeId employee);
 StrategicIntentSubmission submitDeleteEmployee(canonical::EmployeeId employee);
 StrategicIntentSubmission submitDestroyAntimatterFacility(canonical::BaseId base, int32_t facilityIndex);
-StrategicIntentSubmission submitDestroyFacility(canonical::BaseId base, int32_t facilityIndex);
+StrategicIntentSubmission submitDestroyFacility(canonical::BaseId base, canonical::FacilityId facility);
 StrategicIntentSubmission submitDestroyInstallation(canonical::InstallationId installation);
 StrategicIntentSubmission submitDestroyStoredUfo(canonical::StoredUfoId storedUfo);
 StrategicIntentSubmission submitEquipAircraftItem(canonical::AircraftId aircraft, int32_t slotType, int32_t slotIndex, int32_t zone, canonical::ItemId item);

@@ -67,6 +67,9 @@ typedef enum {
 	B_FACILITY_BUILD_APPLIED,
 	B_FACILITY_BUILD_INVALID_BASE,
 	B_FACILITY_BUILD_INVALID_DEFINITION,
+	B_FACILITY_BUILD_MANDATORY_ONLY,
+	B_FACILITY_BUILD_RESEARCH_REQUIRED,
+	B_FACILITY_BUILD_LIMIT_REACHED,
 	B_FACILITY_BUILD_INVALID_POSITION,
 	B_FACILITY_BUILD_DOES_NOT_FIT,
 	B_FACILITY_BUILD_INSUFFICIENT_CREDITS,
@@ -205,9 +208,13 @@ void B_SetBuildingStatus(base_t* const base, const buildingType_t type, bool new
 bool B_MapIsCellFree(const base_t* base, int col, int row);
 building_t* B_BuildBuilding(base_t* base, const building_t* buildingTemplate, int col, int row);
 building_t* B_GetBuildingByIDXSafe(const base_t* base, int facilityIndex);
+uint32_t B_GetFacilityRuntimeId(const building_t* building);
+building_t* B_GetFacilityByRuntimeId(base_t* base, uint32_t runtimeId);
 facilityBuildResult_t B_TryBuildFacility(base_t* base, const char* facilityDefinition, int col, int row, building_t** builtFacility);
 facilityDestroyResult_t B_CheckDestroyFacility(base_t* base, int facilityIndex);
+facilityDestroyResult_t B_CheckDestroyFacilityById(base_t* base, uint32_t runtimeId);
 facilityDestroyResult_t B_TryDestroyFacility(base_t* base, int facilityIndex);
+facilityDestroyResult_t B_TryDestroyFacilityById(base_t* base, uint32_t runtimeId);
 bool B_IsBuildingDestroyable(const building_t* building);
 bool B_BuildingDestroy(building_t* building);
 

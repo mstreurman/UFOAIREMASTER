@@ -462,10 +462,12 @@ marketMutationResult_t BS_TryBuyAircraft (int baseIdx, const char* aircraftDefin
 		return BS_MARKET_MUTATION_INVALID_BASE;
 
 	const aircraft_t* aircraft = aircraftDefinition ? AIR_GetAircraftSilent(aircraftDefinition) : nullptr;
-	if (!aircraft || AIR_IsUFO(aircraft))
+	if (!aircraft || AIR_IsUFO(aircraft) || !aircraft->tech)
 		return BS_MARKET_MUTATION_INVALID_SUBJECT;
 	if (!BS_AircraftIsOnMarket(aircraft))
 		return BS_MARKET_MUTATION_NOT_ON_MARKET;
+	if (!RS_IsResearched_ptr(aircraft->tech))
+		return BS_MARKET_MUTATION_RESEARCH_REQUIRED;
 	if (!B_GetBuildingStatus(base, B_COMMAND))
 		return BS_MARKET_MUTATION_NO_COMMAND_CENTRE;
 	if (!B_GetBuildingStatus(base, B_POWER))
@@ -539,6 +541,11 @@ marketMutationResult_t BS_TryBuyUGV (int baseIdx, const char* ugvDefinition)
 	const ugv_t* ugv = ugvDefinition ? cgi->Com_GetUGVByIDSilent(ugvDefinition) : nullptr;
 	if (!ugv)
 		return BS_MARKET_MUTATION_INVALID_SUBJECT;
+	const technology_t* tech = RS_GetTechByProvided(ugv->id);
+	if (!tech)
+		return BS_MARKET_MUTATION_INVALID_SUBJECT;
+	if (!RS_IsResearched_ptr(tech))
+		return BS_MARKET_MUTATION_RESEARCH_REQUIRED;
 	const objDef_t* ugvWeapon = INVSH_GetItemByID(ugv->weapon);
 	if (!ugvWeapon)
 		return BS_MARKET_MUTATION_INVALID_SUBJECT;
