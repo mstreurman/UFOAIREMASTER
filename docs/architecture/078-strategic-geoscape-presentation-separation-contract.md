@@ -446,21 +446,25 @@ docs/reference/reference-m1-intent-catalog-expansion-2026-09-07.md
 
 This is a seed catalog, not the final strategic command surface. Further actions are added when their owning presentation consumers migrate.
 
-## 14.3. Current M1 strategic authority progress — 2026-09-10
+## 14.3. Current M1 strategic authority progress — 2026-09-11
 
-At implementation baseline `e29739ec2f34fb21e43f664385f57ab5eca18e53`:
+At implementation baseline `aa63c0f84bbf01316542e3b17e8e6acb20ad4a2e`:
 
 ```text
 strategic authoritative semantics: 58
-canonical-applied:                 31
-fail-closed pending owners:        27
+canonical-applied:                 38
+fail-closed pending owners:        20
 
 tactical authoritative semantics:  15
 forwarded to server authority:     13
 fail-closed pending helpers:        2
 ```
 
-The current strategic owner set includes `CreateProduction` and the six Employee/Team actions `AssignEmployeeToAircraft`, `DeequipEmployee`, `DeleteEmployee`, `HireOrFireEmployee`, `RenameEmployee` and `SetEmployeeSkin`. `EmployeeId` is published from persisted `character_t::ucn`.
+The current strategic owner set includes `CreateProduction`, the six Employee/Team actions `AssignEmployeeToAircraft`, `DeequipEmployee`, `DeleteEmployee`, `HireOrFireEmployee`, `RenameEmployee` and `SetEmployeeSkin`, and all seven Market actions: `BuyAircraft`, `BuyItem`, `BuyUGV`, `SellAircraft`, `SellItem`, `SellUGV` and `SetAutoSellPolicy`.
+
+Market item buy/sell retains inherited partial-fill behavior. Aircraft and UGV lifecycle mutation remains in the inherited low-level Market helpers, while the campaign owners perform execution-time validation and identity/definition re-resolution. Autosell is an explicit desired-state mutation. Market introduces no new persistent identity type and does not change save or tactical-wire semantics.
+
+`EmployeeId` remains published from persisted `character_t::ucn`.
 
 These counts are implementation progress, not a new gameplay ABI. Campaign save format v4 and tactical protocol 18 remain unchanged.
 

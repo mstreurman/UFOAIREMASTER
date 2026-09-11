@@ -98,23 +98,23 @@ Earlier documents remain useful for rationale/history but must not redefine an A
 The current qualified implementation baseline for this documentation synchronization is:
 
 ```text
-e29739ec2f34fb21e43f664385f57ab5eca18e53
-feat: extract canonical employee and team owners
+aa63c0f84bbf01316542e3b17e8e6acb20ad4a2e
+feat: extract canonical market owners
 ```
 
 M0 is sealed and M1 canonical-boundary work is active. The authoritative action state at this baseline is:
 
 ```text
 strategic authoritative semantics: 58 total
-  canonical-applied:               31
-  fail-closed pending owners:      27
+  canonical-applied:               38
+  fail-closed pending owners:      20
 
 tactical authoritative semantics:  15 total
   forwarded to server authority:   13
   fail-closed pending helpers:      2
 ```
 
-Qualified M1 publication/owner work includes Research, stable runtime `ProductionId`, persisted `StoredUfoId`, persisted `EmployeeId`, canonical `CreateProduction`, and the six Employee/Team assign/de-equip/delete/hire-fire/rename/skin owners. The next planned strategic owner family is Market.
+Qualified M1 publication/owner work includes Research, stable runtime `ProductionId`, persisted `StoredUfoId`, persisted `EmployeeId`, canonical `CreateProduction`, the six Employee/Team assign/de-equip/delete/hire-fire/rename/skin owners, and all seven Market owners: buy/sell aircraft, items and UGVs plus explicit autosell policy. Market item transactions preserve inherited partial-fill behavior and autosell is an explicit desired-state mutation. The remaining 20 strategic semantics stay fail-closed pending audited owner extraction.
 
 Campaign save format version 4 and tactical protocol version 18 remain explicit compatibility boundaries. Cross-binary classic/remaster save and multiplayer interchange is still a release qualification gate rather than a completed claim.
 

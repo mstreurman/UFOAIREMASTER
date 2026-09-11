@@ -3,7 +3,7 @@
 **Status:** M1 implementation contract — v3 classification sealed; owner extraction in progress
 **Accepted:** 2026-09-07  
 **Qualified source baseline:** `1dd974017f25d5bda5cc5b82b48d2590e574e50f`  
-**Current implementation baseline:** `e29739ec2f34fb21e43f664385f57ab5eca18e53`
+**Current implementation baseline:** `aa63c0f84bbf01316542e3b17e8e6acb20ad4a2e`
 **Supersedes:** v1 command-only inventory interpretation of this document
 
 ## 1. Purpose
@@ -394,21 +394,21 @@ The next authority milestone is not additional classification. It is reducing th
 
 This section is retained as dated 2026-09-08 qualification evidence. A subsequent semantic split of legacy `prod_inc` introduced distinct `CreateProduction`, expanding the strategic authoritative surface from 57 to 58 without changing the tactical total.
 
-## 26. Current M1 authority implementation status — 2026-09-10
+## 26. Current M1 authority implementation status — 2026-09-11
 
-At implementation baseline `e29739ec2f34fb21e43f664385f57ab5eca18e53`:
+At implementation baseline `aa63c0f84bbf01316542e3b17e8e6acb20ad4a2e`:
 
 ```text
 strategic authoritative semantics: 58
-  canonical-applied:               31
-  owner-extraction pending:        27
+  canonical-applied:               38
+  owner-extraction pending:        20
 
 tactical authoritative semantics:  15
   forwarded to server authority:   13
   helper-extraction pending:        2
 ```
 
-The current strategic-applied set includes the previously qualified Aircraft/Geoscape, Base/Installation, Facility, Research and Production owners, canonical `CreateProduction`, plus the six Employee/Team actions:
+The current strategic-applied set includes the previously qualified Aircraft/Geoscape, Base/Installation, Facility, Research and Production owners, canonical `CreateProduction`, the six Employee/Team actions, and all seven Market actions:
 
 ```text
 AssignEmployeeToAircraft
@@ -417,8 +417,17 @@ DeleteEmployee
 HireOrFireEmployee
 RenameEmployee
 SetEmployeeSkin
+BuyAircraft
+BuyItem
+BuyUGV
+SellAircraft
+SellItem
+SellUGV
+SetAutoSellPolicy
 ```
 
-Persisted `EmployeeId` is published from `character_t::ucn`; stable runtime `ProductionId` and persisted `StoredUfoId` remain qualified. The next planned strategic owner family is Market. Unsupported/unqualified actions remain fail-closed.
+Market item owners preserve inherited partial-fill normalization before the strict low-level mutation helpers. Market purchase/sale subjects reuse qualified `BaseId`, `AircraftId`, `EmployeeId`, `ItemId` or static aircraft/UGV definition keys re-resolved at execution; no new persistent identity domain is introduced. Autosell carries an explicit desired state rather than a canonical toggle.
+
+Persisted `EmployeeId` is published from `character_t::ucn`; stable runtime `ProductionId` and persisted `StoredUfoId` remain qualified. The remaining 20 strategic actions stay fail-closed until their campaign-owned contracts are audited and extracted.
 
 These implementation counts do not alter campaign persistence or tactical transport: save format v4 and protocol 18 remain the active compatibility epoch.

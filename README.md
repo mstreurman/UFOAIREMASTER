@@ -76,12 +76,12 @@ The accepted migration roadmap is [`docs/architecture/080-implementation-migrati
 
 ### Immediate execution order
 
-M0 is sealed. M1 is actively extracting presentation-facing authority without replacing canonical game rules. The current boundary state is mechanically inventoried and qualified:
+M0 is sealed. M1 is actively extracting presentation-facing authority without replacing canonical game rules. The current qualified implementation baseline is `aa63c0f84bbf01316542e3b17e8e6acb20ad4a2e` (`feat: extract canonical market owners`). The boundary state is mechanically inventoried and qualified:
 
 ```text
 strategic authoritative semantics: 58 total
-  canonical-applied:               31
-  fail-closed pending owners:      27
+  canonical-applied:               38
+  fail-closed pending owners:      20
 
 tactical authoritative semantics:  15 total
   forwarded to server authority:   13
@@ -98,11 +98,11 @@ The active execution order is:
 3. establish C++11-compatible strong presentation identities and C++26 remaster consumers — **complete foundation**;
 4. complete the source-derived presentation action inventory and five-way authority classification — **complete, with one later semantic split: 58 strategic + 15 tactical authoritative semantics**;
 5. introduce typed intent dispatch without changing canonical rules — **complete contract/catalog foundation**;
-6. extract canonical strategic owners from legacy callbacks — **31 strategic semantics qualified so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, facility build/destroy, Research assign/max/stop, Production create/amount/move/stop operations, and the six Employee/Team assign/de-equip/delete/hire-fire/rename/skin operations;
+6. extract canonical strategic owners from legacy callbacks — **38 strategic semantics qualified so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, facility build/destroy, Research assign/max/stop, Production create/amount/move/stop operations, the six Employee/Team assign/de-equip/delete/hire-fire/rename/skin operations, and Market buy/sell aircraft/item/UGV plus explicit autosell policy;
 7. publish Research + Production + Employee immutable state — **complete**, including `TechnologyId`, stable runtime `ProductionId`, persisted `EmployeeId`, and snapshot-local queue/order plus immutable employee state;
 8. complete the canonical identity audit — **complete contract pass**, with 17 strong 32-bit domains; stable Production, persisted StoredUfo, and persisted Employee identities are now implemented/published while Facility, Transfer, Defence and other runtime mappings remain explicit debt;
-9. Research owner extraction, all existing-job Production owners, and `CreateProduction` are **complete**; ItemId / aircraft-definition / StoredUfo production subjects are qualified and the legacy/remaster create paths converge on the campaign owner;
-10. migrate the remaining market, stored-UFO/recovery, transfer, defence, save/load and mission-start authority families behind typed IDs and canonical owners;
+9. Research owner extraction, all existing-job Production owners, `CreateProduction`, and all seven Market owners are **complete**; ItemId / aircraft-definition / StoredUfo production subjects are qualified, Market item buy/sell preserves partial-fill semantics, autosell uses an explicit desired state, and legacy/remaster paths converge on campaign owners;
+10. migrate the remaining stored-UFO/recovery, transfer, defence, save/load and mission-start authority families behind typed IDs and canonical owners;
 11. keep ambiguous or misclassified semantics fail-closed until their canonical contract is proven;
 12. once M1 boundary exit criteria are satisfied, bring up the SDL3/Vulkan production platform path;
 13. implement frame contexts, allocator and production descriptor-heap runtime;
@@ -197,9 +197,9 @@ The active execution order is:
   - [x] Seal typed catalog coverage, then correct one discovered context-dependent conflation: **58 strategic authoritative semantics + 15 tactical semantics** (`CreateProduction` split from legacy `prod_inc`).
   - [x] Preserve the presentation authority guard: no command/cvar fallback in strategic/tactical intent adapters.
   - [x] Forward **13/15 tactical semantics** through the existing server protocol; keep AbortMission and Reload fail-closed until request helpers prove protocol emission.
-  - [x] Qualify **31/58 strategic semantics** through campaign-owned canonical owners: campaign time lapse; aircraft mission/return/start/stop/destination/pursuit/homebase; base build/rename; installation build/rename/destroy; facility build/destroy; Research assign/max/stop; Production create/decrease/increase/set-amount/move/stop; Employee/Team assign/de-equip/delete/hire-fire/rename/skin.
-  - [x] Keep the remaining **27 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted or corrected.
-  - [x] Complete ItemId + aircraft + StoredUfo production-subject qualification and bridge `CreateProduction` through the canonical campaign owner; facility/defence long-lived mutation still requires stable identity.
+  - [x] Qualify **38/58 strategic semantics** through campaign-owned canonical owners: campaign time lapse; aircraft mission/return/start/stop/destination/pursuit/homebase; base build/rename; installation build/rename/destroy; facility build/destroy; Research assign/max/stop; Production create/decrease/increase/set-amount/move/stop; Employee/Team assign/de-equip/delete/hire-fire/rename/skin; Market buy/sell aircraft/item/UGV and explicit autosell policy.
+  - [x] Keep the remaining **20 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted or corrected.
+  - [x] Complete ItemId + aircraft + StoredUfo production-subject qualification and bridge `CreateProduction` through the canonical campaign owner; Market purchase/sale subjects reuse qualified IDs or static definition keys and introduce no new persistent identity type; facility/defence long-lived mutation still requires stable identity.
 - [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
 
 ### Renderer and presentation

@@ -4,7 +4,7 @@
 **Primary target:** Fedora 44 / i9-9900K / Arc B580  
 **Canonical source baseline:** `763173ed036ebbee32c2a7bf6aefa19748df89ff`  
 **Qualified remaster planning head:** `b0eb12631c71e90b7c3d1f6d19e618e7656c80be`  
-**Current M1 implementation baseline:** `e29739ec2f34fb21e43f664385f57ab5eca18e53`
+**Current M1 implementation baseline:** `aa63c0f84bbf01316542e3b17e8e6acb20ad4a2e`
 **Execution strategy:** architecture 091  
 **Language/toolchain authority:** architecture 092
 
@@ -130,6 +130,7 @@ qualify StoredUfoId — prove persisted monotonic stored-UFO identity across lin
 qualify CreateProduction subjects and owner — prove ItemId / aircraft-definition / StoredUfo subject resolution and route both typed and legacy create-production requests through the canonical campaign owner
 qualify persisted EmployeeId publication — project `character_t::ucn` as immutable EmployeeId state with duplicate-load rejection, allocator reconciliation and inherited signed-16-bit wire-domain preservation
 extract Employee + Team owners — qualify aircraft assignment, de-equip, delete, hire/fire, rename and skin mutation through execution-time EmployeeId re-resolution while preserving legacy UI eligibility rules outside presentation authority
+extract Market owners — qualify buy/sell aircraft, items and UGVs plus explicit autosell policy through campaign-owned owners; preserve inherited partial-fill item semantics, aircraft/UGV lifecycle behavior, execution-time identity/definition re-resolution and existing save persistence
 complete source-derived presentation-action scope + five-way authority classification, including direct input hooks/protocol callsites, before defining the remaining authoritative intent vocabulary
 keep existing consumers behind temporary adapters
 define explicit presentation-facing ownership rather than expose raw canonical pointers
@@ -138,9 +139,9 @@ define explicit presentation-facing ownership rather than expose raw canonical p
 Current qualified M1 authority state at the implementation baseline above:
 
 ```text
-strategic: 31/58 canonical-applied, 27/58 fail-closed
+strategic: 38/58 canonical-applied, 20/58 fail-closed
 tactical:  13/15 forwarded to server authority, 2/15 fail-closed
-next strategic owner family: Market
+Market owner family: qualified at aa63c0f84bbf01316542e3b17e8e6acb20ad4a2e
 ```
 
 Compatibility policy for M1:
