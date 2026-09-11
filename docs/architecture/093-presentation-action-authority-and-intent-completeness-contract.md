@@ -3,7 +3,7 @@
 **Status:** M1 implementation contract — v3 classification sealed; owner extraction in progress
 **Accepted:** 2026-09-07  
 **Qualified source baseline:** `1dd974017f25d5bda5cc5b82b48d2590e574e50f`  
-**Current implementation baseline:** `1f47197936bc0c186b157babbec94010205562a7`
+**Current implementation baseline:** `dced70faf2761332c574f3c201ad5f7c342763e3`
 **Supersedes:** v1 command-only inventory interpretation of this document
 
 ## 1. Purpose
@@ -396,12 +396,12 @@ This section is retained as dated 2026-09-08 qualification evidence. A subsequen
 
 ## 26. Current M1 authority implementation status — 2026-09-11
 
-At implementation baseline `1f47197936bc0c186b157babbec94010205562a7` plus the qualified recovery-owner extraction batch:
+At implementation baseline `dced70faf2761332c574f3c201ad5f7c342763e3` plus the qualified alien-containment owner extraction batch:
 
 ```text
 strategic presentation-authoritative semantics: 57
-  canonical-applied:                            42
-  owner-extraction pending:                     15
+  canonical-applied:                            44
+  owner-extraction pending:                     13
 
 tactical authoritative semantics:               15
   forwarded to server authority:                13
@@ -430,6 +430,6 @@ Market item owners preserve inherited partial-fill normalization before the stri
 
 Persisted `EmployeeId` is published from `character_t::ucn`; stable runtime `ProductionId` and persisted `StoredUfoId` remain qualified. Runtime-only `FacilityId` is now canonical metadata on `building_t`, freshly reconstructed after load, preserved across facility-array compaction, published through immutable facility views and re-resolved at typed destruction execution. BuildFacility, StopAircraft, PursueUfo, SendAircraftToMission, BuyAircraft and BuyUGV also recheck the inherited eligibility boundaries identified by the full authority audit.
 
-`building_amdestroy` is `SCRIPTED_CANONICAL_EVENT`; `DestroyAntimatterFacility = 20` is retained only as a deprecated numeric tombstone and exposes no public submit helper. Recovered/stored-UFO authority now uses a one-shot process-monotonic `UfoRecoveryId` minted from the canonical won-mission recovery trigger, generation-safe `UfoSaleOfferId` values bound to canonical nation/price offers generated at the recovery handoff before the inherited sell-tab projection, and persisted `StoredUfoId` for destroy/transfer. This closes AcceptUfoSaleOffer, StoreRecoveredUfo, DestroyStoredUfo and TransferStoredUfo without trusting UI-round-tripped price/UFO condition and without changing save v4. The remaining 15 true strategic presentation actions stay fail-closed until their campaign-owned contracts are audited and extracted.
+`building_amdestroy` is `SCRIPTED_CANONICAL_EVENT`; `DestroyAntimatterFacility = 20` is retained only as a deprecated numeric tombstone and exposes no public submit helper. Recovered/stored-UFO authority now uses a one-shot process-monotonic `UfoRecoveryId` minted from the canonical won-mission recovery trigger, generation-safe `UfoSaleOfferId` values bound to canonical nation/price offers generated at the recovery handoff before the inherited sell-tab projection, and persisted `StoredUfoId` for destroy/transfer. This closes AcceptUfoSaleOffer, StoreRecoveredUfo, DestroyStoredUfo and TransferStoredUfo without trusting UI-round-tripped price/UFO condition and without changing save v4. `KillContainedAlien` and `KillContainedAliens` now resolve `BaseId`/`TechnologyId` at execution and delegate to UI-free `cp_aliencont.cpp` owners. Single-species killing preserves the inherited behavior of converting one live alien for every team definition mapped to the requested technology; kill-all converts each positive live count to dead through `AlienContainment::add`, so capacity/research side effects and underflow protection remain canonical. No individual `AlienId` is introduced. The remaining 13 true strategic presentation actions stay fail-closed until their campaign-owned contracts are audited and extracted.
 
 These implementation counts and runtime-only FacilityId do not alter campaign persistence or tactical transport: save format v4 and protocol 18 remain the active compatibility epoch.

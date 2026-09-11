@@ -24,6 +24,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma once
 
+struct base_s;
+struct technology_s;
+
+/** @brief Result of presentation-facing canonical alien-containment mutations. */
+typedef enum alienContainmentMutationResult_s {
+	AC_CONTAINMENT_MUTATION_APPLIED,
+	AC_CONTAINMENT_MUTATION_INVALID_BASE,
+	AC_CONTAINMENT_MUTATION_INVALID_TECHNOLOGY,
+	AC_CONTAINMENT_MUTATION_NO_CONTAINMENT,
+	AC_CONTAINMENT_MUTATION_NO_LIVE_ALIENS
+} alienContainmentMutationResult_t;
+
+alienContainmentMutationResult_t AC_TryKillContainedAlien(struct base_s* base, const struct technology_s* technology);
+alienContainmentMutationResult_t AC_TryKillContainedAliens(struct base_s* base);
+
 /**
  * Collecting aliens functions.
  */

@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../../cl_shared.h"
 #include "cp_campaign.h"
 #include "cp_capacity.h"
+#include "cp_aliencont.h"
 #include "cp_aliencont_callbacks.h"
 #include "save/save_aliencont.h"
 #include "aliencargo.h"
@@ -120,6 +121,59 @@ void AL_AddAliens (aircraft_t* aircraft)
 		}
 	}
 	cgi->LIST_Delete(&cargo);
+}
+
+/**
+ * @brief Canonical presentation-facing owner for killing one contained alien
+ * from each team definition mapped to the requested technology.
+ *
+ * This intentionally preserves the inherited callback semantics: a technology
+ * may map to multiple team definitions and each matching entry loses at most
+ * one live alien. No presentation-provided count or team definition is trusted.
+ */
+alienContainmentMutationResult_t AC_TryKillContainedAlien (base_t* base, const technology_t* technology)
+{
+	if (!base)
+		return AC_CONTAINMENT_MUTATION_INVALID_BASE;
+	if (!technology)
+		return AC_CONTAINMENT_MUTATION_INVALID_TECHNOLOGY;
+	if (!base->alienContainment)
+		return AC_CONTAINMENT_MUTATION_NO_CONTAINMENT;
+
+	bool applied = false;
+	linkedList_t* list = base->alienContainment->list();
+	LIST_Foreach(list, alienCargo_t, item) {
+		if (RS_GetTechForTeam(item->teamDef) != technology)
+			continue;
+		if (item->alive <= 0)
+			continue;
+		if (base->alienContainment->add(item->teamDef, -1, 1))
+			applied = true;
+	}
+	cgi->LIST_Delete(&list);
+	return applied ? AC_CONTAINMENT_MUTATION_APPLIED : AC_CONTAINMENT_MUTATION_NO_LIVE_ALIENS;
+}
+
+/**
+ * @brief Canonical presentation-facing owner for killing every live alien in a base.
+ */
+alienContainmentMutationResult_t AC_TryKillContainedAliens (base_t* base)
+{
+	if (!base)
+		return AC_CONTAINMENT_MUTATION_INVALID_BASE;
+	if (!base->alienContainment)
+		return AC_CONTAINMENT_MUTATION_NO_CONTAINMENT;
+
+	bool applied = false;
+	linkedList_t* list = base->alienContainment->list();
+	LIST_Foreach(list, alienCargo_t, item) {
+		const int alive = item->alive;
+		const bool accepted = base->alienContainment->add(item->teamDef, -alive, alive);
+		if (alive > 0 && accepted)
+			applied = true;
+	}
+	cgi->LIST_Delete(&list);
+	return applied ? AC_CONTAINMENT_MUTATION_APPLIED : AC_CONTAINMENT_MUTATION_NO_LIVE_ALIENS;
 }
 
 /**

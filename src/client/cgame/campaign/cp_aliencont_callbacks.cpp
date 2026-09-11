@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cp_aliencont_callbacks.h"
 #include "../../cl_shared.h"
 #include "cp_campaign.h"
+#include "cp_aliencont.h"
 #include "aliencontainment.h"
 
 /**
@@ -74,23 +75,17 @@ static void AC_KillAll_f (void)
 {
 	base_t* base;
 
-	if (cgi->Cmd_Argc() < 2) {
+	if (cgi->Cmd_Argc() < 2)
 		base = B_GetCurrentSelectedBase();
-	} else {
+	else
 		base = B_GetFoundedBaseByIDX(atoi(cgi->Cmd_Argv(1)));
-	}
 
 	if (!base)
 		return;
 	if (!base->alienContainment)
 		return;
 
-	linkedList_t* list = base->alienContainment->list();
-	LIST_Foreach(list, alienCargo_t, item) {
-		base->alienContainment->add(item->teamDef, -item->alive, item->alive);
-	}
-	cgi->LIST_Delete(&list);
-
+	AC_TryKillContainedAliens(base);
 	cgi->Cmd_ExecuteString("ui_aliencont_init");
 }
 
@@ -102,11 +97,10 @@ static void AC_KillOne_f (void)
 	base_t* base;
 	const int argc = cgi->Cmd_Argc();
 
-	if (argc < 3) {
+	if (argc < 3)
 		base = B_GetCurrentSelectedBase();
-	} else {
+	else
 		base = B_GetFoundedBaseByIDX(atoi(cgi->Cmd_Argv(1)));
-	}
 	if (!base)
 		return;
 	if (!base->alienContainment)
@@ -117,18 +111,8 @@ static void AC_KillOne_f (void)
 		return;
 	}
 
-	/* this function should work by teamDef ID (or raceID), but currently multple teams defined per race
-	 * that makes the thing more complicated */
-	const char* techId = cgi->Cmd_Argv(argc - 1);
-	linkedList_t* list = base->alienContainment->list();
-	LIST_Foreach(list, alienCargo_t, item) {
-		const technology_t* tech = RS_GetTechForTeam(item->teamDef);
-		if (!Q_streq(tech->id, techId))
-			continue;
-		base->alienContainment->add(item->teamDef, -1, 1);
-	}
-	cgi->LIST_Delete(&list);
-
+	const technology_t* technology = RS_GetTechByID(cgi->Cmd_Argv(argc - 1));
+	AC_TryKillContainedAlien(base, technology);
 	cgi->Cmd_ExecuteString("ui_aliencont_init");
 }
 

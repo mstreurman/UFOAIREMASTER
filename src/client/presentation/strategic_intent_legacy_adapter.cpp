@@ -9,6 +9,7 @@
  */
 #include "../cl_shared.h"
 #include "../cgame/campaign/cp_aircraft.h"
+#include "../cgame/campaign/cp_aliencont.h"
 #include "../cgame/campaign/cp_campaign.h"
 #include "../cgame/campaign/cp_employee.h"
 #include "../cgame/campaign/cp_market.h"
@@ -353,6 +354,21 @@ void applyPendingStrategicIntents() {
             }
             break;
 
+        case StrategicIntentKind::KillContainedAlien: {
+            base_t* b=resolveBase(in.base); technology_t* tech=resolveTechnology(in.technology);
+            if(b&&tech&&AC_TryKillContainedAlien(b,tech)==AC_CONTAINMENT_MUTATION_APPLIED) {
+                out.disposition=StrategicIntentDisposition::Applied;
+                out.canonicalValue=1;
+            }
+            break; }
+        case StrategicIntentKind::KillContainedAliens: {
+            base_t* b=resolveBase(in.base);
+            if(b&&AC_TryKillContainedAliens(b)==AC_CONTAINMENT_MUTATION_APPLIED) {
+                out.disposition=StrategicIntentDisposition::Applied;
+                out.canonicalValue=1;
+            }
+            break; }
+
         /* Strict-authority catalog is transport-complete, but these actions stay
          * rejected until callback-owned validation/mutation is moved into its
          * canonical campaign subsystem. No command-string fallback is allowed. */
@@ -360,8 +376,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::DestroyAntimatterFacility:
         case StrategicIntentKind::EquipAircraftItem:
         case StrategicIntentKind::EquipBaseDefenceItem:
-        case StrategicIntentKind::KillContainedAlien:
-        case StrategicIntentKind::KillContainedAliens:
         case StrategicIntentKind::LoadGame:
         case StrategicIntentKind::LoadLastSave:
         case StrategicIntentKind::RemoveAircraftItem:
