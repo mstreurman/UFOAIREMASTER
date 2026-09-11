@@ -91,7 +91,7 @@ def source_audit(root: Path) -> None:
     for kind, owner_call in (
         ("SelectMission", "GEO_SelectMission("),
         ("SelectAircraft", "GEO_SelectAircraft("),
-        ("SendAircraftToMission", "AIR_SendAircraftToMission("),
+        ("SendAircraftToMission", "AIR_TrySendAircraftToMission("),
         ("ReturnAircraftToBase", "AIR_AircraftReturnToBase("),
     ):
         case_match = re.search(

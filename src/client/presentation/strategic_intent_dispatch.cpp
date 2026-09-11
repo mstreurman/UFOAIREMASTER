@@ -147,13 +147,6 @@ StrategicIntentSubmission submitDeleteEmployee(canonical::EmployeeId employee)
     return submit(v);
 }
 
-StrategicIntentSubmission submitDestroyAntimatterFacility(canonical::BaseId base, int32_t facilityIndex)
-{
-    StrategicIntent v = make(StrategicIntentKind::DestroyAntimatterFacility);
-    v.base = base; v.value0 = facilityIndex;
-    return submit(v);
-}
-
 StrategicIntentSubmission submitDestroyFacility(canonical::BaseId base, canonical::FacilityId facility)
 {
     StrategicIntent v = make(StrategicIntentKind::DestroyFacility);

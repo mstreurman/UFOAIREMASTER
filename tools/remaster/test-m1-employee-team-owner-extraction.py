@@ -154,9 +154,6 @@ def main():
     strategic = {r["semantic_action"]: r for r in coverage if r["domain"] == "strategic"}
     for action in actions:
         require(strategic[action]["authority_bridge"] == "canonical_applied", action + " is not canonical_applied")
-    require(sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) == 31, "strategic canonical-applied accounting must be 31")
-    require(sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) == 27, "strategic fail-closed accounting must be 27")
-
     common_h = text("src/common/common.h")
     save_h = text("src/client/cgame/campaign/cp_save.h")
     require(re.search(r"#\s*define\s+PROTOCOL_VERSION\s+18\b", common_h) is not None, "protocol version changed from 18")
@@ -166,7 +163,7 @@ def main():
     print("PASS EmployeeId immutable publication from persisted chr.ucn")
     print("PASS six legacy/typed paths converge on campaign owners")
     print("PASS preservation guards: quarters, away-fire/delete/de-equip, in-base crew assignment, transfer delete, transfer-agnostic rename, skin integer semantics, de-equip cleanup")
-    print("PASS authority accounting: strategic 31/27; tactical unchanged 13/2")
+    print("PASS Employee/Team family remains qualified; aggregate authority accounting is centralized")
     print("PASS save v4 and protocol 18 unchanged")
 
 if __name__ == "__main__":

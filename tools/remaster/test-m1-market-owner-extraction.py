@@ -63,6 +63,7 @@ def main():
         "B_GetFoundedBaseByIDX(baseIdx)", "AIR_GetAircraftSilent(aircraftDefinition)",
         "B_GetBuildingStatus(base, B_COMMAND)", "B_GetBuildingStatus(base, B_POWER)",
         "AIR_AircraftAllowed(base)", "CAP_GetFreeCapacity(base, AIR_GetHangarCapacityType(aircraft))",
+        "RS_IsResearched_ptr(aircraft->tech)",
         "BS_GetAircraftOnMarket(aircraft)", "BS_GetAircraftBuyingPrice(aircraft)", "BS_BuyAircraft(aircraft, base)",
     ):
         require(token in buy_aircraft, "BuyAircraft owner contract missing: " + token)
@@ -96,6 +97,7 @@ def main():
 
     buy_ugv = function_body(market_cpp, "marketMutationResult_t BS_TryBuyUGV")
     for token in (
+        "RS_GetTechByProvided(ugv->id)", "RS_IsResearched_ptr(tech)",
         "E_CountUnhiredRobotsByType(ugv)", "BS_GetItemOnMarket(ugvWeapon)",
         "ccs.credits < ugv->price", "UGV_SIZE + ugvWeapon->size", "BS_BuyUGV(ugv, base)",
     ):
@@ -146,9 +148,6 @@ def main():
     strategic = {r["semantic_action"]: r for r in coverage if r["domain"] == "strategic"}
     for action in actions:
         require(strategic[action]["authority_bridge"] == "canonical_applied", action + " is not canonical_applied")
-    require(sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) == 38, "strategic canonical-applied accounting must be 38")
-    require(sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) == 20, "strategic fail-closed accounting must be 20")
-
     common_h = text("src/common/common.h")
     save_h = text("src/client/cgame/campaign/cp_save.h")
     require(re.search(r"#\s*define\s+PROTOCOL_VERSION\s+18\b", common_h) is not None, "protocol version changed from 18")
@@ -158,7 +157,7 @@ def main():
     print("PASS partial-fill item buy/sell and aircraft/UGV lifecycle preservation guards")
     print("PASS legacy and typed Market paths converge on seven campaign owners")
     print("PASS autosell explicit desired state + existing save persistence")
-    print("PASS authority accounting: strategic 38/20; tactical unchanged 13/2")
+    print("PASS Market family includes aircraft/UGV research hardening; aggregate authority accounting is centralized")
     print("PASS save v4 and protocol 18 unchanged")
 
 if __name__ == "__main__":

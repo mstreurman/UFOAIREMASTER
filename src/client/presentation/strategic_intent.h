@@ -29,7 +29,7 @@ enum class StrategicIntentKind : uint8_t {
     DecreaseProduction = 17,
     DeequipEmployee = 18,
     DeleteEmployee = 19,
-    DestroyAntimatterFacility = 20,
+    DestroyAntimatterFacility = 20, /* deprecated tombstone: internal scripted event, not a presentation intent */
     DestroyFacility = 21,
     DestroyInstallation = 22,
     DestroyStoredUfo = 23,
@@ -129,7 +129,6 @@ StrategicIntentSubmission submitChangeAircraftHomebase(canonical::AircraftId air
 StrategicIntentSubmission submitDecreaseProduction(canonical::BaseId base, canonical::ProductionId production, int32_t amount);
 StrategicIntentSubmission submitDeequipEmployee(canonical::BaseId base, canonical::EmployeeId employee);
 StrategicIntentSubmission submitDeleteEmployee(canonical::EmployeeId employee);
-StrategicIntentSubmission submitDestroyAntimatterFacility(canonical::BaseId base, int32_t facilityIndex);
 StrategicIntentSubmission submitDestroyFacility(canonical::BaseId base, canonical::FacilityId facility);
 StrategicIntentSubmission submitDestroyInstallation(canonical::InstallationId installation);
 StrategicIntentSubmission submitDestroyStoredUfo(canonical::StoredUfoId storedUfo);

@@ -52,8 +52,8 @@ try:
               (ROOT/"tools/remaster/strict-strategic-actions.txt").read_text().splitlines()
               if x.strip()]
 
-    if len(strict) != 58 or strict.count("CreateProduction") != 1:
-        raise AssertionError("strict strategic semantic inventory must be 58 with one CreateProduction")
+    if strict.count("CreateProduction") != 1:
+        raise AssertionError("strict strategic semantic inventory must contain exactly one CreateProduction")
 
     require(ih, [
         "CreateProduction = 60",
@@ -162,8 +162,6 @@ try:
         (ROOT/"tools/remaster/m1-authoritative-intent-coverage.tsv").open(encoding="utf-8"),
         delimiter="\t"))
     strategic = {r["semantic_action"]: r for r in rows if r["domain"] == "strategic"}
-    if len(strategic) != 58:
-        raise AssertionError("coverage ledger must contain 58 strategic semantics")
     for name in ("IncreaseProduction", "SetProductionAmount"):
         if strategic[name]["authority_bridge"] != "canonical_applied":
             raise AssertionError(f"{name}: must be canonical_applied")
@@ -173,11 +171,6 @@ try:
         raise AssertionError("CreateProduction must be canonical_applied")
     if strategic["CreateProduction"]["owner_source"] != "src/client/cgame/campaign/cp_produce.cpp":
         raise AssertionError("CreateProduction must be owned by cp_produce.cpp")
-
-    if sum(r["authority_bridge"] == "canonical_applied" for r in strategic.values()) != 31:
-        raise AssertionError("strategic applied accounting must be 31")
-    if sum(r["authority_bridge"] == "owner_extraction_pending_fail_closed" for r in strategic.values()) != 27:
-        raise AssertionError("strategic pending accounting must be 27")
 
     cxx = shutil.which("g++")
     if not cxx:
@@ -195,7 +188,7 @@ try:
     print("PASS legacy prod_inc semantic split: CreateProduction action 60 now routes through its canonical campaign owner")
     print("PASS normalized C++11 intent signatures compile without renumbering existing ABI values")
     print("PASS canonical increase/set owners re-resolve ProductionId and contain no UI/command/cvar dispatch")
-    print("PASS bridge accounting: 58 strategic semantics; 31 applied / 27 fail-closed; tactical 13/2")
+    print("PASS Production normalization family remains qualified; aggregate authority accounting is centralized")
 except AssertionError as exc:
     print("FAIL M1 production contract normalization: " + str(exc), file=sys.stderr)
     raise SystemExit(1)

@@ -135,8 +135,8 @@ def main():
             "CharacterUcn qualified correlation status changed")
     require(by["ItemId"]["second_pass_status"] == "qualified_runtime_content_ordinal",
             "ItemId qualified lifetime status changed")
-    require(by["FacilityId"]["second_pass_status"] == "pending_mapping",
-            "FacilityId debt status changed")
+    require(by["FacilityId"]["second_pass_status"] == "qualified_runtime_mapping",
+            "FacilityId runtime mapping qualification regressed")
     require(by["TransferId"]["second_pass_status"] == "pending_mapping",
             "TransferId debt status changed")
     require(by["DefenceSlotId"]["second_pass_status"] == "pending_mapping",
@@ -149,7 +149,7 @@ def main():
     print("  UCN generation/save/load/wire correlation: explicit")
     print("  UCN allocator restoration/non-reuse + signed-16-bit wire domain: qualified")
     print("  ItemId current-content ordinal + stable script key: qualified")
-    print("  Facility/Transfer/Defence/Message debt remains pending")
+    print("  FacilityId runtime mapping: qualified; Transfer/Defence/Message debt remains pending")
     return 0
 
 

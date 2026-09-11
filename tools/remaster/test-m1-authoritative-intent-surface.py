@@ -22,9 +22,14 @@ for file in ['strategic_intent_legacy_adapter.cpp','tactical_intent_legacy_adapt
     for banned in ['Cmd_ExecuteString(', 'Cbuf_AddText(', 'Cvar_Set(', 'Cvar_SetValue(']:
         if banned in text:
             print(f'FAIL {file}: banned presentation dispatch {banned}'); sys.exit(1)
-# Existing ABI values stay stable.
+# Existing ABI values stay stable. Value 20 remains a tombstone so later kinds do not renumber.
 for token in ['SetCampaignTimeLapse = 1','SelectMission = 2','SelectAircraft = 3','SendAircraftToMission = 4','ReturnAircraftToBase = 5']:
     assert token in strategic, token
+assert 'DestroyAntimatterFacility = 20' in strategic
+if 'submitDestroyAntimatterFacility(' in strategic:
+    print('FAIL deprecated DestroyAntimatterFacility tombstone must not expose a public submit helper'); sys.exit(1)
+if len(strict_s) != 57:
+    print(f'FAIL strict strategic authoritative inventory must be 57, got {len(strict_s)}'); sys.exit(1)
 for token in ['SetReactionFire = 1','SetReservedTimeUnits = 2']:
     assert token in tactical, token
 # Public strategic headers must coexist in one translation unit.
@@ -78,8 +83,18 @@ expected_applied={
 applied={name for name,row in ledger_s.items() if row['authority_bridge']=='canonical_applied'}
 if applied != expected_applied:
     print('FAIL strategic applied-owner set mismatch: '+repr(sorted(applied))); sys.exit(1)
-if sum(r['authority_bridge']=='owner_extraction_pending_fail_closed' for r in ledger_s.values()) != 20:
-    print('FAIL strategic pending-owner accounting must be 20'); sys.exit(1)
+expected_pending={
+    'AcceptUfoSaleOffer','AutoResolveMission','DestroyStoredUfo','EquipAircraftItem',
+    'EquipBaseDefenceItem','KillContainedAlien','KillContainedAliens','LoadGame','LoadLastSave',
+    'RemoveAircraftItem','RemoveBaseDefenceItem','RenameAircraft','SaveGame',
+    'SetAirDefenceAutoFire','SetAirDefenceTarget','StartMission','StartTransfer',
+    'StoreRecoveredUfo','TransferStoredUfo',
+}
+pending={name for name,row in ledger_s.items() if row['authority_bridge']=='owner_extraction_pending_fail_closed'}
+if pending != expected_pending:
+    print('FAIL strategic pending-owner set mismatch: '+repr(sorted(pending))); sys.exit(1)
+if len(ledger_s) != 57:
+    print(f'FAIL strategic coverage ledger must contain 57 semantics, got {len(ledger_s)}'); sys.exit(1)
 if sum(r['authority_bridge']=='server_request_forwarded' for r in ledger_t.values()) != 13:
     print('FAIL tactical v1 bridge accounting must be 13 forwarded / 2 pending'); sys.exit(1)
 if sum(r['authority_bridge']=='client_request_helper_pending_fail_closed' for r in ledger_t.values()) != 2:
@@ -89,4 +104,4 @@ if 'CL_ActorReload(' in tactical_adapter:
     print('FAIL Reload must fail closed until request emission is observable'); sys.exit(1)
 if 'NET_WriteByte(&msg,clc_endround)' not in tactical_adapter:
     print('FAIL EndTurn must emit the existing clc_endround protocol directly'); sys.exit(1)
-print('PASS bridge accounting: strategic 38 applied / 20 fail-closed; tactical 13 forwarded / 2 fail-closed')
+print('PASS bridge accounting: strategic 38 applied / 19 fail-closed; tactical 13 forwarded / 2 fail-closed')

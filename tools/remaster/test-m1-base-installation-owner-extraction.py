@@ -115,9 +115,10 @@ try:
     for name in expected:
         if strategic[name]['authority_bridge']!='canonical_applied':
             raise AssertionError(f'{name}: not canonical_applied')
-    for name in {'DestroyAntimatterFacility','StartMission'}:
-        if strategic[name]['authority_bridge']!='owner_extraction_pending_fail_closed':
-            raise AssertionError(f'{name}: must remain fail-closed')
+    if strategic['StartMission']['authority_bridge']!='owner_extraction_pending_fail_closed':
+        raise AssertionError('StartMission: must remain fail-closed')
+    if 'DestroyAntimatterFacility' in strategic:
+        raise AssertionError('DestroyAntimatterFacility is an internal scripted event, not a strategic presentation action')
 
     print('PASS M1 Base + Installation lifecycle extraction: five canonical owners')
     print('PASS shared geoscape land placement rule is canonical and consumed by legacy + typed paths')

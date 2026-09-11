@@ -191,7 +191,9 @@ StrategicItemDefinitionView projectItemDefinition(const objDef_t& item)
 {
 	StrategicItemDefinitionView out;
 	out.id = indexedId<canonical::ItemId>(item.idx);
-	const technology_t* technology = RS_GetTechForItem(&item);
+	const technology_t* technology = nullptr;
+	if (item.idx >= 0 && item.idx < static_cast<int>(lengthof(ccs.objDefTechs)))
+		technology = ccs.objDefTechs[item.idx];
 	out.technology = technology
 		? indexedId<canonical::TechnologyId>(technology->idx)
 		: canonical::TechnologyId();

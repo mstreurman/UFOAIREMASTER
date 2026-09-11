@@ -7,7 +7,7 @@ src/client/cgame/campaign/cp_base_callbacks.cpp	command	base_changename		PRESENT
 src/client/cgame/campaign/cp_base_callbacks.cpp	command	base_init		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects base availability/capacity to legacy UI.
 src/client/cgame/campaign/cp_base_callbacks.cpp	command	base_assemble		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Builds Baseview data from canonical layout; incidental cache/renderer effects must be split later.
 src/client/cgame/campaign/cp_base_callbacks.cpp	command	building_destroy		PRESENTATION_ACTION	STRATEGIC_CANONICAL	DestroyFacility	yes	HIGH	Destroys canonical facility state; confirmation UI is presentation side effect.
-src/client/cgame/campaign/cp_base_callbacks.cpp	command	building_amdestroy		PRESENTATION_ACTION	STRATEGIC_CANONICAL	DestroyAntimatterFacility	yes	HIGH	Canonical destruction path with antimatter consequences.
+src/client/cgame/campaign/cp_base_callbacks.cpp	command	building_amdestroy		SCRIPTED_CANONICAL_EVENT			no	HIGH	Internal probabilistic antimatter-storage onDestroy breach event; not a presentation-originated gameplay request.
 src/client/cgame/campaign/cp_base_callbacks.cpp	command	base_selectbuilding		PRESENTATION_ACTION	PRESENTATION_ONLY		no	HIGH	Navigates to building-specific window/pedia/info.
 src/client/cgame/campaign/cp_base_callbacks.cpp	command	ui_list_buildings		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Populates building presentation data.
 src/client/cgame/campaign/cp_base_callbacks.cpp	command	ui_show_buildinginfo		PRESENTATION_ACTION	READ_ONLY		no	HIGH	Projects building details.

@@ -59,7 +59,14 @@ COMMAND_ENTRY_RE = re.compile(r'\{\s*"(?P<name>[^"]+)"\s*,\s*(?P<handler>[A-Za-z
 ADD_COMMAND_RE = re.compile(
     r'(?:(?:cgi->)?Cmd_AddCommand)\s*\(\s*"(?P<name>[^"]+)"\s*,\s*(?P<handler>[A-Za-z_]\w*)'
 )
-CGAME_MAPCLICK_RE = re.compile(r'\be\.MapClick\s*=\s*(?P<handler>[A-Za-z_]\w*)\s*;')
+CGAME_EXPORT_RE = re.compile(r'\be\.(?P<name>[A-Za-z_]\w*)\s*=\s*(?P<handler>[A-Za-z_]\w*)\s*;')
+REVIEWED_CGAME_EXPORT_FIELDS = {
+    "Init", "Shutdown", "Spawn", "Results", "IsItemUseable", "GetModelForItem",
+    "GetEquipmentDefinition", "UpdateCharacterValues", "IsTeamKnown", "GetSelectedChr",
+    "Drop", "InitializeBattlescape", "InitMissionBriefing", "RunFrame", "DrawBaseLayout",
+    "DrawBaseLayoutTooltip", "GetTeamDef", "MapDraw", "MapDrawMarkers", "MapClick",
+}
+DIRECT_PRESENTATION_INPUT_EXPORTS = {"MapClick"}
 PA_RE = re.compile(r"MSG_Write_PA\s*\(\s*(PA_[A-Z0-9_]+)")
 ENDROUND_RE = re.compile(r"\bclc_endround\b")
 SV_WIN_RE = re.compile(r'["\']sv\s+win\b')
@@ -381,8 +388,15 @@ def capture(root: Path, registry):
                 seen.add((name,handler))
                 rows.append(row_from_entry(original,active,guards,registry,rel,"command",name,handler,e.start()))
 
-        for e in CGAME_MAPCLICK_RE.finditer(active):
-            rows.append(row_from_entry(original,active,guards,registry,rel,"direct_entry","MapClick",e.group("handler"),e.start()))
+        if rel == "src/client/cgame/campaign/cl_game_campaign.cpp":
+            for e in CGAME_EXPORT_RE.finditer(active):
+                field = e.group("name")
+                handler = e.group("handler")
+                if field not in REVIEWED_CGAME_EXPORT_FIELDS:
+                    violations.append(f"{rel}: unreviewed cgame export field e.{field} -> {handler}")
+                    continue
+                if field in DIRECT_PRESENTATION_INPUT_EXPORTS:
+                    rows.append(row_from_entry(original,active,guards,registry,rel,"direct_entry",field,handler,e.start()))
 
         for m in PA_RE.finditer(active):
             pa = m.group(1)

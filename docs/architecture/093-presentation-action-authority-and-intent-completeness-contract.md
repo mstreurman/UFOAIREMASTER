@@ -3,7 +3,7 @@
 **Status:** M1 implementation contract — v3 classification sealed; owner extraction in progress
 **Accepted:** 2026-09-07  
 **Qualified source baseline:** `1dd974017f25d5bda5cc5b82b48d2590e574e50f`  
-**Current implementation baseline:** `aa63c0f84bbf01316542e3b17e8e6acb20ad4a2e`
+**Current implementation baseline:** `7a1b9568a41b5b61a0820c4d67174f134d4445f9`
 **Supersedes:** v1 command-only inventory interpretation of this document
 
 ## 1. Purpose
@@ -392,20 +392,20 @@ The qualification includes strict C++11 public-header coexistence, bounded C++26
 
 The next authority milestone is not additional classification. It is reducing the fail-closed counts to zero by extracting canonical campaign owners and the remaining tactical request helpers.
 
-This section is retained as dated 2026-09-08 qualification evidence. A subsequent semantic split of legacy `prod_inc` introduced distinct `CreateProduction`, expanding the strategic authoritative surface from 57 to 58 without changing the tactical total.
+This section is retained as dated 2026-09-08 qualification evidence. A subsequent semantic split of legacy `prod_inc` introduced distinct `CreateProduction`, temporarily expanding the strict strategic inventory from 57 to 58. The 2026-09-11 full authority re-audit then proved `building_amdestroy` / `DestroyAntimatterFacility` is an internal probabilistic scripted canonical event rather than a presentation request, correcting the presentation-authoritative strategic surface back to 57 without changing the tactical total.
 
 ## 26. Current M1 authority implementation status — 2026-09-11
 
-At implementation baseline `aa63c0f84bbf01316542e3b17e8e6acb20ad4a2e`:
+At implementation baseline `7a1b9568a41b5b61a0820c4d67174f134d4445f9`:
 
 ```text
-strategic authoritative semantics: 58
-  canonical-applied:               38
-  owner-extraction pending:        20
+strategic presentation-authoritative semantics: 57
+  canonical-applied:                            38
+  owner-extraction pending:                     19
 
-tactical authoritative semantics:  15
-  forwarded to server authority:   13
-  helper-extraction pending:        2
+tactical authoritative semantics:               15
+  forwarded to server authority:                13
+  helper-extraction pending:                     2
 ```
 
 The current strategic-applied set includes the previously qualified Aircraft/Geoscape, Base/Installation, Facility, Research and Production owners, canonical `CreateProduction`, the six Employee/Team actions, and all seven Market actions:
@@ -428,6 +428,8 @@ SetAutoSellPolicy
 
 Market item owners preserve inherited partial-fill normalization before the strict low-level mutation helpers. Market purchase/sale subjects reuse qualified `BaseId`, `AircraftId`, `EmployeeId`, `ItemId` or static aircraft/UGV definition keys re-resolved at execution; no new persistent identity domain is introduced. Autosell carries an explicit desired state rather than a canonical toggle.
 
-Persisted `EmployeeId` is published from `character_t::ucn`; stable runtime `ProductionId` and persisted `StoredUfoId` remain qualified. The remaining 20 strategic actions stay fail-closed until their campaign-owned contracts are audited and extracted.
+Persisted `EmployeeId` is published from `character_t::ucn`; stable runtime `ProductionId` and persisted `StoredUfoId` remain qualified. Runtime-only `FacilityId` is now canonical metadata on `building_t`, freshly reconstructed after load, preserved across facility-array compaction, published through immutable facility views and re-resolved at typed destruction execution. BuildFacility, StopAircraft, PursueUfo, SendAircraftToMission, BuyAircraft and BuyUGV also recheck the inherited eligibility boundaries identified by the full authority audit.
 
-These implementation counts do not alter campaign persistence or tactical transport: save format v4 and protocol 18 remain the active compatibility epoch.
+`building_amdestroy` is `SCRIPTED_CANONICAL_EVENT`; `DestroyAntimatterFacility = 20` is retained only as a deprecated numeric tombstone and exposes no public submit helper. The remaining 19 true strategic presentation actions stay fail-closed until their campaign-owned contracts are audited and extracted.
+
+These implementation counts and runtime-only FacilityId do not alter campaign persistence or tactical transport: save format v4 and protocol 18 remain the active compatibility epoch.

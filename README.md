@@ -76,20 +76,22 @@ The accepted migration roadmap is [`docs/architecture/080-implementation-migrati
 
 ### Immediate execution order
 
-M0 is sealed. M1 is actively extracting presentation-facing authority without replacing canonical game rules. The current qualified implementation baseline is `aa63c0f84bbf01316542e3b17e8e6acb20ad4a2e` (`feat: extract canonical market owners`). The boundary state is mechanically inventoried and qualified:
+M0 is sealed. M1 is actively extracting presentation-facing authority without replacing canonical game rules. The current qualified implementation baseline is `7a1b9568a41b5b61a0820c4d67174f134d4445f9` (`feat: harden M1 strategic authority boundaries`). The boundary state is mechanically inventoried and qualified:
 
 ```text
-strategic authoritative semantics: 58 total
-  canonical-applied:               38
-  fail-closed pending owners:      20
+strategic presentation-authoritative semantics: 57 total
+  canonical-applied:                            38
+  fail-closed pending owners:                   19
 
-tactical authoritative semantics:  15 total
-  forwarded to server authority:   13
-  fail-closed pending helpers:      2
+tactical authoritative semantics:               15 total
+  forwarded to server authority:                13
+  fail-closed pending helpers:                   2
 
 canonical regression:               104/104 twice
-canonical verification digest:      33143dc7b737b6df7c2a1496500bf435b6563f259d60561c4db7f75c2f00bed2
+canonical verification digest:                   b3349db1064514536cff0ffd5cb6837cefca12b8435bc41c27220f5650da845f
 ```
+
+The full authority re-audit removed `DestroyAntimatterFacility` from presentation intent scope: legacy `building_amdestroy` is an internal probabilistic antimatter-storage breach event (`SCRIPTED_CANONICAL_EVENT`), not a user request. Its enum value 20 is retained only as a deprecated ABI tombstone.
 
 The active execution order is:
 
@@ -134,8 +136,8 @@ The active execution order is:
 - [x] CMake 4.3.0 / Ninja 1.13.2 / ccache 4.12.3 available.
 - [x] Vulkan headers/loader/tools and validation layer available.
 - [x] Intel Arc B580 / Mesa 26.2.2 exposes `VK_EXT_descriptor_heap`.
-- [x] SDL3 3.4.14 development environment available.
-- [x] OpenAL Soft 1.25.2 is installed on the Fedora 44 reference workstation and the deterministic M0.3 environment manifest has been recaptured/verified at `aa42dc88f980845c94fab1d6ff992657f935f25c13ac418c16aa25f3baa5d305`; M8 still requires the dedicated EFX/HRTF/device-runtime qualification before audio closure.
+- [x] SDL3 3.4.16 development environment available; the reference workstation tracks the latest installed dependency/tool versions unless an older version is explicitly technically pinned.
+- [x] OpenAL Soft 1.25.2 is installed on the Fedora 44 reference workstation and the deterministic M0.3 environment manifest has been recaptured/verified at `7adfa0c1e62c6ea2347b866fd36873e233b6c2f2bdc71f3336f0796fd9f3c57d`; M8 still requires the dedicated EFX/HRTF/device-runtime qualification before audio closure.
 - [x] FFmpeg 8.1.2 development modules available.
 - [x] Slang v2026.17 provisioned and hash-verified.
 - [x] Slang emits `SPV_EXT_descriptor_heap` and Fedora SPIR-V Tools validates it for Vulkan 1.4.
@@ -194,12 +196,12 @@ The active execution order is:
   - [x] Establish the C++11-compatible strategic intent/result value contract.
   - [x] Establish the bounded strict-C++26 intent/result transport with monotonic sequence IDs.
   - [x] Complete the source-derived presentation-action scope and five-way authority classification.
-  - [x] Seal typed catalog coverage, then correct one discovered context-dependent conflation: **58 strategic authoritative semantics + 15 tactical semantics** (`CreateProduction` split from legacy `prod_inc`).
+  - [x] Seal typed catalog coverage, split `CreateProduction` from legacy `prod_inc`, then correct the re-audit misclassification of internal `building_amdestroy`: **57 presentation-authoritative strategic semantics + 15 tactical semantics**.
   - [x] Preserve the presentation authority guard: no command/cvar fallback in strategic/tactical intent adapters.
   - [x] Forward **13/15 tactical semantics** through the existing server protocol; keep AbortMission and Reload fail-closed until request helpers prove protocol emission.
-  - [x] Qualify **38/58 strategic semantics** through campaign-owned canonical owners: campaign time lapse; aircraft mission/return/start/stop/destination/pursuit/homebase; base build/rename; installation build/rename/destroy; facility build/destroy; Research assign/max/stop; Production create/decrease/increase/set-amount/move/stop; Employee/Team assign/de-equip/delete/hire-fire/rename/skin; Market buy/sell aircraft/item/UGV and explicit autosell policy.
-  - [x] Keep the remaining **20 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted or corrected.
-  - [x] Complete ItemId + aircraft + StoredUfo production-subject qualification and bridge `CreateProduction` through the canonical campaign owner; Market purchase/sale subjects reuse qualified IDs or static definition keys and introduce no new persistent identity type; facility/defence long-lived mutation still requires stable identity.
+  - [x] Qualify **38/57 strategic semantics** through campaign-owned canonical owners: campaign time lapse; hardened aircraft mission/return/start/stop/destination/pursuit/homebase; base build/rename; installation build/rename/destroy; facility build/destroy with runtime `FacilityId`; Research assign/max/stop; Production create/decrease/increase/set-amount/move/stop; Employee/Team assign/de-equip/delete/hire-fire/rename/skin; Market buy/sell aircraft/item/UGV and explicit autosell policy.
+  - [x] Keep the remaining **19 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted.
+  - [x] Complete ItemId + aircraft + StoredUfo production-subject qualification and bridge `CreateProduction` through the canonical campaign owner; Market purchase/sale subjects reuse qualified IDs or static definition keys; runtime-only `FacilityId` is now implemented/published and re-resolved for destruction, while Transfer/Defence and other audited identity debt remains explicit.
 - [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
 
 ### Renderer and presentation

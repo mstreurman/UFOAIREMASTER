@@ -13,7 +13,6 @@ CreateProduction
 DecreaseProduction
 DeequipEmployee
 DeleteEmployee
-DestroyAntimatterFacility
 DestroyFacility
 DestroyInstallation
 DestroyStoredUfo
