@@ -88,9 +88,9 @@ def main():
         (ROOT/"tools/remaster/m1-authoritative-intent-coverage.tsv").open(), delimiter="\t"))
     strategic = [r for r in ledger if r["domain"] == "strategic"]
     tactical = [r for r in ledger if r["domain"] == "tactical"]
-    require(sum(r["authority_bridge"]=="canonical_applied" for r in strategic)==31,
+    require(sum(r["authority_bridge"]=="canonical_applied" for r in strategic)==38,
             "strategic applied accounting changed")
-    require(sum(r["authority_bridge"]=="owner_extraction_pending_fail_closed" for r in strategic)==27,
+    require(sum(r["authority_bridge"]=="owner_extraction_pending_fail_closed" for r in strategic)==20,
             "strategic fail-closed accounting changed")
     require(sum(r["authority_bridge"]=="server_request_forwarded" for r in tactical)==13,
             "tactical forwarded accounting changed")
@@ -108,7 +108,7 @@ def main():
     print("PASS M1 canonical identity completeness: 17 strong 32-bit domains")
     print("PASS missing domains reserved: FacilityId, TransferId, DefenceSlotId")
     print("PASS identity taxonomy locked; ProductionId + StoredUfoId + EmployeeId published; ItemId mapping qualified")
-    print("PASS authority accounting current: strategic 31/27; tactical 13/2")
+    print("PASS authority accounting current: strategic 38/20; tactical 13/2")
     return 0
 if __name__ == "__main__":
     try:

@@ -11,6 +11,7 @@
 #include "../cgame/campaign/cp_aircraft.h"
 #include "../cgame/campaign/cp_campaign.h"
 #include "../cgame/campaign/cp_employee.h"
+#include "../cgame/campaign/cp_market.h"
 #include "../cgame/campaign/cp_team.h"
 #include "../cgame/campaign/cp_geoscape.h"
 #include "../cgame/campaign/cp_missions.h"
@@ -69,6 +70,10 @@ installation_t* resolveInstallation(canonical::InstallationId id) {
 bool resolveEmployeeUcn(canonical::EmployeeId id, int* ucn) {
     if(!ucn || !id.isValid() || id.value>static_cast<uint32_t>(std::numeric_limits<int>::max())) return false;
     *ucn=static_cast<int>(id.value); return true;
+}
+bool resolveItemIndex(canonical::ItemId id, int* itemIndex) {
+    if(!itemIndex || !id.isValid() || id.value>static_cast<uint32_t>(std::numeric_limits<int>::max())) return false;
+    *itemIndex=static_cast<int>(id.value); return true;
 }
 template <std::size_t N>
 const char* resolveBoundedText(const char (&text)[N]) {
@@ -260,14 +265,55 @@ void applyPendingStrategicIntents() {
             }
             break; }
 
+        case StrategicIntentKind::BuyAircraft: {
+            base_t* b=resolveBase(in.base); const char* definition=resolveBoundedText(in.key0);
+            const marketMutationResult_t result=b&&definition
+                ? BS_TryBuyAircraft(b->idx,definition) : BS_MARKET_MUTATION_INVALID_SUBJECT;
+            if(BS_IsMutationAccepted(result)) out.disposition=StrategicIntentDisposition::Applied;
+            out.canonicalValue=BS_IsMutationAccepted(result)?1:0; break; }
+        case StrategicIntentKind::BuyItem: {
+            base_t* b=resolveBase(in.base); int itemIndex=-1; int actualCount=0;
+            const marketMutationResult_t result=b&&resolveItemIndex(in.item,&itemIndex)
+                ? BS_TryBuyItem(b->idx,itemIndex,in.value0,&actualCount) : BS_MARKET_MUTATION_INVALID_SUBJECT;
+            if(BS_IsMutationAccepted(result)) out.disposition=StrategicIntentDisposition::Applied;
+            out.canonicalValue=actualCount; break; }
+        case StrategicIntentKind::BuyUGV: {
+            base_t* b=resolveBase(in.base); const char* definition=resolveBoundedText(in.key0);
+            const marketMutationResult_t result=b&&definition
+                ? BS_TryBuyUGV(b->idx,definition) : BS_MARKET_MUTATION_INVALID_SUBJECT;
+            if(BS_IsMutationAccepted(result)) out.disposition=StrategicIntentDisposition::Applied;
+            out.canonicalValue=BS_IsMutationAccepted(result)?1:0; break; }
+        case StrategicIntentKind::SellAircraft: {
+            aircraft_t* a=resolvePhalanxAircraft(in.aircraft);
+            const int aircraftIdx=a?a->idx:-1;
+            const marketMutationResult_t result=a
+                ? BS_TrySellAircraft(aircraftIdx) : BS_MARKET_MUTATION_INVALID_SUBJECT;
+            if(BS_IsMutationAccepted(result)) out.disposition=StrategicIntentDisposition::Applied;
+            out.canonicalValue=aircraftIdx; break; }
+        case StrategicIntentKind::SellItem: {
+            base_t* b=resolveBase(in.base); int itemIndex=-1; int actualCount=0;
+            const marketMutationResult_t result=b&&resolveItemIndex(in.item,&itemIndex)
+                ? BS_TrySellItem(b->idx,itemIndex,in.value0,&actualCount) : BS_MARKET_MUTATION_INVALID_SUBJECT;
+            if(BS_IsMutationAccepted(result)) out.disposition=StrategicIntentDisposition::Applied;
+            out.canonicalValue=actualCount; break; }
+        case StrategicIntentKind::SellUGV: {
+            int ucn=-1;
+            const marketMutationResult_t result=resolveEmployeeUcn(in.employee,&ucn)
+                ? BS_TrySellUGV(ucn) : BS_MARKET_MUTATION_INVALID_SUBJECT;
+            if(BS_IsMutationAccepted(result)) out.disposition=StrategicIntentDisposition::Applied;
+            out.canonicalValue=ucn; break; }
+        case StrategicIntentKind::SetAutoSellPolicy: {
+            int itemIndex=-1;
+            const marketMutationResult_t result=resolveItemIndex(in.item,&itemIndex)
+                ? BS_TrySetAutoSellPolicy(itemIndex,in.value0!=0) : BS_MARKET_MUTATION_INVALID_SUBJECT;
+            if(BS_IsMutationAccepted(result)) out.disposition=StrategicIntentDisposition::Applied;
+            out.canonicalValue=BS_IsMutationAccepted(result)?(in.value0!=0?1:0):-1; break; }
+
         /* Strict-authority catalog is transport-complete, but these actions stay
          * rejected until callback-owned validation/mutation is moved into its
          * canonical campaign subsystem. No command-string fallback is allowed. */
         case StrategicIntentKind::AcceptUfoSaleOffer:
         case StrategicIntentKind::AutoResolveMission:
-        case StrategicIntentKind::BuyAircraft:
-        case StrategicIntentKind::BuyItem:
-        case StrategicIntentKind::BuyUGV:
         case StrategicIntentKind::DestroyAntimatterFacility:
         case StrategicIntentKind::DestroyStoredUfo:
         case StrategicIntentKind::EquipAircraftItem:
@@ -280,12 +326,8 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::RemoveBaseDefenceItem:
         case StrategicIntentKind::RenameAircraft:
         case StrategicIntentKind::SaveGame:
-        case StrategicIntentKind::SellAircraft:
-        case StrategicIntentKind::SellItem:
-        case StrategicIntentKind::SellUGV:
         case StrategicIntentKind::SetAirDefenceAutoFire:
         case StrategicIntentKind::SetAirDefenceTarget:
-        case StrategicIntentKind::SetAutoSellPolicy:
         case StrategicIntentKind::StartMission:
         case StrategicIntentKind::StartTransfer:
         case StrategicIntentKind::StoreRecoveredUfo:

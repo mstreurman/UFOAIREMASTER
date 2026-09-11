@@ -69,7 +69,6 @@ static void BS_MarketInfoClick_f (void)
 static void BS_SetAutosell_f (void)
 {
 	const objDef_t* od;
-	const technology_t* tech;
 
 	if (cgi->Cmd_Argc() < 2) {
 		cgi->Com_Printf("Usage: %s <item-id> [0|1]\nWhere second parameter is the state (off/on), if omitted the autosell property will be flipped.\n",
@@ -87,24 +86,24 @@ static void BS_SetAutosell_f (void)
 		/* no printf, INVSH_GetItemByID gave warning already */
 		return;
 	}
-	if (od->isVirtual) {
+
+	const bool enabled = cgi->Cmd_Argc() >= 3
+		? atoi(cgi->Cmd_Argv(2)) != 0
+		: !ccs.eMarket.autosell[od->idx];
+	const marketMutationResult_t result = BS_TrySetAutoSellPolicy(od->idx, enabled);
+	switch (result) {
+	case BS_MARKET_MUTATION_VIRTUAL_ITEM:
 		cgi->Com_Printf("Item %s is virtual, can't be autosold!\n", od->id);
-		return;
-	}
-	if (od->notOnMarket) {
+		break;
+	case BS_MARKET_MUTATION_NOT_ON_MARKET:
 		cgi->Com_Printf("Item %s is not on market, can't be autosold!\n", od->id);
-		return;
-	}
-	tech = RS_GetTechForItem(od);
-	/* Don't allow to enable autosell for items not researched. */
-	if (!RS_IsResearched_ptr(tech)) {
+		break;
+	case BS_MARKET_MUTATION_RESEARCH_REQUIRED:
 		cgi->Com_Printf("Item %s is not researched, can't be autosold!\n", od->id);
-		return;
+		break;
+	default:
+		break;
 	}
-	if (cgi->Cmd_Argc() >= 3)
-		ccs.eMarket.autosell[od->idx] = atoi(cgi->Cmd_Argv(2));
-	else
-		ccs.eMarket.autosell[od->idx] = ! ccs.eMarket.autosell[od->idx];
 }
 
 /**
@@ -140,8 +139,7 @@ static void BS_Buy_f (void)
 			cgi->Com_Printf("Invalid aircraft index!\n");
 			return;
 		}
-		AIR_RemoveEmployees(*aircraft);
-		BS_SellAircraft(aircraft);
+		BS_TrySellAircraft(idx);
 		return;
 	}
 
@@ -155,7 +153,7 @@ static void BS_Buy_f (void)
 			return;
 		}
 
-		BS_SellUGV(robot);
+		BS_TrySellUGV(ucn);
 		return;
 	}
 
@@ -166,57 +164,41 @@ static void BS_Buy_f (void)
 
 	aircraft = AIR_GetAircraftSilent(itemid);
 	if (aircraft) {
-		if (!B_GetBuildingStatus(base, B_COMMAND)) {
+		const marketMutationResult_t result = BS_TryBuyAircraft(base->idx, itemid);
+		if (result == BS_MARKET_MUTATION_NO_COMMAND_CENTRE) {
 			CP_Popup(_("Note"), _("No Command Centre in this base.\nHangars are not functional.\n"));
 			return;
 		}
-		/* We cannot buy aircraft if there is no power in our base. */
-		if (!B_GetBuildingStatus(base, B_POWER)) {
+		if (result == BS_MARKET_MUTATION_NO_POWER) {
 			CP_Popup(_("Note"), _("No power supplies in this base.\nHangars are not functional."));
 			return;
 		}
-		/* We cannot buy aircraft without any hangar. */
-		if (!AIR_AircraftAllowed(base)) {
+		if (result == BS_MARKET_MUTATION_AIRCRAFT_NOT_ALLOWED) {
 			CP_Popup(_("Note"), _("Build a hangar first."));
 			return;
 		}
-		/* Check free space in hangars. */
-		if (CAP_GetFreeCapacity(base, AIR_GetHangarCapacityType(aircraft)) <= 0) {
+		if (result == BS_MARKET_MUTATION_NO_HANGAR_CAPACITY) {
 			CP_Popup(_("Notice"), _("You cannot buy this aircraft.\nNot enough space in hangars.\n"));
 			return;
 		}
-
-		if (ccs.credits < BS_GetAircraftBuyingPrice(aircraft)) {
+		if (result == BS_MARKET_MUTATION_NOT_ENOUGH_CREDITS) {
 			CP_Popup(_("Notice"), _("You cannot buy this aircraft.\nNot enough credits.\n"));
 			return;
 		}
-
-		BS_BuyAircraft(aircraft, base);
 		return;
 	}
 
 	ugv = cgi->Com_GetUGVByIDSilent(itemid);
 	if (ugv) {
-		const objDef_t* ugvWeapon = INVSH_GetItemByID(ugv->weapon);
-		if (!ugvWeapon)
-			cgi->Com_Error(ERR_DROP, "BS_BuyItem_f: Could not get weapon '%s' for ugv/tank '%s'.", ugv->weapon, ugv->id);
-
-		if (E_CountUnhiredRobotsByType(ugv) < 1)
-			return;
-		if (ccs.eMarket.numItems[ugvWeapon->idx] < 1)
-			return;
-
-		if (ccs.credits < ugv->price) {
+		const marketMutationResult_t result = BS_TryBuyUGV(base->idx, itemid);
+		if (result == BS_MARKET_MUTATION_NOT_ENOUGH_CREDITS) {
 			CP_Popup(_("Not enough money"), _("You cannot buy this item as you don't have enough credits."));
 			return;
 		}
-
-		if (CAP_GetFreeCapacity(base, CAP_ITEMS) < UGV_SIZE + ugvWeapon->size) {
+		if (result == BS_MARKET_MUTATION_NOT_ENOUGH_STORAGE) {
 			CP_Popup(_("Not enough storage space"), _("You cannot buy this item.\nNot enough space in storage.\nBuild more storage facilities."));
 			return;
 		}
-
-		BS_BuyUGV(ugv, base);
 		return;
 	}
 
@@ -228,48 +210,26 @@ static void BS_Buy_f (void)
 	/* item */
 	od = INVSH_GetItemByID(cgi->Cmd_Argv(1));
 	if (od) {
-		if (!BS_IsOnMarket(od))
-			return;
-
 		if (count > 0) {
-			/* buy */
-			const int price = BS_GetItemBuyingPrice(od);
-			count = std::min(count, BS_GetItemOnMarket(od));
-
-			/* no items available on market */
-			if (count <= 0)
-				return;
-
-			if (price <= 0) {
+			const marketMutationResult_t result = BS_TryBuyItem(base->idx, od->idx, count, nullptr);
+			if (result == BS_MARKET_MUTATION_INVALID_PRICE) {
 				cgi->Com_Printf("Item on market with invalid buying price: %s (%d)\n", od->id, BS_GetItemBuyingPrice(od));
 				return;
 			}
-			/** @todo warn if player can buy less item due to available credits? */
-			count = std::min(count, ccs.credits / price);
-			/* not enough money for a single item */
-			if (count <= 0) {
+			if (result == BS_MARKET_MUTATION_NOT_ENOUGH_CREDITS) {
 				CP_Popup(_("Not enough money"), _("You cannot buy this item as you don't have enough credits."));
 				return;
 			}
-
-			if (od->size <= 0) {
+			if (result == BS_MARKET_MUTATION_INVALID_SIZE) {
 				cgi->Com_Printf("Item on market with invalid size: %s (%d)\n", od->id, od->size);
 				return;
 			}
-			count = std::min(count, CAP_GetFreeCapacity(base, CAP_ITEMS) / od->size);
-			if (count <= 0) {
+			if (result == BS_MARKET_MUTATION_NOT_ENOUGH_STORAGE) {
 				CP_Popup(_("Not enough storage space"), _("You cannot buy this item.\nNot enough space in storage.\nBuild more storage facilities."));
 				return;
 			}
-
-			BS_BuyItem(od, base, count);
 		} else {
-			/* sell */
-			count = std::min(-1 * count, B_ItemInBase(od, base));
-			/* no items in storage */
-			if (count <= 0)
-				return;
-			BS_SellItem(od, base, count);
+			BS_TrySellItem(base->idx, od->idx, -count, nullptr);
 		}
 		return;
 	}

@@ -434,6 +434,216 @@ bool BS_SellItem (const objDef_t* od, base_t* base, int count)
 }
 
 /**
+ * @brief Returns whether a canonical Market owner accepted the requested state change.
+ * @note An idempotent desired-state request is accepted even when it makes no mutation.
+ */
+bool BS_IsMutationAccepted (marketMutationResult_t result)
+{
+	return result == BS_MARKET_MUTATION_APPLIED
+		|| result == BS_MARKET_MUTATION_APPLIED_PARTIAL
+		|| result == BS_MARKET_MUTATION_NO_CHANGE;
+}
+
+static const objDef_t* BS_ResolveItemIndex (int itemIndex)
+{
+	if (itemIndex < 0 || itemIndex >= cgi->csi->numODs)
+		return nullptr;
+	return INVSH_GetItemByIDX(itemIndex);
+}
+
+/**
+ * @brief Canonical owner for buying one aircraft definition into a base.
+ * @note Re-resolves all subjects and preserves the legacy operational/hangar gates.
+ */
+marketMutationResult_t BS_TryBuyAircraft (int baseIdx, const char* aircraftDefinition)
+{
+	base_t* base = B_GetFoundedBaseByIDX(baseIdx);
+	if (!base)
+		return BS_MARKET_MUTATION_INVALID_BASE;
+
+	const aircraft_t* aircraft = aircraftDefinition ? AIR_GetAircraftSilent(aircraftDefinition) : nullptr;
+	if (!aircraft || AIR_IsUFO(aircraft))
+		return BS_MARKET_MUTATION_INVALID_SUBJECT;
+	if (!BS_AircraftIsOnMarket(aircraft))
+		return BS_MARKET_MUTATION_NOT_ON_MARKET;
+	if (!B_GetBuildingStatus(base, B_COMMAND))
+		return BS_MARKET_MUTATION_NO_COMMAND_CENTRE;
+	if (!B_GetBuildingStatus(base, B_POWER))
+		return BS_MARKET_MUTATION_NO_POWER;
+	if (!AIR_AircraftAllowed(base))
+		return BS_MARKET_MUTATION_AIRCRAFT_NOT_ALLOWED;
+	if (CAP_GetFreeCapacity(base, AIR_GetHangarCapacityType(aircraft)) <= 0)
+		return BS_MARKET_MUTATION_NO_HANGAR_CAPACITY;
+	if (ccs.credits < BS_GetAircraftBuyingPrice(aircraft))
+		return BS_MARKET_MUTATION_NOT_ENOUGH_CREDITS;
+	if (BS_GetAircraftOnMarket(aircraft) <= 0)
+		return BS_MARKET_MUTATION_NO_MARKET_STOCK;
+
+	return BS_BuyAircraft(aircraft, base)
+		? BS_MARKET_MUTATION_APPLIED : BS_MARKET_MUTATION_REJECTED;
+}
+
+/**
+ * @brief Canonical owner for item purchase, including legacy partial-fill semantics.
+ */
+marketMutationResult_t BS_TryBuyItem (int baseIdx, int itemIndex, int requestedCount, int* actualCount)
+{
+	if (actualCount)
+		*actualCount = 0;
+	base_t* base = B_GetFoundedBaseByIDX(baseIdx);
+	if (!base)
+		return BS_MARKET_MUTATION_INVALID_BASE;
+	const objDef_t* od = BS_ResolveItemIndex(itemIndex);
+	if (!od)
+		return BS_MARKET_MUTATION_INVALID_SUBJECT;
+	if (requestedCount <= 0)
+		return BS_MARKET_MUTATION_INVALID_COUNT;
+	if (od->isVirtual)
+		return BS_MARKET_MUTATION_VIRTUAL_ITEM;
+	if (od->notOnMarket)
+		return BS_MARKET_MUTATION_NOT_ON_MARKET;
+
+	int count = std::min(requestedCount, BS_GetItemOnMarket(od));
+	if (count <= 0)
+		return BS_MARKET_MUTATION_NO_MARKET_STOCK;
+
+	const int price = BS_GetItemBuyingPrice(od);
+	if (price <= 0)
+		return BS_MARKET_MUTATION_INVALID_PRICE;
+	count = std::min(count, ccs.credits / price);
+	if (count <= 0)
+		return BS_MARKET_MUTATION_NOT_ENOUGH_CREDITS;
+
+	if (od->size <= 0)
+		return BS_MARKET_MUTATION_INVALID_SIZE;
+	count = std::min(count, CAP_GetFreeCapacity(base, CAP_ITEMS) / od->size);
+	if (count <= 0)
+		return BS_MARKET_MUTATION_NOT_ENOUGH_STORAGE;
+
+	if (!BS_BuyItem(od, base, count))
+		return BS_MARKET_MUTATION_REJECTED;
+	if (actualCount)
+		*actualCount = count;
+	return count < requestedCount
+		? BS_MARKET_MUTATION_APPLIED_PARTIAL : BS_MARKET_MUTATION_APPLIED;
+}
+
+/**
+ * @brief Canonical owner for the inherited UGV purchase model.
+ */
+marketMutationResult_t BS_TryBuyUGV (int baseIdx, const char* ugvDefinition)
+{
+	base_t* base = B_GetFoundedBaseByIDX(baseIdx);
+	if (!base)
+		return BS_MARKET_MUTATION_INVALID_BASE;
+	const ugv_t* ugv = ugvDefinition ? cgi->Com_GetUGVByIDSilent(ugvDefinition) : nullptr;
+	if (!ugv)
+		return BS_MARKET_MUTATION_INVALID_SUBJECT;
+	const objDef_t* ugvWeapon = INVSH_GetItemByID(ugv->weapon);
+	if (!ugvWeapon)
+		return BS_MARKET_MUTATION_INVALID_SUBJECT;
+	if (E_CountUnhiredRobotsByType(ugv) < 1)
+		return BS_MARKET_MUTATION_UGV_UNAVAILABLE;
+	if (BS_GetItemOnMarket(ugvWeapon) < 1)
+		return BS_MARKET_MUTATION_NO_MARKET_STOCK;
+	if (ccs.credits < ugv->price)
+		return BS_MARKET_MUTATION_NOT_ENOUGH_CREDITS;
+	if (CAP_GetFreeCapacity(base, CAP_ITEMS) < UGV_SIZE + ugvWeapon->size)
+		return BS_MARKET_MUTATION_NOT_ENOUGH_STORAGE;
+
+	return BS_BuyUGV(ugv, base)
+		? BS_MARKET_MUTATION_APPLIED : BS_MARKET_MUTATION_REJECTED;
+}
+
+/**
+ * @brief Canonical owner for selling a PHALANX aircraft.
+ * @note Crew removal before the strict low-level sale is inherited gameplay behavior.
+ */
+marketMutationResult_t BS_TrySellAircraft (int aircraftIdx)
+{
+	aircraft_t* aircraft = AIR_AircraftGetFromIDX(aircraftIdx);
+	if (!aircraft || AIR_IsUFO(aircraft))
+		return BS_MARKET_MUTATION_INVALID_SUBJECT;
+	if (!AIR_IsAircraftInBase(aircraft))
+		return BS_MARKET_MUTATION_AIRCRAFT_NOT_IN_BASE;
+
+	AIR_RemoveEmployees(*aircraft);
+	return BS_SellAircraft(aircraft)
+		? BS_MARKET_MUTATION_APPLIED : BS_MARKET_MUTATION_REJECTED;
+}
+
+/**
+ * @brief Canonical owner for item sale, including legacy partial-fill semantics.
+ */
+marketMutationResult_t BS_TrySellItem (int baseIdx, int itemIndex, int requestedCount, int* actualCount)
+{
+	if (actualCount)
+		*actualCount = 0;
+	base_t* base = B_GetFoundedBaseByIDX(baseIdx);
+	if (!base)
+		return BS_MARKET_MUTATION_INVALID_BASE;
+	const objDef_t* od = BS_ResolveItemIndex(itemIndex);
+	if (!od)
+		return BS_MARKET_MUTATION_INVALID_SUBJECT;
+	if (requestedCount <= 0)
+		return BS_MARKET_MUTATION_INVALID_COUNT;
+	if (od->isVirtual)
+		return BS_MARKET_MUTATION_VIRTUAL_ITEM;
+	if (od->notOnMarket)
+		return BS_MARKET_MUTATION_NOT_ON_MARKET;
+
+	const int count = std::min(requestedCount, B_ItemInBase(od, base));
+	if (count <= 0)
+		return BS_MARKET_MUTATION_NO_BASE_STOCK;
+	if (!BS_SellItem(od, base, count))
+		return BS_MARKET_MUTATION_REJECTED;
+	if (actualCount)
+		*actualCount = count;
+	return count < requestedCount
+		? BS_MARKET_MUTATION_APPLIED_PARTIAL : BS_MARKET_MUTATION_APPLIED;
+}
+
+/**
+ * @brief Canonical owner for selling a hired UGV employee.
+ * @note Do not add an away-from-base guard: Employee::unhire owns assignment cleanup.
+ */
+marketMutationResult_t BS_TrySellUGV (int employeeUcn)
+{
+	Employee* robot = E_GetEmployeeByTypeFromChrUCN(EMPL_ROBOT, employeeUcn);
+	if (!robot || !robot->isRobot() || !robot->getUGV())
+		return BS_MARKET_MUTATION_INVALID_SUBJECT;
+	if (!robot->isHired() || !robot->baseHired)
+		return BS_MARKET_MUTATION_REJECTED;
+	if (robot->transfer)
+		return BS_MARKET_MUTATION_TRANSFER_ACTIVE;
+
+	return BS_SellUGV(robot)
+		? BS_MARKET_MUTATION_APPLIED : BS_MARKET_MUTATION_REJECTED;
+}
+
+/**
+ * @brief Canonical desired-state owner for Market autosell policy.
+ */
+marketMutationResult_t BS_TrySetAutoSellPolicy (int itemIndex, bool enabled)
+{
+	const objDef_t* od = BS_ResolveItemIndex(itemIndex);
+	if (!od)
+		return BS_MARKET_MUTATION_INVALID_SUBJECT;
+	if (od->isVirtual)
+		return BS_MARKET_MUTATION_VIRTUAL_ITEM;
+	if (od->notOnMarket)
+		return BS_MARKET_MUTATION_NOT_ON_MARKET;
+	const technology_t* tech = RS_GetTechForItem(od);
+	if (!RS_IsResearched_ptr(tech))
+		return BS_MARKET_MUTATION_RESEARCH_REQUIRED;
+	if (ccs.eMarket.autosell[od->idx] == enabled)
+		return BS_MARKET_MUTATION_NO_CHANGE;
+
+	ccs.eMarket.autosell[od->idx] = enabled;
+	return BS_MARKET_MUTATION_APPLIED;
+}
+
+/**
  * @brief Save callback for savegames
  * @param[out] parent XML Node structure, where we write the information to
  * @sa BS_LoadXML
