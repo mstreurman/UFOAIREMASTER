@@ -1,8 +1,9 @@
 # Presentation Action Authority, Scope, and Intent Completeness Contract
 
-**Status:** M1 implementation contract — v2 scanner model  
+**Status:** M1 implementation contract — v3 classification sealed; owner extraction in progress
 **Accepted:** 2026-09-07  
 **Qualified source baseline:** `1dd974017f25d5bda5cc5b82b48d2590e574e50f`  
+**Current implementation baseline:** `e29739ec2f34fb21e43f664385f57ab5eca18e53`
 **Supersedes:** v1 command-only inventory interpretation of this document
 
 ## 1. Purpose
@@ -116,7 +117,7 @@ MapClick -> GEO_Click
 
 `GEO_Click` handles presentation selection/placement and also contains the legacy aircraft-route mutation.
 
-It remains `SPLIT_REQUIRED` until decomposed at minimum into:
+At v2 discovery time it remained `SPLIT_REQUIRED`; the v3 decomposition registry subsequently split it into:
 
 ```text
 presentation selection/focus
@@ -353,7 +354,7 @@ with `api_relevance=yes`.
 
 That file is the source inventory for the complete typed-intent implementation pass.
 
-## 24. v3 observed-surface closure target
+## 24. v3 observed-surface closure
 
 The v3 registry resolves every entry reported by the local v2 capture:
 
@@ -362,13 +363,13 @@ v2 unresolved entries: 119
 v3 registry/decomposition/protocol coverage: 119/119
 ```
 
-This is artifact-side coverage only. Classification is sealed when the exact local tree reports:
+The v3 registry/decomposition result is the sealed classification basis for the typed-intent catalog. Reproducibility remains guarded by running the strict capture on the exact local tree:
 
 ```bash
 python3 tools/remaster/capture-m1-presentation-authority-inventory.py --strict
 ```
 
-with zero unresolved entries and zero presentation source-guard violations.
+which must continue to report zero unresolved entries and zero presentation source-guard violations.
 ## 25. Authoritative intent surface v1 qualification — 2026-09-08
 
 The classification contract described by this document has now produced and qualified the complete typed authoritative surface:
@@ -390,3 +391,34 @@ tactical helper-extraction pending: 2/15
 The qualification includes strict C++11 public-header coexistence, bounded C++26 transport checks, historical M1 integration lanes, two canonical 104/104 regression passes with trace repeatability, digest verification, and fresh legacy/remaster production builds.
 
 The next authority milestone is not additional classification. It is reducing the fail-closed counts to zero by extracting canonical campaign owners and the remaining tactical request helpers.
+
+This section is retained as dated 2026-09-08 qualification evidence. A subsequent semantic split of legacy `prod_inc` introduced distinct `CreateProduction`, expanding the strategic authoritative surface from 57 to 58 without changing the tactical total.
+
+## 26. Current M1 authority implementation status — 2026-09-10
+
+At implementation baseline `e29739ec2f34fb21e43f664385f57ab5eca18e53`:
+
+```text
+strategic authoritative semantics: 58
+  canonical-applied:               31
+  owner-extraction pending:        27
+
+tactical authoritative semantics:  15
+  forwarded to server authority:   13
+  helper-extraction pending:        2
+```
+
+The current strategic-applied set includes the previously qualified Aircraft/Geoscape, Base/Installation, Facility, Research and Production owners, canonical `CreateProduction`, plus the six Employee/Team actions:
+
+```text
+AssignEmployeeToAircraft
+DeequipEmployee
+DeleteEmployee
+HireOrFireEmployee
+RenameEmployee
+SetEmployeeSkin
+```
+
+Persisted `EmployeeId` is published from `character_t::ucn`; stable runtime `ProductionId` and persisted `StoredUfoId` remain qualified. The next planned strategic owner family is Market. Unsupported/unqualified actions remain fail-closed.
+
+These implementation counts do not alter campaign persistence or tactical transport: save format v4 and protocol 18 remain the active compatibility epoch.

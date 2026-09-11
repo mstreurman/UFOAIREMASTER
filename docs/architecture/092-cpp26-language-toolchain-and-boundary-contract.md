@@ -2,6 +2,7 @@
 
 **Status:** Accepted implementation contract  
 **Adopted:** 2026-09-07  
+**Current M1 implementation baseline:** `e29739ec2f34fb21e43f664385f57ab5eca18e53`
 **Primary platform:** Fedora 44 / GCC 16.2.x / libstdc++  
 **Related:** architecture 006, 075, 078, 080, 091; ADR-001, ADR-024, ADR-047  
 **Purpose:** Define the language-standard ownership, compiler/toolchain baseline, ABI boundary and dependency-version hardening used while the remaster runtime is built around retained canonical UFO:AI code.
@@ -427,32 +428,24 @@ The permanent evidence record is `docs/reference/reference-m1-cpp26-language-bou
 
 The later 2026-09-07 OpenAL Soft 1.25.2 reference-environment rotation intentionally resealed M0.3/M0.5 evidence without changing the canonical 104-test corpus or two-run trace. The current M0.3 environment identity is `aa42dc88f980845c94fab1d6ff992657f935f25c13ac418c16aa25f3baa5d305` and the current M0.5 evidence identity is `33143dc7b737b6df7c2a1496500bf435b6563f259d60561c4db7f75c2f00bed2`. The earlier `b5a6178ef17c3eb9f8957307ef94dc9d367ca2495d970f5c747170fe435b6a7e` M0.5 digest remains historical evidence for the prior 1.24.2 environment.
 
-## 14. Sequencing
+## 14. Sequencing status
 
-Documentation is updated first.
+The adoption-time sequencing that established this boundary is complete. Section 13.1 records the qualified C++11/C++26 implementation; it is no longer a future prerequisite.
 
-Then the next implementation slice is:
-
-```text
-build: establish C++11/C++26 language boundary
-```
-
-That slice occurs before typed-intent dispatch grows substantially and before M2 establishes the SDL3/Vulkan runtime.
-
-Required implementation work:
+Current M1 work therefore proceeds through the owner-extraction/publication plan in architectures 080 and 093 rather than repeating the language-boundary slice. At implementation baseline `e29739ec2f34fb21e43f664385f57ab5eca18e53`:
 
 ```text
-raise authoritative CMake minimum to >= 3.25
-remove global C++0x standard forcing
-create explicit C++11 legacy/bridge target ownership
-create explicit strict C++26 remaster target ownership
-modernize tactical atomic shared_ptr publication
-update qualification audits
-add mixed-standard compile/link/run fixture
-perform clean legacy/remaster/canonical qualification
+shared C++11/C++26 boundary:        qualified
+strategic canonical-applied:        31/58
+strategic fail-closed pending:       27/58
+tactical server-forwarded:           13/15
+tactical fail-closed pending:         2/15
+CreateProduction:                    qualified
+persisted EmployeeId publication:    qualified
+Employee/Team six-owner batch:       qualified
 ```
 
-No completed M1 spatial, identity, tactical-publication or strategic-publication semantic work is invalidated.
+No completed M1 spatial, identity, tactical-publication, strategic-publication or owner-extraction work is invalidated by later runtime expansion.
 
 ## 15. Future legacy modernization
 

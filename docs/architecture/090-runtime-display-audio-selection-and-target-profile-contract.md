@@ -191,7 +191,7 @@ HDR quality profile: DisplayHDR 600-class when enabled
 
 The exact selected physical display and audio endpoint are recorded in each benchmark artifact; they are not implied by this profile.
 
-For an HDR run to be labeled the **DisplayHDR-600-class qualification profile**, the benchmark manifest must also record the resolved active HDR luminance descriptor/target and verify that the active output policy is actually configured for the intended 600-class target. A display capability alone is insufficient. For example, the fresh workstation capture reports a 644-nit display capability but a current KDE peak override of 370 nits; that captured 370-nit active state is a valid runtime test case but must not be mislabeled as the 600-class HDR qualification run.
+For an HDR run to be labeled the **DisplayHDR-600-class qualification profile**, the benchmark manifest must also record the resolved active HDR luminance descriptor/target and verify that the active output policy is actually configured for the intended 600-class target. A display capability alone is insufficient. For example, the 2026-09-04 workstation capture reports a 644-nit display capability and a captured KDE peak override of 370 nits; that 370-nit active state is a valid runtime test case but must not be mislabeled as the 600-class HDR qualification run.
 
 ## 13. Validation matrix
 
@@ -218,7 +218,7 @@ device reopen/change
 selected-device disconnect/recovery
 ```
 
-The current workstation's DP HDR display + HDMI SDR display and Bluetooth + AE-7 routes are useful local fixtures for this matrix, not required hardware for players.
+The 2026-09-04 workstation capture's DP HDR display + HDMI SDR display and Bluetooth + AE-7 routes are useful local fixtures for this matrix, not required hardware for players.
 
 ## 14. SDL/OpenAL API basis
 
@@ -240,4 +240,4 @@ Relevant SDL documentation:
 - https://wiki.libsdl.org/SDL3/SDL_SetWindowFullscreen
 - https://wiki.libsdl.org/SDL3/README-wayland
 
-The audio contract relies on standard ALC device enumeration plus OpenAL Soft extensions already observed in the fresh audio capture, including `ALC_ENUMERATE_ALL_EXT`, `ALC_SOFT_HRTF` and `ALC_SOFT_reopen_device`.
+The audio contract relies on standard ALC device enumeration plus OpenAL Soft extensions observed in the 2026-09-04 audio capture, including `ALC_ENUMERATE_ALL_EXT`, `ALC_SOFT_HRTF` and `ALC_SOFT_reopen_device`.

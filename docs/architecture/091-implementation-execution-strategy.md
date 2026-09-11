@@ -4,6 +4,7 @@
 **Primary target:** Fedora 44 / Intel Core i9-9900K / Intel Arc B580  
 **Canonical source baseline:** `763173ed036ebbee32c2a7bf6aefa19748df89ff`  
 **Qualified remaster planning head:** `b0eb12631c71e90b7c3d1f6d19e618e7656c80be`  
+**Current M1 implementation baseline:** `e29739ec2f34fb21e43f664385f57ab5eca18e53`
 **Milestone authority:** architecture 080  
 **Language/toolchain authority:** architecture 092  
 **Purpose:** Define how the M0-M13 roadmap is executed, integrated, tested, measured, rolled back and allowed to retire obsolete presentation implementations as soon as their replacements are proven.
@@ -410,7 +411,7 @@ OpenAL / OpenAL Soft
     OpenAL Soft >=1.25.2 reference implementation for production audio qualification
     require ALC_EXT_EFX + ALC_SOFT_HRTF + >=2 auxiliary sends/source on the reference target
     optional SOFT extensions capability-probed
-    current workstation 1.24.2 remains evidence but requires upgrade/requalification before M8 closure
+    current reference workstation 1.25.2 satisfies the version baseline; M8 still requires dedicated EFX/HRTF/device-runtime qualification and production-audio soak
 
 Jolt v5.6.0
     vendored source under third_party/JoltPhysics/
@@ -446,7 +447,9 @@ Jolt stress qualification
 clean-checkout reproducibility evidence
 ```
 
-Implementation now begins at M1.
+Implementation is currently in M1.
+
+At documentation-sync baseline `e29739ec2f34fb21e43f664385f57ab5eca18e53`, strategic authority is 31/58 canonical-applied with 27/58 fail-closed, tactical authority is 13/15 server-forwarded with 2/15 fail-closed, `CreateProduction` and the six Employee/Team owners are qualified, and persisted `EmployeeId` is published. Save format v4 and tactical protocol 18 remain unchanged.
 
 ## 12. M1-M4 critical path
 

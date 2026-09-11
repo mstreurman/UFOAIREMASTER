@@ -4,6 +4,7 @@
 **Primary target:** Fedora 44 / i9-9900K / Arc B580  
 **Canonical source baseline:** `763173ed036ebbee32c2a7bf6aefa19748df89ff`  
 **Qualified remaster planning head:** `b0eb12631c71e90b7c3d1f6d19e618e7656c80be`  
+**Current M1 implementation baseline:** `e29739ec2f34fb21e43f664385f57ab5eca18e53`
 **Execution strategy:** architecture 091  
 **Language/toolchain authority:** architecture 092
 
@@ -104,6 +105,8 @@ architecture 075
 architecture 077
 architecture 078
 architecture 092
+architecture 093
+architecture 094
 ```
 
 Work:
@@ -124,9 +127,20 @@ establish stable ProductionId — add runtime-only canonical production identity
 extract stable-ID production owners — qualify Decrease/MoveUp/MoveDown/Stop through execution-time `(BaseId, ProductionId)` resolution; stale IDs reject after queue compaction; retain IncreaseProduction and SetProductionAmount fail-closed pending contract normalization
 normalize final production contracts — split legacy prod_inc into existing-job IncreaseProduction and fail-closed CreateProduction, define SetProductionAmount as an absolute target, and qualify all existing-job production mutations through stable ProductionId
 qualify StoredUfoId — prove persisted monotonic stored-UFO identity across linked-list removal/save/load, harden duplicate/counter load behavior, and publish immutable stored-UFO subject state while keeping CreateProduction fail-closed
+qualify CreateProduction subjects and owner — prove ItemId / aircraft-definition / StoredUfo subject resolution and route both typed and legacy create-production requests through the canonical campaign owner
+qualify persisted EmployeeId publication — project `character_t::ucn` as immutable EmployeeId state with duplicate-load rejection, allocator reconciliation and inherited signed-16-bit wire-domain preservation
+extract Employee + Team owners — qualify aircraft assignment, de-equip, delete, hire/fire, rename and skin mutation through execution-time EmployeeId re-resolution while preserving legacy UI eligibility rules outside presentation authority
 complete source-derived presentation-action scope + five-way authority classification, including direct input hooks/protocol callsites, before defining the remaining authoritative intent vocabulary
 keep existing consumers behind temporary adapters
 define explicit presentation-facing ownership rather than expose raw canonical pointers
+```
+
+Current qualified M1 authority state at the implementation baseline above:
+
+```text
+strategic: 31/58 canonical-applied, 27/58 fail-closed
+tactical:  13/15 forwarded to server authority, 2/15 fail-closed
+next strategic owner family: Market
 ```
 
 Compatibility policy for M1:
@@ -135,6 +149,7 @@ Compatibility policy for M1:
 do not design the new boundaries around legacy GUI/mod/renderer ABI compatibility
 do not preserve old OpenGL-style R_* ownership as a future extension interface
 do not make legacy Lua/UI callback behavior a permanent public contract
+preserve campaign save format v4 and tactical protocol 18 throughout the current compatibility epoch; intentional incompatibility requires the explicit architecture-094 epoch/version process
 ```
 
 Exit:

@@ -53,7 +53,7 @@ In particular:
 
 - presentation IDs are not save identities by default;
 - runtime-only identities such as `ProductionId` are reconstructed after load rather than persisted;
-- an identity may use an existing save field only after that field has been qualified as canonical persistent identity (for example the stored-UFO `idx` qualification);
+- an identity may use an existing save field only after that field has been qualified as canonical persistent identity (currently `StoredUfoId` from `storedUFO_t::idx` and `EmployeeId` from persisted `character_t::ucn`);
 - renderer, Vulkan, ray tracing, audio, Jolt, UI-layout, frame-history, cache and Presentation World state are outside the canonical campaign save ABI.
 
 ### 2.3 Intentional save break
@@ -118,6 +118,8 @@ Changing a wire ABI anchor without those companion changes is a regression.
 `tools/remaster/m1-legacy-compatibility-contract.tsv` is the machine-readable manifest of the current epoch.
 
 `tools/remaster/run-m1-legacy-compatibility-qualification.sh` runs both compatibility guards and the already-established identity/publication guards that protect the presentation/canonical boundary.
+
+Employee identity qualification additionally guards duplicate-UCN load rejection, post-load allocator reconciliation and the inherited nonnegative signed-16-bit UCN wire domain. Publishing `EmployeeId` therefore reuses qualified canonical identity and does not add a save field or tactical opcode.
 
 ### 4.2 Dynamic cross-binary qualification — release/interchange gate
 

@@ -330,7 +330,7 @@ UI/debug output reports actual state, not just requested state.
 
 ## 16. HRTF target use
 
-HRTF is intended for headphone spatialization and remains explicitly user-selectable. The fact that the latest development-machine Bluetooth route reported HRTF disabled does not establish the game's default or force HRTF off.
+HRTF is intended for headphone spatialization and remains explicitly user-selectable. The fact that the 2026-09-04 development-machine Bluetooth route capture reported HRTF disabled does not establish the game's default or force HRTF off.
 
 World mono sources receive normal 3D spatialization.
 

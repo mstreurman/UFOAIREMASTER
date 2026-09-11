@@ -72,7 +72,9 @@ struct StrategicSnapshot {
     Span<const StrategicInstallationView> installations;
     Span<const StrategicNationView> nations;
     Span<const StrategicTechnologyView> technologies;
+    Span<const StrategicEmployeeView> employees;
     Span<const StrategicProductionView> productions;
+    Span<const StrategicStoredUfoView> storedUfos;
     Span<const StrategicMessageView> messages;
 
     StrategicSelectionView selection;
@@ -119,9 +121,11 @@ Mutable array/list ordinals are not stable IDs. Production `queueIndex`, base-lo
 
 Production mutation owners resolve `(BaseId, ProductionId)` against the current canonical queue at execution time. A missing/stale ID rejects; it is never reinterpreted as the object currently occupying an old `queueIndex`. Decrease/MoveUp/MoveDown/Stop/Increase/SetAmount use this contract.
 
-Legacy `prod_inc` was found to contain two context-dependent authoritative semantics. The typed contract therefore splits existing-job `IncreaseProduction` from `CreateProduction`; the latter is a distinct fail-closed action until production-subject identity/publication is qualified.
+Legacy `prod_inc` was found to contain two context-dependent authoritative semantics. The typed contract therefore splits existing-job `IncreaseProduction` from `CreateProduction`. Production-subject identity/publication is now qualified for ItemId, aircraft-definition keys and StoredUfoId, and `CreateProduction` routes through the canonical campaign owner.
 
-`StoredUfoId` maps directly to persisted `storedUFO_t::idx`. Stored UFOs are linked-list objects, removal does not renumber survivors, the ID and its monotonic allocator state are saved, duplicate IDs are rejected on load, and the allocator is reconciled after load before new recovery can allocate another identity. Immutable strategic publication exposes `StoredUfoId` plus value-only UFO-yard/status/condition/definition state. This qualifies the stored-UFO subject identity but does not by itself authorize `CreateProduction`.
+`StoredUfoId` maps directly to persisted `storedUFO_t::idx`. Stored UFOs are linked-list objects, removal does not renumber survivors, the ID and its monotonic allocator state are saved, duplicate IDs are rejected on load, and the allocator is reconciled after load before new recovery can allocate another identity. Immutable strategic publication exposes `StoredUfoId` plus value-only UFO-yard/status/condition/definition state. This qualification is one of the prerequisites now consumed by the canonical-applied `CreateProduction` owner.
+
+`EmployeeId` maps directly to persisted `character_t::ucn`. Duplicate loaded UCNs are rejected, the allocator is reconciled monotonically after load, and the inherited nonnegative signed-16-bit wire domain remains unchanged. Immutable strategic publication exposes employee identity plus base/aircraft/type/body-skin/hired/transfer/name value state. Employee/Team mutation owners re-resolve the UCN at execution time rather than retaining raw `Employee*` pointers.
 
 `FacilityId` and `DefenceSlotId` still require their generation-safe mappings before new presentation relies on those mutable ordinals for long-lived mutation.
 
@@ -441,6 +445,24 @@ docs/reference/reference-m1-intent-catalog-expansion-2026-09-07.md
 ```
 
 This is a seed catalog, not the final strategic command surface. Further actions are added when their owning presentation consumers migrate.
+
+## 14.3. Current M1 strategic authority progress — 2026-09-10
+
+At implementation baseline `e29739ec2f34fb21e43f664385f57ab5eca18e53`:
+
+```text
+strategic authoritative semantics: 58
+canonical-applied:                 31
+fail-closed pending owners:        27
+
+tactical authoritative semantics:  15
+forwarded to server authority:     13
+fail-closed pending helpers:        2
+```
+
+The current strategic owner set includes `CreateProduction` and the six Employee/Team actions `AssignEmployeeToAircraft`, `DeequipEmployee`, `DeleteEmployee`, `HireOrFireEmployee`, `RenameEmployee` and `SetEmployeeSkin`. `EmployeeId` is published from persisted `character_t::ucn`.
+
+These counts are implementation progress, not a new gameplay ABI. Campaign save format v4 and tactical protocol 18 remain unchanged.
 
 ## 15. Removal criterion
 

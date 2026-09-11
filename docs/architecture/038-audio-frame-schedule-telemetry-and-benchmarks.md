@@ -251,7 +251,7 @@ device switch/reopen while the game is running
 selected-device disconnect with fallback/recovery
 ```
 
-On the current workstation, the 10:47 capture provides a Bluetooth A2DP/aptX-HD system-default case and an AE-7 analog endpoint as two concrete local test routes. Neither endpoint is hardcoded into production configuration.
+The 2026-09-04 10:47 workstation capture provides a Bluetooth A2DP/aptX-HD system-default case and an AE-7 analog endpoint as two concrete local test routes. Neither endpoint is hardcoded into production configuration.
 
 ## 12. EFX benchmark
 

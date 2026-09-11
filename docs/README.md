@@ -71,11 +71,11 @@ Runtime display/audio selection     ADR-046, architecture 035/037/081/090
 Target optimization benchmarks     ADR-032, architecture 073
 GPU memory commitment/residency    ADR-032, architecture 030, 070, 074
 B580/Xe2 static hardware facts     reference-arc-b580-xe2-microarchitecture.md
-Current local workstation state    reference-current-development-machine-2026-09-04-104103.md
-Current local audio/routing state   reference-current-audio-state-2026-09-04-104754.md
-Current Jolt provisioning state       reference-current-jolt-provisioning-2026-09-04-121547.md
+2026-09-04 workstation snapshot    reference-current-development-machine-2026-09-04-104103.md
+2026-09-04 audio/routing snapshot   reference-current-audio-state-2026-09-04-104754.md
+2026-09-04 Jolt provisioning snapshot  reference-current-jolt-provisioning-2026-09-04-121547.md
 Historical workstation snapshot     reference-local-development-state-2026-09-04.md
-Current B580 Vulkan runtime          reference-local-vulkan-state-2026-09-04-mesa-26_2_2.md
+2026-09-04 B580 Vulkan snapshot      reference-local-vulkan-state-2026-09-04-mesa-26_2_2.md
 Third-party dependency manifest    reference-third-party-toolchain-manifest.md
 Resolved decision register         design/001-decisions-required-for-implementation-complete-baseline.md
 Fedora SDL3 platform/input         ADR-033, architecture 081
@@ -92,6 +92,34 @@ Local crash/privacy                ADR-040, architecture 086
 ```
 
 Earlier documents remain useful for rationale/history but must not redefine an ABI or ownership rule that a later authority above has explicitly locked.
+
+## Current implementation state
+
+The current qualified implementation baseline for this documentation synchronization is:
+
+```text
+e29739ec2f34fb21e43f664385f57ab5eca18e53
+feat: extract canonical employee and team owners
+```
+
+M0 is sealed and M1 canonical-boundary work is active. The authoritative action state at this baseline is:
+
+```text
+strategic authoritative semantics: 58 total
+  canonical-applied:               31
+  fail-closed pending owners:      27
+
+tactical authoritative semantics:  15 total
+  forwarded to server authority:   13
+  fail-closed pending helpers:      2
+```
+
+Qualified M1 publication/owner work includes Research, stable runtime `ProductionId`, persisted `StoredUfoId`, persisted `EmployeeId`, canonical `CreateProduction`, and the six Employee/Team assign/de-equip/delete/hire-fire/rename/skin owners. The next planned strategic owner family is Market.
+
+Campaign save format version 4 and tactical protocol version 18 remain explicit compatibility boundaries. Cross-binary classic/remaster save and multiplayer interchange is still a release qualification gate rather than a completed claim.
+
+Files under `docs/reference/` are timestamped qualification evidence. They remain historical snapshots even when their filenames contain `current`; live project status is owned by the active architecture/ADR/README documents above.
+
 
 ## Documents
 

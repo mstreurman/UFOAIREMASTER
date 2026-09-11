@@ -26,11 +26,11 @@ presentation-only physics/debris
 
 but it has no authority over canonical gameplay.
 
-The current Fedora 44 workstation has confirmed the required audio capability family while running OpenAL Soft 1.24.2. The accepted reference implementation baseline for the new production audio runtime is now OpenAL Soft >=1.25.2; the local package must be upgraded/requalified before M8 closure.
+The 2026-09-04 Fedora 44 workstation capture confirmed the required audio capability family while running OpenAL Soft 1.24.2. The reference workstation was upgraded to OpenAL Soft 1.25.2 on 2026-09-07, satisfying the accepted implementation-version baseline; M8 still requires dedicated device/EFX/HRTF runtime qualification and production-audio soak.
 
 ```text
 OpenAL 1.1 API
-OpenAL Soft 1.24.2 currently observed; >=1.25.2 production-qualification baseline
+OpenAL Soft 1.25.2 current reference-workstation runtime; >=1.25.2 production-qualification baseline
 48 kHz
 ALC_EXT_EFX
 ALC_SOFT_HRTF
@@ -39,7 +39,7 @@ EAX Reverb / Reverb and other EFX effects
 low/high/band-pass filters
 ```
 
-HRTF support exists on the reference OpenAL Soft runtime, but whether it is active is a user/runtime choice. The fresh 10:47:54+02:00 audio snapshot happened to use the Bluetooth `LG-PK5(56)` route with HRTF disabled; that observation is not a default-device or default-HRTF requirement.
+HRTF support exists on the reference OpenAL Soft runtime, but whether it is active is a user/runtime choice. The 2026-09-04 10:47:54+02:00 audio snapshot used the Bluetooth `LG-PK5(56)` route with HRTF disabled; that historical observation is not a default-device or default-HRTF requirement.
 
 ## Decision
 
