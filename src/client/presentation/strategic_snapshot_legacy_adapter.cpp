@@ -12,6 +12,7 @@
 #include "strategic_snapshot_legacy_adapter.h"
 
 #include <cstdint>
+#include <cstddef>
 #include <map>
 #include <string>
 #include <utility>
@@ -263,6 +264,31 @@ StrategicStoredUfoView projectStoredUfo(const storedUFO_t& ufo)
 	return out;
 }
 
+
+StrategicUfoRecoveryView projectUfoRecovery(const ufoRecovery_t* recovery)
+{
+	StrategicUfoRecoveryView out;
+	if (!recovery || !Q_strvalid(recovery->ufoDefinition))
+		return out;
+	out.id = canonical::UfoRecoveryId(recovery->runtimeId);
+	out.condition = recovery->condition;
+	out.ufoDefinition = valueString(recovery->ufoDefinition);
+	return out;
+}
+
+StrategicUfoSaleOfferView projectUfoSaleOffer(const ufoSaleOffer_t& offer)
+{
+	StrategicUfoSaleOfferView out;
+	out.id = canonical::UfoSaleOfferId(offer.runtimeId);
+	out.recovery = canonical::UfoRecoveryId(offer.recoveryRuntimeId);
+	out.nation = offer.nation ? indexedId<canonical::NationId>(offer.nation->idx) : canonical::NationId();
+	out.price = offer.price;
+	const ufoRecovery_t* recovery = UR_GetPendingRecovery();
+	out.ufoDefinition = recovery && recovery->runtimeId == offer.recoveryRuntimeId
+		? valueString(recovery->ufoDefinition) : std::string();
+	return out;
+}
+
 StrategicEmployeeView projectEmployee(const Employee& employee)
 {
 	StrategicEmployeeView out;
@@ -360,6 +386,15 @@ StrategicSnapshot buildCurrentStrategicSnapshot(uint64_t publicationSerial)
 		storedUfos.push_back(projectStoredUfo(*ufo));
 	}
 
+
+	const StrategicUfoRecoveryView ufoRecovery = projectUfoRecovery(UR_GetPendingRecovery());
+	std::vector<StrategicUfoSaleOfferView> ufoSaleOffers;
+	for (std::size_t i = 0; i < UR_GetUfoSaleOfferCount(); ++i) {
+		const ufoSaleOffer_t* offer = UR_GetUfoSaleOfferAt(i);
+		if (offer)
+			ufoSaleOffers.push_back(projectUfoSaleOffer(*offer));
+	}
+
 	std::vector<StrategicEmployeeView> employees;
 	for (int type = 0; type < MAX_EMPL; ++type) {
 		E_Foreach(type, employee) {
@@ -403,7 +438,9 @@ StrategicSnapshot buildCurrentStrategicSnapshot(uint64_t publicationSerial)
 		std::move(itemDefinitions),
 		std::move(aircraftDefinitions),
 		std::move(employees),
-		std::move(facilities));
+		std::move(facilities),
+		ufoRecovery,
+		std::move(ufoSaleOffers));
 }
 
 void resetStrategicSnapshotAdapter()

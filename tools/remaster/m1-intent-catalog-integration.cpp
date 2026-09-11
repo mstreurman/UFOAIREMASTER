@@ -14,6 +14,7 @@
 #include "../../src/client/cgame/campaign/cp_campaign.h"
 #include "../../src/client/cgame/campaign/cp_geoscape.h"
 #include "../../src/client/cgame/campaign/cp_missions.h"
+#include "../../src/client/cgame/campaign/cp_uforecovery.h"
 #include "../../src/client/presentation/strategic_intent.h"
 #include "../../src/client/presentation/strategic_intent_legacy_adapter.h"
 #include "../../src/client/presentation/strategic_publication.h"
@@ -57,6 +58,32 @@ void ResetCatalogInventory()
 campaign_t* CatalogCampaign()
 {
 	return CP_GetCampaign("main");
+}
+
+
+const aircraft_t* FirstCatalogUfoTemplate()
+{
+	for (int i = 0; i < ccs.numAircraftTemplates; ++i) {
+		const aircraft_t* aircraft = &ccs.aircraftTemplates[i];
+		if (AIR_IsUFO(aircraft))
+			return aircraft;
+	}
+	return nullptr;
+}
+
+installation_t* MakeCatalogUfoYard(const char* name, float longitude)
+{
+	const installationTemplate_t* tpl = INS_GetInstallationTemplateByType(INSTALLATION_UFOYARD);
+	if (!tpl)
+		return nullptr;
+	vec2_t pos = {longitude, 0.0f};
+	installation_t* yard = INS_Build(tpl, pos, name);
+	if (!yard)
+		return nullptr;
+	yard->installationStatus = INSTALLATION_WORKING;
+	yard->ufoCapacity.max = 4;
+	yard->ufoCapacity.cur = 0;
+	return yard;
 }
 
 class M1IntentCatalogTest: public ::testing::Test {
@@ -217,6 +244,131 @@ TEST_F(M1IntentCatalogTest, TacticalIntentNeverClaimsCanonicalApplicationAtClien
 	EXPECT_EQ(
 		ufo::presentation::TacticalIntentDisposition::RejectedByClientBoundary,
 		second.disposition);
+}
+
+
+TEST_F(M1IntentCatalogTest, UfoRecoveryOwnersBindOneShotRecoveryAndRejectReplay)
+{
+	const aircraft_t* ufo = FirstCatalogUfoTemplate();
+	ASSERT_NE(nullptr, ufo);
+	installation_t* firstYard = MakeCatalogUfoYard("M1 Recovery Yard A", 10.0f);
+	installation_t* secondYard = MakeCatalogUfoYard("M1 Recovery Yard B", 20.0f);
+	ASSERT_NE(nullptr, firstYard);
+	ASSERT_NE(nullptr, secondYard);
+
+	mission_t recoveryMission = {};
+	recoveryMission.ufo = const_cast<aircraft_t*>(ufo);
+	recoveryMission.crashed = true;
+	Com_sprintf(recoveryMission.onwin, sizeof(recoveryMission.onwin),
+		"ui_push popup_uforecovery \"Recovered UFO\" \"%s\" \"%s\" \"crashed\" 0.42",
+		ufo->id, ufo->model);
+	ASSERT_TRUE(UR_BeginRecoveryFromMission(&recoveryMission));
+
+	ufo::presentation::legacy::publishAfterCanonicalCampaignUpdate();
+	ufo::presentation::StrategicSnapshotPtr snapshot = ufo::presentation::latestStrategicSnapshot();
+	ASSERT_TRUE(snapshot);
+	const ufo::canonical::UfoRecoveryId recoveryId = snapshot->ufoRecovery().id;
+	ASSERT_TRUE(recoveryId.isValid());
+	EXPECT_STREQ(ufo->id, snapshot->ufoRecovery().ufoDefinition.c_str());
+	EXPECT_FLOAT_EQ(0.42f, snapshot->ufoRecovery().condition);
+
+	const ufo::presentation::StrategicIntentSubmission store =
+		ufo::presentation::intent::submitStoreRecoveredUfo(
+			recoveryId, ufo::canonical::InstallationId(static_cast<uint32_t>(firstYard->idx)));
+	ASSERT_TRUE(store.accepted);
+	ufo::presentation::legacy::applyPendingStrategicIntents();
+	ufo::presentation::StrategicIntentResult storeResult = {};
+	ASSERT_TRUE(ufo::presentation::intent::pollStrategicIntentResult(&storeResult));
+	ASSERT_EQ(ufo::presentation::StrategicIntentDisposition::Applied, storeResult.disposition);
+	ASSERT_GE(storeResult.canonicalValue, 0);
+
+	storedUFO_t* stored = US_GetStoredUFOByIDX(storeResult.canonicalValue);
+	ASSERT_NE(nullptr, stored);
+	EXPECT_FLOAT_EQ(0.42f, stored->condition);
+	EXPECT_EQ(firstYard, stored->installation);
+	EXPECT_EQ(nullptr, UR_GetPendingRecovery());
+
+	const ufo::presentation::StrategicIntentSubmission storeReplay =
+		ufo::presentation::intent::submitStoreRecoveredUfo(
+			recoveryId, ufo::canonical::InstallationId(static_cast<uint32_t>(secondYard->idx)));
+	ASSERT_TRUE(storeReplay.accepted);
+	ufo::presentation::legacy::applyPendingStrategicIntents();
+	ufo::presentation::StrategicIntentResult storeReplayResult = {};
+	ASSERT_TRUE(ufo::presentation::intent::pollStrategicIntentResult(&storeReplayResult));
+	EXPECT_EQ(ufo::presentation::StrategicIntentDisposition::RejectedByCanonical, storeReplayResult.disposition);
+
+	/* Complete recovery transit so the inherited transfer owner becomes eligible. */
+	stored->status = SUFO_STORED;
+	stored->arrive = ccs.date;
+	const ufo::canonical::StoredUfoId storedId(static_cast<uint32_t>(stored->idx));
+	const ufo::presentation::StrategicIntentSubmission transfer =
+		ufo::presentation::intent::submitTransferStoredUfo(
+			storedId, ufo::canonical::InstallationId(static_cast<uint32_t>(secondYard->idx)));
+	ASSERT_TRUE(transfer.accepted);
+	ufo::presentation::legacy::applyPendingStrategicIntents();
+	ufo::presentation::StrategicIntentResult transferResult = {};
+	ASSERT_TRUE(ufo::presentation::intent::pollStrategicIntentResult(&transferResult));
+	ASSERT_EQ(ufo::presentation::StrategicIntentDisposition::Applied, transferResult.disposition);
+	stored = US_GetStoredUFOByIDX(static_cast<int>(storedId.value));
+	ASSERT_NE(nullptr, stored);
+	EXPECT_EQ(secondYard, stored->installation);
+	EXPECT_EQ(SUFO_TRANSFERED, stored->status);
+
+	const ufo::presentation::StrategicIntentSubmission destroy =
+		ufo::presentation::intent::submitDestroyStoredUfo(storedId);
+	ASSERT_TRUE(destroy.accepted);
+	ufo::presentation::legacy::applyPendingStrategicIntents();
+	ufo::presentation::StrategicIntentResult destroyResult = {};
+	ASSERT_TRUE(ufo::presentation::intent::pollStrategicIntentResult(&destroyResult));
+	ASSERT_EQ(ufo::presentation::StrategicIntentDisposition::Applied, destroyResult.disposition);
+	EXPECT_EQ(nullptr, US_GetStoredUFOByIDX(static_cast<int>(storedId.value)));
+
+	recoveryMission.crashed = false;
+	Com_sprintf(recoveryMission.onwin, sizeof(recoveryMission.onwin),
+		"ui_push popup_uforecovery \"Recovered UFO\" \"%s\" \"%s\" \"landed\" 1.00",
+		ufo->id, ufo->model);
+	ASSERT_TRUE(UR_BeginRecoveryFromMission(&recoveryMission));
+	const ufoRecovery_t* pending = UR_GetPendingRecovery();
+	ASSERT_NE(nullptr, pending);
+	ASSERT_GT(UR_GetUfoSaleOfferCount(), 0u);
+
+	ufo::presentation::legacy::publishAfterCanonicalCampaignUpdate();
+	snapshot = ufo::presentation::latestStrategicSnapshot();
+	ASSERT_TRUE(snapshot);
+	ASSERT_TRUE(snapshot->ufoRecovery().id.isValid());
+	ASSERT_FALSE(snapshot->ufoSaleOffers().empty());
+	const ufo::presentation::StrategicUfoSaleOfferView* offer = nullptr;
+	for (const ufo::presentation::StrategicUfoSaleOfferView& candidate : snapshot->ufoSaleOffers()) {
+		if (candidate.price > 0) {
+			offer = &candidate;
+			break;
+		}
+	}
+	ASSERT_NE(nullptr, offer);
+	EXPECT_EQ(snapshot->ufoRecovery().id, offer->recovery);
+	ASSERT_TRUE(offer->id.isValid());
+
+	CP_UpdateCredits(1000);
+	const ufo::presentation::StrategicIntentSubmission accept =
+		ufo::presentation::intent::submitAcceptUfoSaleOffer(offer->id);
+	ASSERT_TRUE(accept.accepted);
+	ufo::presentation::legacy::applyPendingStrategicIntents();
+	ufo::presentation::StrategicIntentResult acceptResult = {};
+	ASSERT_TRUE(ufo::presentation::intent::pollStrategicIntentResult(&acceptResult));
+	ASSERT_EQ(ufo::presentation::StrategicIntentDisposition::Applied, acceptResult.disposition);
+	ASSERT_GT(ccs.credits, 1000);
+	const int creditsAfterAccept = ccs.credits;
+	EXPECT_EQ(nullptr, UR_GetPendingRecovery());
+	EXPECT_EQ(0u, UR_GetUfoSaleOfferCount());
+
+	const ufo::presentation::StrategicIntentSubmission replay =
+		ufo::presentation::intent::submitAcceptUfoSaleOffer(offer->id);
+	ASSERT_TRUE(replay.accepted);
+	ufo::presentation::legacy::applyPendingStrategicIntents();
+	ufo::presentation::StrategicIntentResult replayResult = {};
+	ASSERT_TRUE(ufo::presentation::intent::pollStrategicIntentResult(&replayResult));
+	EXPECT_EQ(ufo::presentation::StrategicIntentDisposition::RejectedByCanonical, replayResult.disposition);
+	EXPECT_EQ(creditsAfterAccept, ccs.credits);
 }
 
 } // namespace

@@ -105,6 +105,7 @@ int main()
 		MessageId,
 		ItemId,
 		StoredUfoId,
+		UfoRecoveryId,
 		UfoSaleOfferId,
 		TransferManifestId>::value,
 		"canonical presentation identity domains must remain distinct types");
@@ -124,6 +125,7 @@ int main()
 	static_assert(IdentityShape<MessageId>::value, "MessageId shape contract failed");
 	static_assert(IdentityShape<ItemId>::value, "ItemId shape contract failed");
 	static_assert(IdentityShape<StoredUfoId>::value, "StoredUfoId shape contract failed");
+	static_assert(IdentityShape<UfoRecoveryId>::value, "UfoRecoveryId shape contract failed");
 	static_assert(IdentityShape<UfoSaleOfferId>::value, "UfoSaleOfferId shape contract failed");
 	static_assert(IdentityShape<TransferManifestId>::value, "TransferManifestId shape contract failed");
 
@@ -143,6 +145,7 @@ int main()
 		MessageId,
 		ItemId,
 		StoredUfoId,
+		UfoRecoveryId,
 		UfoSaleOfferId,
 		TransferManifestId>::value,
 		"canonical presentation identity domains must reject cross-domain construction");
@@ -180,14 +183,15 @@ int main()
 		&& checkId<MessageId>(13U)
 		&& checkId<ItemId>(14U)
 		&& checkId<StoredUfoId>(15U)
-		&& checkId<UfoSaleOfferId>(16U)
-		&& checkId<TransferManifestId>(17U);
+		&& checkId<UfoRecoveryId>(16U)
+		&& checkId<UfoSaleOfferId>(17U)
+		&& checkId<TransferManifestId>(18U);
 
 	if (!ok) {
 		std::cerr << "M1 canonical identity contract: FAIL\n";
 		return 1;
 	}
 
-	std::cout << "M1 canonical identity contract: PASS (17 distinct 32-bit domains)\n";
+	std::cout << "M1 canonical identity contract: PASS (18 distinct 32-bit domains)\n";
 	return 0;
 }

@@ -34,8 +34,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cp_geoscape.h"
 #include "cp_time.h"
 
-#define HAPPINESS_UFO_SALE_GAIN				0.02
-#define HAPPINESS_UFO_SALE_LOSS				0.005
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
+#include <limits>
 
 /**
  * @brief Function to initialize list of storage locations for recovered UFO.
@@ -44,6 +46,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 static void UR_DialogInitStore_f (void)
 {
+	if (!UR_GetPendingRecovery())
+		return;
+
 	/* Check how many bases can store this UFO. */
 	INS_Foreach(installation) {
 		const capacities_t* capacity = &installation->ufoCapacity;
@@ -64,41 +69,37 @@ static void UR_DialogInitStore_f (void)
  */
 static void UR_DialogStartStore_f (void)
 {
-
 	if (cgi->Cmd_Argc() < 4) {
 		cgi->Com_Printf("Usage: %s <ufoType> <damage> <installationIDX>\n", cgi->Cmd_Argv(0));
 		return;
 	}
 
+	const ufoRecovery_t* recovery = UR_GetPendingRecovery();
+	if (!recovery || !Q_strvalid(recovery->ufoDefinition)) {
+		cgi->Com_Printf("%s No canonical UFO recovery is pending\n", cgi->Cmd_Argv(0));
+		return;
+	}
 	const aircraft_t* ufo = AIR_GetAircraftSilent(cgi->Cmd_Argv(1));
-	if (ufo == nullptr || !AIR_IsUFO(ufo)) {
-		cgi->Com_Printf("%s Invalid UFO type\n", cgi->Cmd_Argv(0));
+	if (!ufo || !AIR_IsUFO(ufo) || !Q_streq(ufo->id, recovery->ufoDefinition)) {
+		cgi->Com_Printf("%s Recovery UFO does not match canonical context\n", cgi->Cmd_Argv(0));
 		return;
 	}
 
-	float condition = atof(cgi->Cmd_Argv(2));
-	if (condition < 0.0f || condition > 100.0f) {
-		cgi->Com_Printf("%s Invalid UFO damage value\n", cgi->Cmd_Argv(0));
+	const float condition = atof(cgi->Cmd_Argv(2));
+	if (!std::isfinite(condition) || std::fabs(condition - recovery->condition) > 0.0001f) {
+		cgi->Com_Printf("%s Recovery condition does not match canonical context\n", cgi->Cmd_Argv(0));
 		return;
 	}
 
 	installation_t* installation = INS_GetByIDX(atoi(cgi->Cmd_Argv(3)));
-	if (installation == nullptr || installation->ufoCapacity.max <= 0) {
+	if (!installation || installation->ufoCapacity.max <= 0) {
 		cgi->Com_Printf("%s Invalid Installation IDX\n", cgi->Cmd_Argv(0));
 		return;
 	}
 
-	if (installation->ufoCapacity.max <= installation->ufoCapacity.cur) {
-		cgi->Com_Printf("%s The selected installation has no spare capacity\n", cgi->Cmd_Argv(0));
-		return;
-	}
-
-	Com_sprintf(cp_messageBuffer, lengthof(cp_messageBuffer), _("Recovered %s from the battlefield. UFO is being transported to %s."),
-		UFO_GetName(ufo), installation->name);
-	MS_AddNewMessage(_("UFO Recovery"), cp_messageBuffer);
-
-	DateTime date = DateTime(ccs.date) + DateTime((int) RECOVERY_DELAY, 0);
-	US_StoreUFO(ufo, installation, date, condition);
+	const uint32_t recoveryRuntimeId = recovery->runtimeId;
+	if (!UR_TryStoreRecoveredUFO(recoveryRuntimeId, installation, nullptr))
+		cgi->Com_Printf("%s Canonical UFO recovery store rejected\n", cgi->Cmd_Argv(0));
 }
 
 /**
@@ -112,24 +113,24 @@ static void UR_DialogInitSell_f (void)
 		return;
 	}
 
-	const aircraft_t* ufo = AIR_GetAircraft(cgi->Cmd_Argv(1));
-	if (ufo == nullptr) {
-		cgi->Com_Printf("%s Invalid ufo Type\n", cgi->Cmd_Argv(0));
+	const ufoRecovery_t* recovery = UR_GetPendingRecovery();
+	const aircraft_t* requested = AIR_GetAircraftSilent(cgi->Cmd_Argv(1));
+	if (!recovery || !Q_strvalid(recovery->ufoDefinition) || !requested || !AIR_IsUFO(requested)
+	 || !Q_streq(requested->id, recovery->ufoDefinition)) {
+		cgi->Com_Printf("%s Recovery UFO does not match canonical context\n", cgi->Cmd_Argv(0));
 		return;
 	}
-
-	NAT_Foreach(nation) {
-		const nationInfo_t* stats = NAT_GetCurrentMonthInfo(nation);
-		int price;
-
-		price = (int) (ufo->price * (.85f + frand() * .3f));
-		/* Nation will pay less if corrupted */
-		price = (int) (price * exp(-stats->xviInfection / 20.0f));
-
+	for (std::size_t i = 0; i < UR_GetUfoSaleOfferCount(); ++i) {
+		const ufoSaleOffer_t* offer = UR_GetUfoSaleOfferAt(i);
+		if (!offer || !offer->nation)
+			continue;
+		const nationInfo_t* stats = NAT_GetCurrentMonthInfo(offer->nation);
+		if (!stats)
+			continue;
 		cgi->UI_ExecuteConfunc("ui_uforecovery_nations %s \"%s\" %d %s %.2f",
-			nation->id,
-			_(nation->name),
-			price,
+			offer->nation->id,
+			_(offer->nation->name),
+			offer->price,
 			NAT_GetHappinessString(stats->happiness),
 			stats->happiness
 		);
@@ -147,37 +148,29 @@ static void UR_DialogStartSell_f (void)
 		return;
 	}
 
+	const ufoRecovery_t* recovery = UR_GetPendingRecovery();
+	if (!recovery || !Q_strvalid(recovery->ufoDefinition)) {
+		cgi->Com_Printf("%s: No canonical UFO recovery is pending\n", cgi->Cmd_Argv(0));
+		return;
+	}
 	const nation_t* nation = NAT_GetNationByID(cgi->Cmd_Argv(2));
-	if (nation == nullptr) {
-		cgi->Com_Printf("%s: Nation not found\n", cgi->Cmd_Argv(0));
+	const int price = atoi(cgi->Cmd_Argv(3));
+	if (!nation || price <= 0) {
+		cgi->Com_Printf("%s: Invalid nation/price\n", cgi->Cmd_Argv(0));
 		return;
 	}
 
-	int price = atoi(cgi->Cmd_Argv(3));
-	if (price <= 0) {
-		cgi->Com_Printf("%s: Invalid price\n", cgi->Cmd_Argv(0));
-		return;
+	uint32_t offerRuntimeId = std::numeric_limits<uint32_t>::max();
+	for (std::size_t i = 0; i < UR_GetUfoSaleOfferCount(); ++i) {
+		const ufoSaleOffer_t* offer = UR_GetUfoSaleOfferAt(i);
+		if (offer && offer->recoveryRuntimeId == recovery->runtimeId
+		 && offer->nation == nation && offer->price == price) {
+			offerRuntimeId = offer->runtimeId;
+			break;
+		}
 	}
-
-	Com_sprintf(cp_messageBuffer, sizeof(cp_messageBuffer), _("Recovered %s from the battlefield. UFO sold to nation %s, gained %i credits."),
-		cgi->Cmd_Argv(1), _(nation->name), price);
-	MS_AddNewMessage(_("UFO Recovery"), cp_messageBuffer);
-	CP_UpdateCredits(ccs.credits + price);
-
-	/* update nation happiness */
-	NAT_Foreach(nat) {
-		float ufoHappiness;
-
-		assert(nat);
-		if (nat == nation)
-			/* nation is happy because it got the UFO */
-			ufoHappiness = HAPPINESS_UFO_SALE_GAIN;
-		else
-			/* nation is unhappy because it wanted the UFO */
-			ufoHappiness = HAPPINESS_UFO_SALE_LOSS;
-
-		NAT_SetHappiness(ccs.curCampaign->minhappiness, nat, nat->stats[0].happiness + ufoHappiness);
-	}
+	if (offerRuntimeId == std::numeric_limits<uint32_t>::max() || !UR_TryAcceptUfoSaleOffer(offerRuntimeId))
+		cgi->Com_Printf("%s: Canonical UFO sale offer rejected\n", cgi->Cmd_Argv(0));
 }
 
 
@@ -243,16 +236,16 @@ static void US_DestroyStoredUFO_f (void)
 		cgi->Com_DPrintf(DEBUG_CLIENT, "Usage: %s <idx> [0|1]\nWhere the second, optional parameter is the confirmation.\n", cgi->Cmd_Argv(0));
 		return;
 	}
-	storedUFO_t* ufo = US_GetStoredUFOByIDX(atoi(cgi->Cmd_Argv(1)));
+	const int storedUfoIdx = atoi(cgi->Cmd_Argv(1));
+	storedUFO_t* ufo = US_GetStoredUFOByIDX(storedUfoIdx);
 	if (!ufo) {
-		cgi->Com_DPrintf(DEBUG_CLIENT, "Stored UFO with idx: %i does not exist\n", atoi(cgi->Cmd_Argv(1)));
+		cgi->Com_DPrintf(DEBUG_CLIENT, "Stored UFO with idx: %i does not exist\n", storedUfoIdx);
 		return;
 	}
 
 	/* Ask 'Are you sure?' by default */
 	if (cgi->Cmd_Argc() < 3 || !atoi(cgi->Cmd_Argv(2))) {
 		char command[128];
-
 		Com_sprintf(command, sizeof(command), "ui_pop; ui_destroystoredufo %d 1; mn_installation_select %d;", ufo->idx, ufo->installation->idx);
 		cgi->UI_PopupButton(_("Destroy stored UFO"), _("Do you really want to destroy this stored UFO?"),
 			command, _("Destroy"), _("Destroy stored UFO"),
@@ -260,8 +253,10 @@ static void US_DestroyStoredUFO_f (void)
 			nullptr, nullptr, nullptr);
 		return;
 	}
-	US_RemoveStoredUFO(ufo);
-	cgi->Cmd_ExecuteString("mn_installation_select %d", ufo->installation->idx);
+
+	const int installationIdx = ufo->installation ? ufo->installation->idx : -1;
+	if (US_TryDestroyStoredUFO(storedUfoIdx) && installationIdx >= 0)
+		cgi->Cmd_ExecuteString("mn_installation_select %d", installationIdx);
 }
 
 /**
@@ -320,24 +315,22 @@ static void US_FillUFOTransferUFOs_f (void)
  */
 static void US_TransferUFO_f (void)
 {
-	storedUFO_t* ufo;
-	installation_t* ins = nullptr;
-
 	if (cgi->Cmd_Argc() < 3) {
 		cgi->Com_Printf("Usage: %s <stored-ufo-idx> <ufoyard-idx>\n", cgi->Cmd_Argv(0));
 		return;
 	}
-	ufo = US_GetStoredUFOByIDX(atoi(cgi->Cmd_Argv(1)));
-	if (ufo == nullptr) {
-		cgi->Com_Printf("Stored ufo with idx %i not found.\n", atoi(cgi->Cmd_Argv(1)));
+	const int storedUfoIdx = atoi(cgi->Cmd_Argv(1));
+	if (!US_GetStoredUFOByIDX(storedUfoIdx)) {
+		cgi->Com_Printf("Stored ufo with idx %i not found.\n", storedUfoIdx);
 		return;
 	}
-	ins = INS_GetByIDX(atoi(cgi->Cmd_Argv(2)));
-	if (!ins) {
+	installation_t* installation = INS_GetByIDX(atoi(cgi->Cmd_Argv(2)));
+	if (!installation) {
 		cgi->Com_Printf("Installation with idx: %i does not exist\n", atoi(cgi->Cmd_Argv(2)));
 		return;
 	}
-	US_TransferUFO(ufo, ins);
+	if (!US_TryTransferStoredUFO(storedUfoIdx, installation))
+		cgi->Com_Printf("Canonical stored UFO transfer rejected.\n");
 }
 
 static const cmdList_t ufoRecoveryCallbacks[] = {

@@ -134,6 +134,22 @@ struct StrategicStoredUfoView {
 	std::string ufoDefinition;
 };
 
+
+struct StrategicUfoRecoveryView {
+	canonical::UfoRecoveryId id;
+	float condition;
+	std::string ufoDefinition;
+	StrategicUfoRecoveryView() : condition(0.0f) {}
+};
+
+struct StrategicUfoSaleOfferView {
+	canonical::UfoSaleOfferId id;
+	canonical::UfoRecoveryId recovery;
+	canonical::NationId nation;
+	int32_t price;
+	std::string ufoDefinition;
+};
+
 struct StrategicEmployeeView {
 	canonical::EmployeeId id;
 	canonical::BaseId base;
@@ -182,7 +198,9 @@ public:
 		std::vector<StrategicItemDefinitionView> itemDefinitions = std::vector<StrategicItemDefinitionView>(),
 		std::vector<StrategicAircraftDefinitionView> aircraftDefinitions = std::vector<StrategicAircraftDefinitionView>(),
 		std::vector<StrategicEmployeeView> employees = std::vector<StrategicEmployeeView>(),
-		std::vector<StrategicFacilityView> facilities = std::vector<StrategicFacilityView>())
+		std::vector<StrategicFacilityView> facilities = std::vector<StrategicFacilityView>(),
+		StrategicUfoRecoveryView ufoRecovery = StrategicUfoRecoveryView(),
+		std::vector<StrategicUfoSaleOfferView> ufoSaleOffers = std::vector<StrategicUfoSaleOfferView>())
 		: publicationSerial_(publicationSerial),
 		  campaignTime_(campaignTime),
 		  credits_(credits),
@@ -200,7 +218,9 @@ public:
 		  itemDefinitions_(std::move(itemDefinitions)),
 		  aircraftDefinitions_(std::move(aircraftDefinitions)),
 		  employees_(std::move(employees)),
-		  facilities_(std::move(facilities))
+		  facilities_(std::move(facilities)),
+		  ufoRecovery_(std::move(ufoRecovery)),
+		  ufoSaleOffers_(std::move(ufoSaleOffers))
 	{
 	}
 
@@ -222,6 +242,8 @@ public:
 	const std::vector<StrategicAircraftDefinitionView>& aircraftDefinitions() const noexcept { return aircraftDefinitions_; }
 	const std::vector<StrategicEmployeeView>& employees() const noexcept { return employees_; }
 	const std::vector<StrategicFacilityView>& facilities() const noexcept { return facilities_; }
+	const StrategicUfoRecoveryView& ufoRecovery() const noexcept { return ufoRecovery_; }
+	const std::vector<StrategicUfoSaleOfferView>& ufoSaleOffers() const noexcept { return ufoSaleOffers_; }
 
 private:
 	uint64_t publicationSerial_;
@@ -242,6 +264,8 @@ private:
 	std::vector<StrategicAircraftDefinitionView> aircraftDefinitions_;
 	std::vector<StrategicEmployeeView> employees_;
 	std::vector<StrategicFacilityView> facilities_;
+	StrategicUfoRecoveryView ufoRecovery_;
+	std::vector<StrategicUfoSaleOfferView> ufoSaleOffers_;
 };
 
 } // namespace presentation

@@ -8,7 +8,7 @@ BASELINE = "d10c58e4d6e826db89c4a4c7c7bfcbaf8c3dd903"
 STRONG = [
     "EntityId","MissionId","AircraftId","BaseId","InstallationId","NationId",
     "EmployeeId","TechnologyId","ProductionId","FacilityId","TransferId",
-    "DefenceSlotId","MessageId","ItemId","StoredUfoId","UfoSaleOfferId",
+    "DefenceSlotId","MessageId","ItemId","StoredUfoId","UfoRecoveryId","UfoSaleOfferId",
     "TransferManifestId",
 ]
 ALIASED_STRONG = STRONG[1:]
@@ -137,19 +137,23 @@ def main():
             "ItemId qualified lifetime status changed")
     require(by["FacilityId"]["second_pass_status"] == "qualified_runtime_mapping",
             "FacilityId runtime mapping qualification regressed")
+    require(by["UfoRecoveryId"]["second_pass_status"] == "qualified_runtime_mapping",
+            "UfoRecoveryId runtime mapping qualification regressed")
+    require(by["UfoSaleOfferId"]["second_pass_status"] == "qualified_runtime_mapping",
+            "UfoSaleOfferId runtime mapping qualification regressed")
     require(by["TransferId"]["second_pass_status"] == "pending_mapping",
             "TransferId debt status changed")
     require(by["DefenceSlotId"]["second_pass_status"] == "pending_mapping",
             "DefenceSlotId debt status changed")
 
     print("PASS M1 second-pass identity lifetime audit")
-    print("  strong canonical ID domains: 17/17")
+    print("  strong canonical ID domains: 18/18")
     print("    EntityId: hand-written protocol value type")
-    print("    StableId aliases: 16/16")
+    print("    StableId aliases: 17/17")
     print("  UCN generation/save/load/wire correlation: explicit")
     print("  UCN allocator restoration/non-reuse + signed-16-bit wire domain: qualified")
     print("  ItemId current-content ordinal + stable script key: qualified")
-    print("  FacilityId runtime mapping: qualified; Transfer/Defence/Message debt remains pending")
+    print("  Facility/UfoRecovery/UfoSaleOffer runtime mappings: qualified; Transfer/Defence/Message debt remains pending")
     return 0
 
 

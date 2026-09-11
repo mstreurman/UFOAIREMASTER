@@ -413,10 +413,10 @@ StrategicIntentSubmission submitStopResearch(canonical::BaseId base, canonical::
     return submit(v);
 }
 
-StrategicIntentSubmission submitStoreRecoveredUfo(const char* ufoDefinition, float conditionPercent, canonical::InstallationId installation)
+StrategicIntentSubmission submitStoreRecoveredUfo(canonical::UfoRecoveryId recovery, canonical::InstallationId installation)
 {
     StrategicIntent v = make(StrategicIntentKind::StoreRecoveredUfo);
-    copyBounded(v.key0, ufoDefinition); v.scalar0 = conditionPercent; v.installation = installation;
+    v.recovery = recovery; v.installation = installation;
     return submit(v);
 }
 

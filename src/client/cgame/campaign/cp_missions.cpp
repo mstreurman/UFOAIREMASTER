@@ -1288,6 +1288,10 @@ void CP_MissionEnd (const campaign_t* campaign, mission_t* mission, const battle
 	}
 	cgi->Com_DPrintf(DEBUG_CLIENT, "CP_MissionEnd - num %i\n", numberOfSoldiers);
 
+	UR_ClearRecovery();
+	if (won && mission->ufo && !UR_BeginRecoveryFromMission(mission))
+		cgi->Com_Printf("Unable to establish canonical UFO recovery context.\n");
+
 	CP_ExecuteMissionTrigger(mission, won);
 	CP_MissionEndActions(mission, aircraft, won);
 }

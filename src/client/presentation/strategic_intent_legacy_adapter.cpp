@@ -19,6 +19,7 @@
 #include "../cgame/campaign/cp_research.h"
 #include "../cgame/campaign/cp_time.h"
 #include "../cgame/campaign/cp_ufo.h"
+#include "../cgame/campaign/cp_uforecovery.h"
 #include "strategic_intent.h"
 #include "strategic_intent_legacy_adapter.h"
 #include <cmath>
@@ -318,13 +319,45 @@ void applyPendingStrategicIntents() {
             if(BS_IsMutationAccepted(result)) out.disposition=StrategicIntentDisposition::Applied;
             out.canonicalValue=BS_IsMutationAccepted(result)?(in.value0!=0?1:0):-1; break; }
 
+        case StrategicIntentKind::AcceptUfoSaleOffer:
+            if(in.offer.isValid() && UR_TryAcceptUfoSaleOffer(in.offer.value)) {
+                out.disposition=StrategicIntentDisposition::Applied;
+                out.canonicalValue=1;
+            }
+            break;
+        case StrategicIntentKind::DestroyStoredUfo:
+            if(in.storedUfo.isValid() && in.storedUfo.value<=static_cast<uint32_t>(std::numeric_limits<int>::max())) {
+                const int storedUfoIdx=static_cast<int>(in.storedUfo.value);
+                if(US_TryDestroyStoredUFO(storedUfoIdx)) {
+                    out.disposition=StrategicIntentDisposition::Applied;
+                    out.canonicalValue=storedUfoIdx;
+                }
+            }
+            break;
+        case StrategicIntentKind::StoreRecoveredUfo: {
+            installation_t* installation=resolveInstallation(in.installation); storedUFO_t* stored=nullptr;
+            if(in.recovery.isValid()&&installation&&UR_TryStoreRecoveredUFO(in.recovery.value,installation,&stored)) {
+                out.disposition=StrategicIntentDisposition::Applied;
+                out.canonicalValue=stored?stored->idx:-1;
+            }
+            break; }
+        case StrategicIntentKind::TransferStoredUfo:
+            if(in.storedUfo.isValid() && in.storedUfo.value<=static_cast<uint32_t>(std::numeric_limits<int>::max())) {
+                installation_t* installation=resolveInstallation(in.installation);
+                const int storedUfoIdx=static_cast<int>(in.storedUfo.value);
+                if(installation&&US_TryTransferStoredUFO(storedUfoIdx,installation)) {
+                    out.disposition=StrategicIntentDisposition::Applied;
+                    storedUFO_t* stored=US_GetStoredUFOByIDX(storedUfoIdx);
+                    out.canonicalValue=stored?static_cast<int32_t>(stored->status):-1;
+                }
+            }
+            break;
+
         /* Strict-authority catalog is transport-complete, but these actions stay
          * rejected until callback-owned validation/mutation is moved into its
          * canonical campaign subsystem. No command-string fallback is allowed. */
-        case StrategicIntentKind::AcceptUfoSaleOffer:
         case StrategicIntentKind::AutoResolveMission:
         case StrategicIntentKind::DestroyAntimatterFacility:
-        case StrategicIntentKind::DestroyStoredUfo:
         case StrategicIntentKind::EquipAircraftItem:
         case StrategicIntentKind::EquipBaseDefenceItem:
         case StrategicIntentKind::KillContainedAlien:
@@ -339,8 +372,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::SetAirDefenceTarget:
         case StrategicIntentKind::StartMission:
         case StrategicIntentKind::StartTransfer:
-        case StrategicIntentKind::StoreRecoveredUfo:
-        case StrategicIntentKind::TransferStoredUfo:
             break;
         }
         intent::legacy::publishStrategicIntentResult(out);

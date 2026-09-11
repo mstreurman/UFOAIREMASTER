@@ -26,6 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../../DateTime.h"
 
+#include <cstddef>
+#include <cstdint>
+
 /* time the recovery takes in days */
 #define RECOVERY_DELAY 2.0f
 
@@ -60,11 +63,35 @@ typedef struct storedUFO_s {
 	production_t* disassembly;
 } storedUFO_t;
 
+
+/** Runtime-only one-shot identity for the recovered craft awaiting sell/store choice. */
+typedef struct ufoRecovery_s {
+	uint32_t runtimeId;
+	char ufoDefinition[MAX_VAR];
+	float condition;
+} ufoRecovery_t;
+
+/** Runtime-only generated nation offer bound to one recovery generation. */
+typedef struct ufoSaleOffer_s {
+	uint32_t runtimeId;
+	uint32_t recoveryRuntimeId;
+	const struct nation_s* nation;
+	int price;
+} ufoSaleOffer_t;
+
 void UR_ProcessActive(void);
 
 #define US_Foreach(var) LIST_Foreach(ccs.storedUFOs, storedUFO_t, var)
 
 storedUFO_t* US_StoreUFO(const aircraft_t* ufoTemplate, installation_t* installation, DateTime& date, float condition);
+bool UR_BeginRecoveryFromMission(const struct mission_s* mission);
+void UR_ClearRecovery(void);
+const ufoRecovery_t* UR_GetPendingRecovery(void);
+bool UR_TryStoreRecoveredUFO(uint32_t recoveryRuntimeId, installation_t* installation, storedUFO_t** storedUfo);
+bool UR_GenerateUfoSaleOffers(uint32_t recoveryRuntimeId);
+std::size_t UR_GetUfoSaleOfferCount(void);
+const ufoSaleOffer_t* UR_GetUfoSaleOfferAt(std::size_t index);
+bool UR_TryAcceptUfoSaleOffer(uint32_t offerRuntimeId);
 storedUFO_t* US_GetStoredUFOByIDX(const int idx);
 storedUFO_t* US_GetClosestStoredUFO(const aircraft_t* ufoTemplate, const base_t* base);
 void US_RemoveStoredUFO(storedUFO_t* ufo);
@@ -72,6 +99,8 @@ int US_UFOsInStorage(const aircraft_t* ufoTemplate, const installation_t* instal
 int US_StoredUFOCount(void);
 void US_RemoveUFOsExceedingCapacity(installation_t* installation);
 bool US_TransferUFO(storedUFO_t* ufo, installation_t* ufoyard);
+bool US_TryDestroyStoredUFO(int storedUfoIdx);
+bool US_TryTransferStoredUFO(int storedUfoIdx, installation_t* ufoyard);
 
 /**
  * @brief returns if any UFOs are stored in UFO Yards

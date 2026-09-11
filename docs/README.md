@@ -98,23 +98,23 @@ Earlier documents remain useful for rationale/history but must not redefine an A
 The current qualified implementation baseline for this documentation synchronization is:
 
 ```text
-7a1b9568a41b5b61a0820c4d67174f134d4445f9
-feat: harden M1 strategic authority boundaries
+1f47197936bc0c186b157babbec94010205562a7
+fix: synchronize M1 authority bookkeeping and publication
 ```
 
 M0 is sealed and M1 canonical-boundary work is active. The authoritative action state at this baseline is:
 
 ```text
 strategic presentation-authoritative semantics: 57 total
-  canonical-applied:                            38
-  fail-closed pending owners:                   19
+  canonical-applied:                            42
+  fail-closed pending owners:                   15
 
 tactical authoritative semantics:               15 total
   forwarded to server authority:                13
   fail-closed pending helpers:                   2
 ```
 
-The re-audit reclassifies legacy `building_amdestroy` / `DestroyAntimatterFacility` as an internal `SCRIPTED_CANONICAL_EVENT`, not a presentation-originated request; enum value 20 remains only as a deprecated tombstone. Qualified M1 publication/owner work includes runtime-only published `FacilityId`, Research, stable runtime `ProductionId`, persisted `StoredUfoId`, persisted `EmployeeId`, canonical `CreateProduction`, the six Employee/Team owners, and all seven Market owners. The remaining 19 strategic presentation actions stay fail-closed pending audited owner extraction.
+The re-audit reclassifies legacy `building_amdestroy` / `DestroyAntimatterFacility` as an internal `SCRIPTED_CANONICAL_EVENT`, not a presentation-originated request; enum value 20 remains only as a deprecated tombstone. Qualified M1 publication/owner work includes runtime-only published `FacilityId`, Research, stable runtime `ProductionId`, persisted `StoredUfoId`, persisted `EmployeeId`, canonical `CreateProduction`, the six Employee/Team owners, and all seven Market owners. Recovered/stored-UFO authority is now extracted with runtime-only `UfoRecoveryId`/`UfoSaleOfferId` plus persisted `StoredUfoId`; store/sell are one-shot generation-bound and price/condition no longer come from presentation authority. The remaining 15 strategic presentation actions stay fail-closed pending audited owner extraction.
 
 Campaign save format version 4 and tactical protocol version 18 remain explicit compatibility boundaries. Cross-binary classic/remaster save and multiplayer interchange is still a release qualification gate rather than a completed claim.
 

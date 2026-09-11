@@ -31,16 +31,212 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cp_geoscape.h"
 #include "cp_time.h"
 #include "cp_uforecovery.h"
+#include "cp_missions.h"
 #include "cp_uforecovery_callbacks.h"
 #include "cp_aircraft.h"
 #include "save/save_uforecovery.h"
 #include "cp_component.h"
 
 #include <limits>
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <vector>
 
 /*==================================
 Backend functions
 ==================================*/
+
+namespace {
+
+const float HAPPINESS_UFO_SALE_GAIN = 0.02f;
+const float HAPPINESS_UFO_SALE_LOSS = 0.005f;
+
+bool pendingRecoveryActive = false;
+ufoRecovery_t pendingRecovery = {};
+std::vector<ufoSaleOffer_t> ufoSaleOffers;
+uint32_t nextRecoveryRuntimeId = 0;
+uint32_t nextSaleOfferRuntimeId = 0;
+
+bool UR_AllocateRuntimeId(uint32_t* next, uint32_t* out)
+{
+	if (!next || !out || *next == std::numeric_limits<uint32_t>::max())
+		return false;
+	*out = (*next)++;
+	return true;
+}
+
+bool UR_ParsePersistedRecoveryCondition(const mission_t* mission, float* condition)
+{
+	if (!mission || !condition || !Q_strstart(mission->onwin, "ui_push popup_uforecovery "))
+		return false;
+	if (!mission->crashed) {
+		*condition = 1.0f;
+		return true;
+	}
+
+	const char* tail = std::strrchr(mission->onwin, ' ');
+	if (!tail || !tail[1])
+		return false;
+	char* end = nullptr;
+	const double parsed = std::strtod(tail + 1, &end);
+	if (end == tail + 1 || !end || *end != '\0' || !std::isfinite(parsed) || parsed < 0.0 || parsed > 1.0)
+		return false;
+	*condition = static_cast<float>(parsed);
+	return true;
+}
+
+} // namespace
+
+void UR_ClearRecovery (void)
+{
+	pendingRecoveryActive = false;
+	OBJZERO(pendingRecovery);
+	ufoSaleOffers.clear();
+}
+
+const ufoRecovery_t* UR_GetPendingRecovery (void)
+{
+	return pendingRecoveryActive ? &pendingRecovery : nullptr;
+}
+
+bool UR_BeginRecoveryFromMission (const mission_t* mission)
+{
+	UR_ClearRecovery();
+	if (!mission || !mission->ufo || !AIR_IsUFO(mission->ufo))
+		return false;
+
+	float condition = 0.0f;
+	if (!UR_ParsePersistedRecoveryCondition(mission, &condition))
+		return false;
+
+	uint32_t runtimeId;
+	if (!UR_AllocateRuntimeId(&nextRecoveryRuntimeId, &runtimeId))
+		return false;
+
+	pendingRecovery.runtimeId = runtimeId;
+	Q_strncpyz(pendingRecovery.ufoDefinition, mission->ufo->id, sizeof(pendingRecovery.ufoDefinition));
+	pendingRecovery.condition = condition;
+	pendingRecoveryActive = true;
+
+	/* The inherited recovery popup selects its sell tab immediately on open.
+	 * Generate the canonical offers here, before the inherited UI trigger runs,
+	 * so the legacy sell-init callback remains a pure projection and cannot own
+	 * RNG/price authority. A missing offer set does not invalidate storing. */
+	UR_GenerateUfoSaleOffers(runtimeId);
+	return true;
+}
+
+bool UR_GenerateUfoSaleOffers (uint32_t recoveryRuntimeId)
+{
+	ufoSaleOffers.clear();
+	if (!pendingRecoveryActive || pendingRecovery.runtimeId != recoveryRuntimeId || !Q_strvalid(pendingRecovery.ufoDefinition))
+		return false;
+
+	const aircraft_t* ufo = AIR_GetAircraftSilent(pendingRecovery.ufoDefinition);
+	if (!ufo || !AIR_IsUFO(ufo))
+		return false;
+	NAT_Foreach(nation) {
+		const nationInfo_t* stats = NAT_GetCurrentMonthInfo(nation);
+		if (!stats) {
+			ufoSaleOffers.clear();
+			return false;
+		}
+
+		uint32_t offerRuntimeId;
+		if (!UR_AllocateRuntimeId(&nextSaleOfferRuntimeId, &offerRuntimeId)) {
+			ufoSaleOffers.clear();
+			return false;
+		}
+
+		int price = static_cast<int>(ufo->price * (.85f + frand() * .3f));
+		price = static_cast<int>(price * std::exp(-stats->xviInfection / 20.0f));
+		ufoSaleOffer_t offer = {};
+		offer.runtimeId = offerRuntimeId;
+		offer.recoveryRuntimeId = recoveryRuntimeId;
+		offer.nation = nation;
+		offer.price = price;
+		ufoSaleOffers.push_back(offer);
+	}
+	return !ufoSaleOffers.empty();
+}
+
+std::size_t UR_GetUfoSaleOfferCount (void)
+{
+	return ufoSaleOffers.size();
+}
+
+const ufoSaleOffer_t* UR_GetUfoSaleOfferAt (std::size_t index)
+{
+	return index < ufoSaleOffers.size() ? &ufoSaleOffers[index] : nullptr;
+}
+
+bool UR_TryAcceptUfoSaleOffer (uint32_t offerRuntimeId)
+{
+	if (!pendingRecoveryActive)
+		return false;
+
+	ufoSaleOffer_t accepted = {};
+	bool found = false;
+	for (std::size_t i = 0; i < ufoSaleOffers.size(); ++i) {
+		const ufoSaleOffer_t& offer = ufoSaleOffers[i];
+		if (offer.runtimeId == offerRuntimeId) {
+			accepted = offer;
+			found = true;
+			break;
+		}
+	}
+	if (!found || accepted.recoveryRuntimeId != pendingRecovery.runtimeId
+	 || !accepted.nation || accepted.price <= 0 || !Q_strvalid(pendingRecovery.ufoDefinition))
+		return false;
+
+	const aircraft_t* ufo = AIR_GetAircraftSilent(pendingRecovery.ufoDefinition);
+	if (!ufo || !AIR_IsUFO(ufo))
+		return false;
+
+	Com_sprintf(cp_messageBuffer, sizeof(cp_messageBuffer), _("Recovered %s from the battlefield. UFO sold to nation %s, gained %i credits."),
+		UFO_GetName(ufo), _(accepted.nation->name), accepted.price);
+	MS_AddNewMessage(_("UFO Recovery"), cp_messageBuffer);
+
+	CP_UpdateCredits(ccs.credits + accepted.price);
+
+	NAT_Foreach(nation) {
+		const float delta = nation == accepted.nation ? HAPPINESS_UFO_SALE_GAIN : HAPPINESS_UFO_SALE_LOSS;
+		NAT_SetHappiness(ccs.curCampaign->minhappiness, nation, nation->stats[0].happiness + delta);
+	}
+
+	UR_ClearRecovery();
+	return true;
+}
+
+bool UR_TryStoreRecoveredUFO (uint32_t recoveryRuntimeId, installation_t* installation, storedUFO_t** storedUfo)
+{
+	if (storedUfo)
+		*storedUfo = nullptr;
+	if (!pendingRecoveryActive || pendingRecovery.runtimeId != recoveryRuntimeId
+	 || !Q_strvalid(pendingRecovery.ufoDefinition) || !installation || installation->ufoCapacity.max <= 0
+	 || installation->ufoCapacity.cur >= installation->ufoCapacity.max)
+		return false;
+
+	const aircraft_t* ufo = AIR_GetAircraftSilent(pendingRecovery.ufoDefinition);
+	if (!ufo || !AIR_IsUFO(ufo))
+		return false;
+
+	Com_sprintf(cp_messageBuffer, lengthof(cp_messageBuffer), _("Recovered %s from the battlefield. UFO is being transported to %s."),
+		UFO_GetName(ufo), installation->name);
+	MS_AddNewMessage(_("UFO Recovery"), cp_messageBuffer);
+
+	DateTime date = DateTime(ccs.date) + DateTime(static_cast<int>(RECOVERY_DELAY), 0);
+	storedUFO_t* created = US_StoreUFO(ufo, installation, date, pendingRecovery.condition);
+	if (!created)
+		return false;
+	if (storedUfo)
+		*storedUfo = created;
+	UR_ClearRecovery();
+	return true;
+}
+
 
 /**
  * @brief Function to process active recoveries.
@@ -230,6 +426,23 @@ void US_RemoveUFOsExceedingCapacity (installation_t* installation)
  * @param[in,out] ufoyard Destination of the UFO transfer
  * @return success or failure indicator
  */
+bool US_TryDestroyStoredUFO (int storedUfoIdx)
+{
+	storedUFO_t* ufo = US_GetStoredUFOByIDX(storedUfoIdx);
+	if (!ufo)
+		return false;
+	US_RemoveStoredUFO(ufo);
+	return true;
+}
+
+bool US_TryTransferStoredUFO (int storedUfoIdx, installation_t* ufoyard)
+{
+	storedUFO_t* ufo = US_GetStoredUFOByIDX(storedUfoIdx);
+	if (!ufo || !ufoyard)
+		return false;
+	return US_TransferUFO(ufo, ufoyard);
+}
+
 bool US_TransferUFO (storedUFO_t* ufo, installation_t* ufoyard)
 {
 	if (!ufo)
@@ -509,6 +722,7 @@ void UR_InitStartup (void)
  */
 void UR_Shutdown (void)
 {
+	UR_ClearRecovery();
 	cgi->LIST_Delete(&ccs.storedUFOs);
 
 	UR_ShutdownCallbacks();

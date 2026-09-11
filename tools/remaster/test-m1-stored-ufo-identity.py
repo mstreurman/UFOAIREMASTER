@@ -142,8 +142,8 @@ try:
         raise AssertionError("StoredUfoId mapping must be direct_persisted_qualified")
     if stored["publication_status"] != "published":
         raise AssertionError("StoredUfoId must be published")
-    if stored["intent_status"] != "create_production_owner_qualified":
-        raise AssertionError("StoredUfoId intent status must reflect the qualified CreateProduction owner")
+    if stored["intent_status"] != "create_production_recovery_owners_qualified":
+        raise AssertionError("StoredUfoId intent status must reflect CreateProduction plus recovery destroy/transfer owners")
 
     coverage = list(csv.DictReader(
         (ROOT/"tools/remaster/m1-authoritative-intent-coverage.tsv").open(encoding="utf-8"),
@@ -151,10 +151,13 @@ try:
     strategic = {r["semantic_action"]: r for r in coverage if r["domain"] == "strategic"}
     if strategic["CreateProduction"]["authority_bridge"] != "canonical_applied":
         raise AssertionError("CreateProduction must be canonical_applied after owner extraction")
+    for action in ("DestroyStoredUfo", "TransferStoredUfo"):
+        if strategic[action]["authority_bridge"] != "canonical_applied":
+            raise AssertionError(action + " must be canonical_applied after recovery owner extraction")
     print("PASS M1 StoredUfoId: monotonic linked-list identity with direct lookup and no removal compaction")
     print("PASS StoredUfoId save/load: object ID + allocator state persist; duplicate IDs reject; counter reconciles after load")
     print("PASS immutable stored-UFO publication: StoredUfoId + InstallationId + status/condition/definition, no raw pointers")
-    print("PASS CreateProduction is canonical-applied with ItemId/aircraft/StoredUfoId subject qualification")
+    print("PASS CreateProduction + DestroyStoredUfo + TransferStoredUfo are canonical-applied with stable StoredUfoId re-resolution")
     print("PASS StoredUfoId family remains qualified; aggregate authority accounting is centralized")
 except AssertionError as exc:
     print("FAIL M1 StoredUfoId qualification: " + str(exc), file=sys.stderr)

@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_STRONG_IDS = [
     "EntityId","MissionId","AircraftId","BaseId","InstallationId","NationId",
     "EmployeeId","TechnologyId","ProductionId","FacilityId","TransferId",
-    "DefenceSlotId","MessageId","ItemId","StoredUfoId","UfoSaleOfferId",
+    "DefenceSlotId","MessageId","ItemId","StoredUfoId","UfoRecoveryId","UfoSaleOfferId",
     "TransferManifestId",
 ]
 REQUIRED_REGISTRY = {
@@ -21,7 +21,8 @@ REQUIRED_REGISTRY = {
     "MessageId": ("runtime_sidecar_current", "pointer_sidecar_existing"),
     "ItemId": ("static_definition", "runtime_content_ordinal_qualified"),
     "StoredUfoId": ("runtime_direct", "direct_persisted_qualified"),
-    "UfoSaleOfferId": ("runtime_sidecar_required", "stable_mapping_missing"),
+    "UfoRecoveryId": ("runtime_sidecar_current", "runtime_mapping_implemented"),
+    "UfoSaleOfferId": ("runtime_sidecar_current", "runtime_mapping_implemented"),
     "TransferManifestId": ("submission_context", "typed_token_declared"),
     "AircraftEquipmentSlot": ("structural_reference", "structural_tuple"),
     "FacilityPlacementCell": ("structural_reference", "structural_tuple"),
@@ -40,7 +41,7 @@ def main():
     header = (ROOT/"src/client/presentation/canonical_identity.h").read_text()
     for name in EXPECTED_STRONG_IDS:
         require(name in header, f"canonical_identity.h missing {name}")
-    for name in ("FacilityId","TransferId","DefenceSlotId"):
+    for name in ("FacilityId","TransferId","DefenceSlotId","UfoRecoveryId","UfoSaleOfferId"):
         require(f"UFOAI_CANONICAL_ID_CONTRACT({name})" in header,
                 f"new ID domain missing compile-time contract: {name}")
     rows = list(csv.DictReader((ROOT/"tools/remaster/m1-canonical-identity-registry.tsv").open(),
@@ -92,10 +93,10 @@ def main():
     run([cxx,"-std=c++11","-Wall","-Wextra","-Werror","-pedantic","-I",str(ROOT),
          str(ROOT/"tools/remaster/m1-canonical-identity-contract.cpp"),"-o",str(binary)])
     out = run([str(binary)])
-    require("PASS (17 distinct 32-bit domains)" in out, "expanded identity contract failed")
-    print("PASS M1 canonical identity completeness: 17 strong 32-bit domains")
+    require("PASS (18 distinct 32-bit domains)" in out, "expanded identity contract failed")
+    print("PASS M1 canonical identity completeness: 18 strong 32-bit domains")
     print("PASS FacilityId runtime mapping published/qualified; TransferId and DefenceSlotId remain reserved debt")
-    print("PASS identity taxonomy locked; ProductionId + FacilityId + StoredUfoId + EmployeeId published; ItemId mapping qualified")
+    print("PASS identity taxonomy locked; UfoRecoveryId/UfoSaleOfferId runtime mappings published and qualified")
     print("PASS aggregate authority accounting is owned by test-m1-authoritative-intent-surface.py")
     return 0
 if __name__ == "__main__":

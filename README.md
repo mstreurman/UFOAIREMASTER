@@ -76,12 +76,12 @@ The accepted migration roadmap is [`docs/architecture/080-implementation-migrati
 
 ### Immediate execution order
 
-M0 is sealed. M1 is actively extracting presentation-facing authority without replacing canonical game rules. The current qualified implementation baseline is `7a1b9568a41b5b61a0820c4d67174f134d4445f9` (`feat: harden M1 strategic authority boundaries`). The boundary state is mechanically inventoried and qualified:
+M0 is sealed. M1 is actively extracting presentation-facing authority without replacing canonical game rules. The current qualified implementation baseline is `1f47197936bc0c186b157babbec94010205562a7` (`fix: synchronize M1 authority bookkeeping and publication`). The boundary state is mechanically inventoried and qualified:
 
 ```text
 strategic presentation-authoritative semantics: 57 total
-  canonical-applied:                            38
-  fail-closed pending owners:                   19
+  canonical-applied:                            42
+  fail-closed pending owners:                   15
 
 tactical authoritative semantics:               15 total
   forwarded to server authority:                13
@@ -199,9 +199,10 @@ The active execution order is:
   - [x] Seal typed catalog coverage, split `CreateProduction` from legacy `prod_inc`, then correct the re-audit misclassification of internal `building_amdestroy`: **57 presentation-authoritative strategic semantics + 15 tactical semantics**.
   - [x] Preserve the presentation authority guard: no command/cvar fallback in strategic/tactical intent adapters.
   - [x] Forward **13/15 tactical semantics** through the existing server protocol; keep AbortMission and Reload fail-closed until request helpers prove protocol emission.
-  - [x] Qualify **38/57 strategic semantics** through campaign-owned canonical owners: campaign time lapse; hardened aircraft mission/return/start/stop/destination/pursuit/homebase; base build/rename; installation build/rename/destroy; facility build/destroy with runtime `FacilityId`; Research assign/max/stop; Production create/decrease/increase/set-amount/move/stop; Employee/Team assign/de-equip/delete/hire-fire/rename/skin; Market buy/sell aircraft/item/UGV and explicit autosell policy.
-  - [x] Keep the remaining **19 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted.
+  - [x] Qualify **42/57 strategic semantics** through campaign-owned canonical owners: campaign time lapse; hardened aircraft mission/return/start/stop/destination/pursuit/homebase; base build/rename; installation build/rename/destroy; facility build/destroy with runtime `FacilityId`; Research assign/max/stop; Production create/decrease/increase/set-amount/move/stop; Employee/Team assign/de-equip/delete/hire-fire/rename/skin; Market buy/sell aircraft/item/UGV and explicit autosell policy.
+  - [x] Keep the remaining **15 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted.
   - [x] Complete ItemId + aircraft + StoredUfo production-subject qualification and bridge `CreateProduction` through the canonical campaign owner; Market purchase/sale subjects reuse qualified IDs or static definition keys; runtime-only `FacilityId` is now implemented/published and re-resolved for destruction, while Transfer/Defence and other audited identity debt remains explicit.
+  - [x] Extract recovered/stored-UFO authority: runtime-only process-monotonic `UfoRecoveryId` binds the one-shot won-mission recovery choice, `UfoSaleOfferId` binds canonical nation/price offers, and persisted `StoredUfoId` now drives destroy/transfer. Store/sell consume the recovery generation; save v4 remains unchanged.
 - [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
 
 ### Renderer and presentation

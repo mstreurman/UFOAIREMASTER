@@ -91,6 +91,7 @@ struct StrategicIntent {
     canonical::ProductionId production;
     canonical::ItemId item;
     canonical::StoredUfoId storedUfo;
+    canonical::UfoRecoveryId recovery;
     canonical::UfoSaleOfferId offer;
     canonical::TransferManifestId transferManifest;
     char key0[96];
@@ -167,7 +168,7 @@ StrategicIntentSubmission submitStartTransfer(canonical::TransferManifestId mani
 StrategicIntentSubmission submitStopAircraft(canonical::AircraftId aircraft);
 StrategicIntentSubmission submitStopProduction(canonical::BaseId base, canonical::ProductionId production);
 StrategicIntentSubmission submitStopResearch(canonical::BaseId base, canonical::TechnologyId technology);
-StrategicIntentSubmission submitStoreRecoveredUfo(const char* ufoDefinition, float conditionPercent, canonical::InstallationId installation);
+StrategicIntentSubmission submitStoreRecoveredUfo(canonical::UfoRecoveryId recovery, canonical::InstallationId installation);
 StrategicIntentSubmission submitTransferStoredUfo(canonical::StoredUfoId storedUfo, canonical::InstallationId installation);
 
 bool pollStrategicIntentResult(StrategicIntentResult* result);

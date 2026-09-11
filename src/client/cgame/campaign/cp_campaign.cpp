@@ -886,6 +886,7 @@ campaign_t* CP_GetCampaign (const char* name)
  */
 void CP_ResetCampaignData (void)
 {
+	UR_ClearRecovery();
 	mapDef_t* md;
 
 	cgi->UI_MessageResetStack();

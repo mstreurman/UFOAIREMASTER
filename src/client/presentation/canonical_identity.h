@@ -39,7 +39,7 @@ template<typename DomainTag> inline bool operator!=(StableId<DomainTag> lhs, Sta
 struct MissionIdTag; struct AircraftIdTag; struct BaseIdTag; struct InstallationIdTag;
 struct NationIdTag; struct EmployeeIdTag; struct TechnologyIdTag; struct ProductionIdTag;
 struct FacilityIdTag; struct TransferIdTag; struct DefenceSlotIdTag;
-struct MessageIdTag; struct ItemIdTag; struct StoredUfoIdTag; struct UfoSaleOfferIdTag;
+struct MessageIdTag; struct ItemIdTag; struct StoredUfoIdTag; struct UfoRecoveryIdTag; struct UfoSaleOfferIdTag;
 struct TransferManifestIdTag;
 } // namespace detail
 using MissionId = detail::StableId<detail::MissionIdTag>;
@@ -56,6 +56,7 @@ using DefenceSlotId = detail::StableId<detail::DefenceSlotIdTag>;
 using MessageId = detail::StableId<detail::MessageIdTag>;
 using ItemId = detail::StableId<detail::ItemIdTag>;
 using StoredUfoId = detail::StableId<detail::StoredUfoIdTag>;
+using UfoRecoveryId = detail::StableId<detail::UfoRecoveryIdTag>;
 using UfoSaleOfferId = detail::StableId<detail::UfoSaleOfferIdTag>;
 using TransferManifestId = detail::StableId<detail::TransferManifestIdTag>;
 #define UFOAI_CANONICAL_ID_CONTRACT(TypeName) \
@@ -70,7 +71,7 @@ UFOAI_CANONICAL_ID_CONTRACT(TechnologyId); UFOAI_CANONICAL_ID_CONTRACT(Productio
 UFOAI_CANONICAL_ID_CONTRACT(FacilityId); UFOAI_CANONICAL_ID_CONTRACT(TransferId);
 UFOAI_CANONICAL_ID_CONTRACT(DefenceSlotId);
 UFOAI_CANONICAL_ID_CONTRACT(MessageId); UFOAI_CANONICAL_ID_CONTRACT(ItemId);
-UFOAI_CANONICAL_ID_CONTRACT(StoredUfoId); UFOAI_CANONICAL_ID_CONTRACT(UfoSaleOfferId);
+UFOAI_CANONICAL_ID_CONTRACT(StoredUfoId); UFOAI_CANONICAL_ID_CONTRACT(UfoRecoveryId); UFOAI_CANONICAL_ID_CONTRACT(UfoSaleOfferId);
 UFOAI_CANONICAL_ID_CONTRACT(TransferManifestId);
 #undef UFOAI_CANONICAL_ID_CONTRACT
 } // namespace canonical
