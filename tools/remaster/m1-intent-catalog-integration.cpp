@@ -25,6 +25,7 @@
 #include "../../src/client/renderer/r_state.h"
 #include "../../src/client/ui/ui_main.h"
 #include "../../src/shared/images.h"
+#include <cstring>
 
 namespace {
 
@@ -556,6 +557,103 @@ TEST_F(M1IntentCatalogTest, UfoRecoveryOwnersBindOneShotRecoveryAndRejectReplay)
 	ASSERT_TRUE(ufo::presentation::intent::pollStrategicIntentResult(&replayResult));
 	EXPECT_EQ(ufo::presentation::StrategicIntentDisposition::RejectedByCanonical, replayResult.disposition);
 	EXPECT_EQ(creditsAfterAccept, ccs.credits);
+}
+
+TEST_F(M1IntentCatalogTest, LoadGameIntentConvergesOnCanonicalOwner)
+{
+	campaign_t* campaign = CatalogCampaign();
+	ASSERT_NE(nullptr, campaign);
+
+	/* Follow the established campaign-test prerequisites, but construct the
+	 * base through the already-qualified canonical owner. */
+	RS_InitTree(campaign, false);
+	E_InitialEmployees(campaign);
+
+	vec2_t pos = {0.0f, 0.0f};
+	bool foundLand = false;
+	for (int latitude = -60; latitude <= 60 && !foundLand; latitude += 10) {
+		for (int longitude = -170; longitude <= 170; longitude += 10) {
+			Vector2Set(pos, longitude, latitude);
+			if (GEO_IsValidLandPosition(pos)) {
+				foundLand = true;
+				break;
+			}
+		}
+	}
+	ASSERT_TRUE(foundLand);
+
+	base_t* base = nullptr;
+	ASSERT_EQ(B_BUILD_APPLIED,
+		B_TryBuildBase(pos, "M1 typed load base", &base));
+	ASSERT_NE(nullptr, base);
+
+	Cvar_Set("save_compressed", "0");
+	const char* const slot = "m1_typed_load_good";
+	char* saveError = nullptr;
+	ASSERT_TRUE(SAV_GameSave(slot, "M1 typed LoadGame fixture", &saveError))
+		<< (saveError ? saveError : "");
+
+	const ufo::presentation::StrategicIntentSubmission submission =
+		ufo::presentation::intent::submitLoadGame(slot);
+	ASSERT_TRUE(submission.accepted);
+	ufo::presentation::legacy::applyPendingStrategicIntents();
+
+	char deletePath[MAX_OSPATH];
+	cgi->GetAbsoluteSavePath(deletePath, sizeof(deletePath));
+	Q_strcat(deletePath, sizeof(deletePath), "%s.%s", slot, SAVEGAME_EXTENSION);
+	cgi->FS_RemoveFile(deletePath);
+
+	ufo::presentation::StrategicIntentResult result = {};
+	ASSERT_TRUE(ufo::presentation::intent::pollStrategicIntentResult(&result));
+	EXPECT_EQ(submission.sequence, result.sequence);
+	EXPECT_EQ(ufo::presentation::StrategicIntentKind::LoadGame, result.kind);
+	EXPECT_EQ(ufo::presentation::StrategicIntentDisposition::Applied, result.disposition);
+	EXPECT_EQ(1, result.canonicalValue);
+	EXPECT_TRUE(CP_IsRunning());
+	EXPECT_GE(B_GetCount(), 1);
+}
+
+TEST_F(M1IntentCatalogTest, LoadGamePostReloadFailureRestoresCleanCampaignMode)
+{
+	campaign_t* campaign = CatalogCampaign();
+	ASSERT_NE(nullptr, campaign);
+
+	const char* const slot = "m1_typed_load_invalid_post_reload";
+	const char xml[] = "<?xml version=\"1.0\"?><savegame></savegame>";
+
+	saveFileHeader_t header = {};
+	header.version = LittleLong(SAVE_FILE_VERSION);
+	header.compressed = LittleLong(0);
+	header.subsystems = LittleLong(0);
+	header.xmlSize = LittleLong(static_cast<uint32_t>(sizeof(xml)));
+
+	byte payload[sizeof(saveFileHeader_t) + sizeof(xml)] = {};
+	std::memcpy(payload, &header, sizeof(header));
+	std::memcpy(payload + sizeof(header), xml, sizeof(xml));
+
+	char savePath[MAX_OSPATH];
+	cgi->GetRelativeSavePath(savePath, sizeof(savePath));
+	Q_strcat(savePath, sizeof(savePath), "%s.%s", slot, SAVEGAME_EXTENSION);
+	ASSERT_EQ(static_cast<int>(sizeof(payload)),
+		cgi->FS_WriteFile(payload, sizeof(payload), savePath));
+
+	const ufo::presentation::StrategicIntentSubmission submission =
+		ufo::presentation::intent::submitLoadGame(slot);
+	ASSERT_TRUE(submission.accepted);
+	ufo::presentation::legacy::applyPendingStrategicIntents();
+	char deletePath[MAX_OSPATH];
+	cgi->GetAbsoluteSavePath(deletePath, sizeof(deletePath));
+	Q_strcat(deletePath, sizeof(deletePath), "%s.%s", slot, SAVEGAME_EXTENSION);
+	cgi->FS_RemoveFile(deletePath);
+
+	ufo::presentation::StrategicIntentResult result = {};
+	ASSERT_TRUE(ufo::presentation::intent::pollStrategicIntentResult(&result));
+	EXPECT_EQ(submission.sequence, result.sequence);
+	EXPECT_EQ(ufo::presentation::StrategicIntentKind::LoadGame, result.kind);
+	EXPECT_EQ(ufo::presentation::StrategicIntentDisposition::RejectedByCanonical, result.disposition);
+	EXPECT_EQ(0, result.canonicalValue);
+	EXPECT_FALSE(CP_IsRunning());
+	EXPECT_NE(nullptr, CP_GetCampaign("main"));
 }
 
 } // namespace

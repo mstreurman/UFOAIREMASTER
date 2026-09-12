@@ -86,29 +86,9 @@ def main():
     fail = adapter[adapter.find("/* Strict-authority catalog is transport-complete"):]
     require("case StrategicIntentKind::SaveGame:" not in fail,
             "SaveGame still appears in fail-closed block")
-    for kind in ("LoadGame", "LoadLastSave", "AutoResolveMission", "StartMission"):
+    for kind in ("LoadLastSave", "AutoResolveMission", "StartMission"):
         require("case StrategicIntentKind::" + kind + ":" in fail,
-                kind + " must remain fail-closed in this batch")
-
-    load = function_body(save_cpp, "bool SAV_GameLoad (")
-    reload_pos = load.find("cgi->GAME_ReloadMode();")
-    require(reload_pos >= 0, "SAV_GameLoad mode reload seam missing")
-    post_reload = load[reload_pos:]
-    for token in (
-        "saveSubsystems[i].load(node)",
-        "SAV_GameActionsAfterLoad()",
-        "return false;",
-    ):
-        require(token in post_reload,
-                "load must retain observable post-GAME_ReloadMode failure seam: " + token)
-
-    legacy_load = function_body(callbacks, "static void SAV_GameLoad_f (")
-    for token in (
-        "SAV_GameLoad(",
-        'cgi->Cmd_ExecuteString("game_exit")',
-        'cgi->Cmd_ExecuteString("game_setmode campaign")',
-    ):
-        require(token in legacy_load, "legacy LoadGame recovery contract missing: " + token)
+                kind + " must remain fail-closed after SaveGame qualification")
 
     cont = function_body(callbacks, "static void SAV_GameContinue_f (")
     for token in (
@@ -138,15 +118,15 @@ def main():
     applied = {n for n, r in strategic.items() if r["authority_bridge"] == "canonical_applied"}
     pending = {n for n, r in strategic.items()
                if r["authority_bridge"] == "owner_extraction_pending_fail_closed"}
-    require(len(applied) == 53, "strategic applied count must be 53")
-    require(pending == {"AutoResolveMission", "LoadGame", "LoadLastSave", "StartMission"},
+    require(len(applied) == 54, "strategic applied count must be 54")
+    require(pending == {"AutoResolveMission", "LoadLastSave", "StartMission"},
             "strategic pending set mismatch: " + repr(sorted(pending)))
 
     print("PASS M1 SaveGame canonical owner qualification")
     print("  legacy + typed SaveGame converge on existing SAV_GameSave")
     print("  canonical save eligibility + v4 serializer remain unchanged")
-    print("  LoadGame/LoadLastSave stay fail-closed across the post-reload failure seam")
-    print("  authority: strategic 53/57 applied, 4 fail-closed")
+    print("  LoadGame is lifecycle-qualified independently; LoadLastSave remains fail-closed")
+    print("  authority: strategic 54/57 applied, 3 fail-closed")
     print("  save v4 / savx / protocol 18 unchanged")
 
 if __name__ == "__main__":

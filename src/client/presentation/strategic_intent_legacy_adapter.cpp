@@ -510,13 +510,21 @@ void applyPendingStrategicIntents() {
                 if(saved) out.disposition=StrategicIntentDisposition::Applied;
             }
             break; }
+        case StrategicIntentKind::LoadGame: {
+            const char* slot=resolveBoundedText(in.key0);
+            if(slot) {
+                const char* error=nullptr;
+                const bool loaded=SAV_GameLoad(slot,&error);
+                out.canonicalValue=loaded?1:0;
+                if(loaded) out.disposition=StrategicIntentDisposition::Applied;
+            }
+            break; }
 
         /* Strict-authority catalog is transport-complete, but these actions stay
          * rejected until callback-owned validation/mutation is moved into its
          * canonical campaign subsystem. No command-string fallback is allowed. */
         case StrategicIntentKind::AutoResolveMission:
         case StrategicIntentKind::DestroyAntimatterFacility:
-        case StrategicIntentKind::LoadGame:
         case StrategicIntentKind::LoadLastSave:
         case StrategicIntentKind::StartMission:
             break;

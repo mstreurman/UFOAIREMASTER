@@ -228,6 +228,7 @@ bool SAV_GameLoad (const char* file, const char** error)
 	if (!node) {
 		cgi->Com_Printf("Error: Failure in loading the xml data! (savegame node not found)\n");
 		mxmlDelete(topNode);
+		cgi->GAME_ReloadMode();
 		*error = "Invalid xml data";
 		return false;
 	}
@@ -238,9 +239,12 @@ bool SAV_GameLoad (const char* file, const char** error)
 			continue;
 		cgi->Com_Printf("...Running subsystem '%s'\n", saveSubsystems[i].name);
 		if (!saveSubsystems[i].load(node)) {
+			const char* const failedSubsystem = saveSubsystems[i].name;
 			cgi->Com_Printf("...subsystem '%s' returned false - savegame could not be loaded\n",
-					saveSubsystems[i].name);
-			*error = va("Could not load subsystem %s", saveSubsystems[i].name);
+					failedSubsystem);
+			mxmlDelete(topNode);
+			cgi->GAME_ReloadMode();
+			*error = va("Could not load subsystem %s", failedSubsystem);
 			return false;
 		} else
 			cgi->Com_Printf("...subsystem '%s' - loaded.\n", saveSubsystems[i].name);
@@ -250,6 +254,7 @@ bool SAV_GameLoad (const char* file, const char** error)
 
 	if (!SAV_GameActionsAfterLoad()) {
 		cgi->Com_Printf("Savegame postprocessing returned false - savegame could not be loaded\n");
+		cgi->GAME_ReloadMode();
 		*error = "Postprocessing failed";
 		return false;
 	}
