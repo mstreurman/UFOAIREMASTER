@@ -19,6 +19,7 @@
 #include "../cgame/campaign/cp_missions.h"
 #include "../cgame/campaign/cp_produce.h"
 #include "../cgame/campaign/cp_research.h"
+#include "../cgame/campaign/cp_save.h"
 #include "../cgame/campaign/cp_time.h"
 #include "../cgame/campaign/cp_transfer.h"
 #include "../cgame/campaign/cp_ufo.h"
@@ -499,6 +500,17 @@ void applyPendingStrategicIntents() {
             out.canonicalValue=static_cast<int32_t>(result);
             break; }
 
+        case StrategicIntentKind::SaveGame: {
+            const char* slot=resolveBoundedText(in.key0);
+            const char* comment=resolveBoundedText(in.text);
+            if(slot&&comment) {
+                char* error=nullptr;
+                const bool saved=SAV_GameSave(slot,comment,&error);
+                out.canonicalValue=saved?1:0;
+                if(saved) out.disposition=StrategicIntentDisposition::Applied;
+            }
+            break; }
+
         /* Strict-authority catalog is transport-complete, but these actions stay
          * rejected until callback-owned validation/mutation is moved into its
          * canonical campaign subsystem. No command-string fallback is allowed. */
@@ -506,7 +518,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::DestroyAntimatterFacility:
         case StrategicIntentKind::LoadGame:
         case StrategicIntentKind::LoadLastSave:
-        case StrategicIntentKind::SaveGame:
         case StrategicIntentKind::StartMission:
             break;
         }

@@ -98,23 +98,23 @@ Earlier documents remain useful for rationale/history but must not redefine an A
 The current qualified implementation baseline for this documentation synchronization is:
 
 ```text
-65d7f78d2ce751dab545a6e6ebec5285a8afae18
-feat: extract canonical defence authority + qualified StartTransfer owner extraction
+9138b998bb0d1d647ef6da85b287928b74ccbcfd
+feat: extract canonical transfer authority + qualified SaveGame owner path
 ```
 
 M0 is sealed and M1 canonical-boundary work is active. The authoritative action state at this baseline is:
 
 ```text
 strategic presentation-authoritative semantics: 57 total
-  canonical-applied:                            52
-  fail-closed pending owners:                   5
+  canonical-applied:                            53
+  fail-closed pending owners:                   4
 
 tactical authoritative semantics:               15 total
   forwarded to server authority:                13
   fail-closed pending helpers:                   2
 ```
 
-The re-audit reclassifies legacy `building_amdestroy` / `DestroyAntimatterFacility` as an internal `SCRIPTED_CANONICAL_EVENT`, not a presentation-originated request; enum value 20 remains only as a deprecated tombstone. Qualified M1 publication/owner work includes runtime-only published `FacilityId`, Research, stable runtime `ProductionId`, persisted `StoredUfoId`, persisted `EmployeeId`, canonical `CreateProduction`, the six Employee/Team owners, and all seven Market owners. Recovered/stored-UFO authority is now extracted with runtime-only `UfoRecoveryId`/`UfoSaleOfferId` plus persisted `StoredUfoId`; store/sell are one-shot generation-bound and price/condition no longer come from presentation authority. Alien-containment kill authority is also extracted through campaign-owned aggregate mutation helpers using `BaseId` + `TechnologyId`, preserving all matching team definitions without inventing `AlienId`. Aircraft equipment and rename authority is now extracted as well: fixed aircraft slot topology remains a structural coordinate, `ItemId` eligibility is rechecked at execution, and rename validation/default restoration lives in the aircraft owner. Defence authority is now extracted as well: runtime-only `DefenceSlotId` metadata survives base battery compaction, is regenerated after load without entering save v4, is published through immutable defence-slot views, and equip/remove re-resolve it at execution; autofire/target preserve inherited aggregate all-battery semantics. StartTransfer authority is now extracted through a bounded value-only manifest staged behind one-shot `TransferManifestId`; the campaign owner re-resolves and validates the complete cargo before invoking inherited transfer mutation/scheduling, while active `TransferId` remains separate unmapped debt. The remaining 5 strategic presentation actions stay fail-closed pending audited owner extraction.
+The re-audit reclassifies legacy `building_amdestroy` / `DestroyAntimatterFacility` as an internal `SCRIPTED_CANONICAL_EVENT`, not a presentation-originated request; enum value 20 remains only as a deprecated tombstone. Qualified M1 publication/owner work includes runtime-only published `FacilityId`, Research, stable runtime `ProductionId`, persisted `StoredUfoId`, persisted `EmployeeId`, canonical `CreateProduction`, the six Employee/Team owners, and all seven Market owners. Recovered/stored-UFO authority is now extracted with runtime-only `UfoRecoveryId`/`UfoSaleOfferId` plus persisted `StoredUfoId`; store/sell are one-shot generation-bound and price/condition no longer come from presentation authority. Alien-containment kill authority is also extracted through campaign-owned aggregate mutation helpers using `BaseId` + `TechnologyId`, preserving all matching team definitions without inventing `AlienId`. Aircraft equipment and rename authority is now extracted as well: fixed aircraft slot topology remains a structural coordinate, `ItemId` eligibility is rechecked at execution, and rename validation/default restoration lives in the aircraft owner. Defence authority is now extracted as well: runtime-only `DefenceSlotId` metadata survives base battery compaction, is regenerated after load without entering save v4, is published through immutable defence-slot views, and equip/remove re-resolve it at execution; autofire/target preserve inherited aggregate all-battery semantics. StartTransfer authority is now extracted through a bounded value-only manifest staged behind one-shot `TransferManifestId`; the campaign owner re-resolves and validates the complete cargo before invoking inherited transfer mutation/scheduling, while active `TransferId` remains separate unmapped debt. SaveGame is now qualified without a serializer fork: both legacy and typed paths call the existing `SAV_GameSave`, which retains canonical save-eligibility checks and the v4/`.savx` archive. `LoadGame` and `LoadLastSave` remain fail-closed because `SAV_GameLoad` can still fail after `GAME_ReloadMode()`, while legacy recovery is presentation-command based. The remaining 4 strategic presentation actions stay fail-closed pending audited owner extraction.
 
 Campaign save format version 4 and tactical protocol version 18 remain explicit compatibility boundaries. Cross-binary classic/remaster save and multiplayer interchange is still a release qualification gate rather than a completed claim.
 
