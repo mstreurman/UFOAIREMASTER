@@ -13,6 +13,7 @@
 #include "../cgame/campaign/cp_campaign.h"
 #include "../cgame/campaign/cp_employee.h"
 #include "../cgame/campaign/cp_market.h"
+#include "../cgame/campaign/cp_mapfightequip.h"
 #include "../cgame/campaign/cp_team.h"
 #include "../cgame/campaign/cp_geoscape.h"
 #include "../cgame/campaign/cp_missions.h"
@@ -369,18 +370,40 @@ void applyPendingStrategicIntents() {
             }
             break; }
 
+        case StrategicIntentKind::EquipAircraftItem: {
+            aircraft_t* a=resolvePhalanxAircraft(in.aircraft); int itemIndex=-1;
+            const aircraftEquipmentMutationResult_t result=a&&resolveItemIndex(in.item,&itemIndex)
+                ? AII_TryEquipAircraftItem(a,in.value0,in.value1,in.value2,itemIndex)
+                : AII_AIRCRAFT_EQUIPMENT_INVALID_ITEM;
+            if(result==AII_AIRCRAFT_EQUIPMENT_APPLIED) out.disposition=StrategicIntentDisposition::Applied;
+            if(a){out.aircraft=canonical::AircraftId(static_cast<uint32_t>(a->idx));out.canonicalValue=static_cast<int32_t>(result);}
+            break; }
+        case StrategicIntentKind::RemoveAircraftItem: {
+            aircraft_t* a=resolvePhalanxAircraft(in.aircraft);
+            const aircraftEquipmentMutationResult_t result=a
+                ? AII_TryRemoveAircraftItem(a,in.value0,in.value1,in.value2)
+                : AII_AIRCRAFT_EQUIPMENT_INVALID_AIRCRAFT;
+            if(result==AII_AIRCRAFT_EQUIPMENT_APPLIED) out.disposition=StrategicIntentDisposition::Applied;
+            if(a){out.aircraft=canonical::AircraftId(static_cast<uint32_t>(a->idx));out.canonicalValue=static_cast<int32_t>(result);}
+            break; }
+        case StrategicIntentKind::RenameAircraft: {
+            aircraft_t* a=resolvePhalanxAircraft(in.aircraft); const char* name=resolveBoundedText(in.text);
+            if(a&&name&&AIR_TrySetName(a,name)) {
+                out.disposition=StrategicIntentDisposition::Applied;
+                out.aircraft=canonical::AircraftId(static_cast<uint32_t>(a->idx));
+                out.canonicalValue=1;
+            }
+            break; }
+
         /* Strict-authority catalog is transport-complete, but these actions stay
          * rejected until callback-owned validation/mutation is moved into its
          * canonical campaign subsystem. No command-string fallback is allowed. */
         case StrategicIntentKind::AutoResolveMission:
         case StrategicIntentKind::DestroyAntimatterFacility:
-        case StrategicIntentKind::EquipAircraftItem:
         case StrategicIntentKind::EquipBaseDefenceItem:
         case StrategicIntentKind::LoadGame:
         case StrategicIntentKind::LoadLastSave:
-        case StrategicIntentKind::RemoveAircraftItem:
         case StrategicIntentKind::RemoveBaseDefenceItem:
-        case StrategicIntentKind::RenameAircraft:
         case StrategicIntentKind::SaveGame:
         case StrategicIntentKind::SetAirDefenceAutoFire:
         case StrategicIntentKind::SetAirDefenceTarget:

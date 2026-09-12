@@ -7,8 +7,8 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 
 EXPECTED_PENDING = {
-    "AutoResolveMission","EquipAircraftItem","EquipBaseDefenceItem","LoadGame","LoadLastSave",
-    "RemoveAircraftItem","RemoveBaseDefenceItem","RenameAircraft","SaveGame",
+    "AutoResolveMission","EquipBaseDefenceItem","LoadGame","LoadLastSave",
+    "RemoveBaseDefenceItem","SaveGame",
     "SetAirDefenceAutoFire","SetAirDefenceTarget","StartMission","StartTransfer",
 }
 FAMILY_TESTS = (
@@ -24,6 +24,7 @@ FAMILY_TESTS = (
     "test-m1-canonical-identity-completeness.py",
     "test-m1-ufo-recovery-owner-extraction.py",
     "test-m1-alien-containment-owner-extraction.py",
+    "test-m1-aircraft-configuration-owner-extraction.py",
 )
 
 class GateError(RuntimeError):
@@ -51,7 +52,7 @@ def main():
     require(set(strategic)==set(strict), "coverage ledger and strict strategic inventory differ")
     applied={n for n,r in strategic.items() if r["authority_bridge"]=="canonical_applied"}
     pending={n for n,r in strategic.items() if r["authority_bridge"]=="owner_extraction_pending_fail_closed"}
-    require(len(applied)==44, f"strategic applied count must be 44, got {len(applied)}")
+    require(len(applied)==47, f"strategic applied count must be 47, got {len(applied)}")
     require(pending==EXPECTED_PENDING, "strategic pending set mismatch: "+repr(sorted(pending)))
     require(len(tactical)==15, f"tactical total must remain 15, got {len(tactical)}")
     require(sum(r["authority_bridge"]=="server_request_forwarded" for r in tactical.values())==13,
@@ -79,7 +80,7 @@ def main():
     require(facility["mapping_status"]=="runtime_mapping_implemented", "FacilityId runtime mapping not recorded")
     require(facility["publication_status"]=="published", "FacilityId publication not recorded")
     require(facility["intent_status"]=="destroy_owner_qualified", "FacilityId destroy owner not recorded")
-    require(registry["ItemId"]["intent_status"]=="create_production_market_owners_qualified", "ItemId Market status stale")
+    require(registry["ItemId"]["intent_status"]=="create_production_market_aircraft_equipment_owners_qualified", "ItemId aircraft-equipment status stale")
     require(registry["AircraftDefinitionKey"]["intent_status"]=="create_production_market_owner_qualified",
             "AircraftDefinitionKey Market status stale")
     require(registry["UgvDefinitionKey"]["intent_status"]=="market_owner_qualified", "UgvDefinitionKey Market status stale")
@@ -88,6 +89,8 @@ def main():
     require(registry["UfoSaleOfferId"]["mapping_status"]=="runtime_mapping_implemented", "UfoSaleOfferId mapping stale")
     require(registry["UfoSaleOfferId"]["publication_status"]=="published", "UfoSaleOfferId publication stale")
     require(registry["ContainedAlienSpecies"]["intent_status"]=="containment_owners_qualified", "containment aggregate owner status stale")
+    require(registry["AircraftEquipmentSlot"]["intent_status"]=="aircraft_equipment_owners_qualified", "aircraft equipment structural owner status stale")
+    require(registry["AircraftEquipmentSlot"]["mapping_status"]=="structural_tuple", "aircraft equipment slot must remain structural")
 
     lifetime={r["identity"]:r for r in rows("tools/remaster/m1-canonical-identity-lifetime-registry.tsv")}
     require(lifetime["FacilityId"]["second_pass_status"]=="qualified_runtime_mapping",
@@ -131,17 +134,19 @@ def main():
     docs=text("docs/README.md")
     arch=text("docs/architecture/093-presentation-action-authority-and-intent-completeness-contract.md")
     for docname,doc in (("README.md",readme),("docs/README.md",docs),("architecture 093",arch)):
-        require("57" in doc and "13" in doc and "dced70faf2761332c574f3c201ad5f7c342763e3" in doc,
+        require("57" in doc and "10" in doc and "3f301de322dc19018f5d9d905c836f014cd0ae54" in doc,
                 docname+": current authority baseline/counts not synchronized")
     require("SDL3 3.4.16" in readme, "README does not reflect latest installed SDL3")
-    require("b3349db1064514536cff0ffd5cb6837cefca12b8435bc41c27220f5650da845f" in readme,
+    require("8add4c8c8319111766d2ba9939e6fdcab8e08bd272fbadb068d198567bcaa218" in readme,
             "README canonical verification digest stale")
+    require("ea6cb9ded6289b809ab22ae8fe2fb19e3ed8fb0ff8e71ec180f3c9a2710f6c35" in readme,
+            "README M0.3 environment digest stale")
 
     print("PASS M1 authority bookkeeping synchronization")
-    print("PASS strategic authority: 57 total / 44 applied / 13 fail-closed")
+    print("PASS strategic authority: 57 total / 47 applied / 10 fail-closed")
     print("PASS tactical authority: 15 total / 13 forwarded / 2 fail-closed")
     print("PASS DestroyAntimatterFacility reclassified as scripted canonical event; enum 20 tombstone retained")
-    print("PASS FacilityId + Market + UFO recovery + containment aggregate registries synchronized")
+    print("PASS FacilityId + Market + UFO recovery + containment + aircraft-equipment registries synchronized")
     print("PASS cgame export surface is explicitly reviewed; MapClick remains classified")
     print("PASS family tests no longer own global historical authority totals")
     print("PASS save v4 / protocol 18 unchanged")

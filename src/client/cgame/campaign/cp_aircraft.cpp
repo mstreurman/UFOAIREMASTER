@@ -321,6 +321,36 @@ void AII_CollectingItems (aircraft_t* aircraft, int won)
 }
 
 /**
+ * @brief Canonical presentation-facing owner for aircraft rename.
+ *
+ * Empty names restore the inherited translated default name. Names containing
+ * only control/space characters or failing Com_IsValidName are rejected.
+ */
+bool AIR_TrySetName (aircraft_t* aircraft, const char* newName)
+{
+	if (!aircraft || AIR_IsUFO(aircraft) || !newName)
+		return false;
+
+	if (Q_strnull(newName)) {
+		Q_strncpyz(aircraft->name, _(aircraft->defaultName), sizeof(aircraft->name));
+		return true;
+	}
+
+	int i;
+	for (i = 0; newName[i] != '\0'; i++) {
+		if (newName[i] > 0x20)
+			break;
+	}
+	if (newName[i] == '\0')
+		return false;
+	if (!Com_IsValidName(newName))
+		return false;
+
+	Q_strncpyz(aircraft->name, newName, sizeof(aircraft->name));
+	return true;
+}
+
+/**
  * @brief Translates the aircraft status id to a translatable string
  * @param[in] aircraft Aircraft to translate the status of
  * @return Translation string of given status.

@@ -245,34 +245,10 @@ static void AIR_AircraftFillList_f (void)
 static void AIR_ChangeAircraftName_f (void)
 {
 	const base_t* base = B_GetCurrentSelectedBase();
-	if (!base)
+	if (!base || !base->aircraftCurrent)
 		return;
 
-	aircraft_t* aircraft = base->aircraftCurrent;
-	if (!aircraft)
-		return;
-
-	/* set default name on empty new name*/
-	const char* newName = cgi->Cvar_GetString("mn_aircraftname");
-	if (Q_strnull(newName)) {
-		Q_strncpyz(aircraft->name, _(aircraft->defaultName), sizeof(aircraft->name));
-		return;
-	}
-
-	/* refuse to set name contains only non-printable characters */
-	int i;
-	for (i = 0; newName[i] != '\0'; i++) {
-		if (newName[i] > 0x20)
-			break;
-	}
-	if (newName[i] == '\0')
-		return;
-
-	/* aircraft name should not contain " */
-	if (!Com_IsValidName(newName))
-		return;
-
-	Q_strncpyz(aircraft->name, newName, sizeof(aircraft->name));
+	AIR_TrySetName(base->aircraftCurrent, cgi->Cvar_GetString("mn_aircraftname"));
 }
 
 /**

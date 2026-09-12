@@ -39,6 +39,17 @@ typedef enum {
 	ZONE_MAX
 } zoneaircraftParams_t;
 
+/** @brief Result of presentation-facing canonical aircraft equipment mutations. */
+typedef enum aircraftEquipmentMutationResult_s {
+	AII_AIRCRAFT_EQUIPMENT_APPLIED,
+	AII_AIRCRAFT_EQUIPMENT_INVALID_AIRCRAFT,
+	AII_AIRCRAFT_EQUIPMENT_INVALID_SLOT,
+	AII_AIRCRAFT_EQUIPMENT_INVALID_ITEM,
+	AII_AIRCRAFT_EQUIPMENT_NOT_ELIGIBLE,
+	AII_AIRCRAFT_EQUIPMENT_NO_CHANGE,
+	AII_AIRCRAFT_EQUIPMENT_REJECTED
+} aircraftEquipmentMutationResult_t;
+
 /**
  * @brief Different status for numAmmo.
  * @todo do we still need this?
@@ -71,6 +82,8 @@ void BDEF_ReloadBattery(void);
 void BDEF_AutoSelectTarget(void);
 
 technology_t** AII_GetCraftitemTechsByType(aircraftItemType_t type);
+aircraftEquipmentMutationResult_t AII_TryEquipAircraftItem(aircraft_t* aircraft, int slotType, int slotIndex, int zone, int itemIndex);
+aircraftEquipmentMutationResult_t AII_TryRemoveAircraftItem(aircraft_t* aircraft, int slotType, int slotIndex, int zone);
 void AII_UpdateInstallationDelay(void);
 bool AII_AddItemToSlot(base_t* base, const technology_t* tech, aircraftSlot_t* slot, bool nextItem);
 bool AII_AddAmmoToSlot(base_t* base, const technology_t* tech, aircraftSlot_t* slot);

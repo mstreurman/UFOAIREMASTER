@@ -98,23 +98,23 @@ Earlier documents remain useful for rationale/history but must not redefine an A
 The current qualified implementation baseline for this documentation synchronization is:
 
 ```text
-dced70faf2761332c574f3c201ad5f7c342763e3
-feat: extract canonical UFO recovery authority + qualified alien-containment owner extraction
+3f301de322dc19018f5d9d905c836f014cd0ae54
+feat: extract canonical alien containment authority + qualified aircraft-configuration owner extraction
 ```
 
 M0 is sealed and M1 canonical-boundary work is active. The authoritative action state at this baseline is:
 
 ```text
 strategic presentation-authoritative semantics: 57 total
-  canonical-applied:                            44
-  fail-closed pending owners:                   13
+  canonical-applied:                            47
+  fail-closed pending owners:                   10
 
 tactical authoritative semantics:               15 total
   forwarded to server authority:                13
   fail-closed pending helpers:                   2
 ```
 
-The re-audit reclassifies legacy `building_amdestroy` / `DestroyAntimatterFacility` as an internal `SCRIPTED_CANONICAL_EVENT`, not a presentation-originated request; enum value 20 remains only as a deprecated tombstone. Qualified M1 publication/owner work includes runtime-only published `FacilityId`, Research, stable runtime `ProductionId`, persisted `StoredUfoId`, persisted `EmployeeId`, canonical `CreateProduction`, the six Employee/Team owners, and all seven Market owners. Recovered/stored-UFO authority is now extracted with runtime-only `UfoRecoveryId`/`UfoSaleOfferId` plus persisted `StoredUfoId`; store/sell are one-shot generation-bound and price/condition no longer come from presentation authority. Alien-containment kill authority is also extracted through campaign-owned aggregate mutation helpers using `BaseId` + `TechnologyId`, preserving all matching team definitions without inventing `AlienId`. The remaining 13 strategic presentation actions stay fail-closed pending audited owner extraction.
+The re-audit reclassifies legacy `building_amdestroy` / `DestroyAntimatterFacility` as an internal `SCRIPTED_CANONICAL_EVENT`, not a presentation-originated request; enum value 20 remains only as a deprecated tombstone. Qualified M1 publication/owner work includes runtime-only published `FacilityId`, Research, stable runtime `ProductionId`, persisted `StoredUfoId`, persisted `EmployeeId`, canonical `CreateProduction`, the six Employee/Team owners, and all seven Market owners. Recovered/stored-UFO authority is now extracted with runtime-only `UfoRecoveryId`/`UfoSaleOfferId` plus persisted `StoredUfoId`; store/sell are one-shot generation-bound and price/condition no longer come from presentation authority. Alien-containment kill authority is also extracted through campaign-owned aggregate mutation helpers using `BaseId` + `TechnologyId`, preserving all matching team definitions without inventing `AlienId`. Aircraft equipment and rename authority is now extracted as well: fixed aircraft slot topology remains a structural coordinate, `ItemId` eligibility is rechecked at execution, and rename validation/default restoration lives in the aircraft owner. The remaining 10 strategic presentation actions stay fail-closed pending audited owner extraction.
 
 Campaign save format version 4 and tactical protocol version 18 remain explicit compatibility boundaries. Cross-binary classic/remaster save and multiplayer interchange is still a release qualification gate rather than a completed claim.
 

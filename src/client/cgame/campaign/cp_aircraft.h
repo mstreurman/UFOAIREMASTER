@@ -251,6 +251,7 @@ bool AIR_TryStopAircraft(aircraft_t* aircraft);
 bool AIR_TrySetAircraftDestination(aircraft_t* aircraft, const vec2_t destination);
 aircraftPursuitResult_t AIR_TryPursueUFO(aircraft_t* aircraft, aircraft_t* ufo);
 bool AIR_TryChangeHomebase(aircraft_t* aircraft, struct base_s* base);
+bool AIR_TrySetName(aircraft_t* aircraft, const char* name);
 
 const char* AIR_AircraftStatusToName(const aircraft_t* aircraft);
 bool AIR_IsAircraftInBase(const aircraft_t* aircraft);

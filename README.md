@@ -76,19 +76,19 @@ The accepted migration roadmap is [`docs/architecture/080-implementation-migrati
 
 ### Immediate execution order
 
-M0 is sealed. M1 is actively extracting presentation-facing authority without replacing canonical game rules. The current qualified implementation baseline is `dced70faf2761332c574f3c201ad5f7c342763e3` (`feat: extract canonical UFO recovery authority`) plus the qualified alien-containment owner extraction batch. The boundary state is mechanically inventoried and qualified:
+M0 is sealed. M1 is actively extracting presentation-facing authority without replacing canonical game rules. The current qualified implementation baseline is `3f301de322dc19018f5d9d905c836f014cd0ae54` (`feat: extract canonical alien containment authority`) plus the qualified aircraft-configuration owner extraction batch. The boundary state is mechanically inventoried and qualified:
 
 ```text
 strategic presentation-authoritative semantics: 57 total
-  canonical-applied:                            44
-  fail-closed pending owners:                   13
+  canonical-applied:                            47
+  fail-closed pending owners:                   10
 
 tactical authoritative semantics:               15 total
   forwarded to server authority:                13
   fail-closed pending helpers:                   2
 
 canonical regression:               104/104 twice
-canonical verification digest:                   b3349db1064514536cff0ffd5cb6837cefca12b8435bc41c27220f5650da845f
+canonical verification digest:                   8add4c8c8319111766d2ba9939e6fdcab8e08bd272fbadb068d198567bcaa218
 ```
 
 The full authority re-audit removed `DestroyAntimatterFacility` from presentation intent scope: legacy `building_amdestroy` is an internal probabilistic antimatter-storage breach event (`SCRIPTED_CANONICAL_EVENT`), not a user request. Its enum value 20 is retained only as a deprecated ABI tombstone.
@@ -100,11 +100,11 @@ The active execution order is:
 3. establish C++11-compatible strong presentation identities and C++26 remaster consumers — **complete foundation**;
 4. complete the source-derived presentation action inventory and five-way authority classification — **complete, with one later semantic split: 58 strategic + 15 tactical authoritative semantics**;
 5. introduce typed intent dispatch without changing canonical rules — **complete contract/catalog foundation**;
-6. extract canonical strategic owners from legacy callbacks — **44 strategic semantics qualified so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, facility build/destroy, Research assign/max/stop, Production create/amount/move/stop operations, the six Employee/Team assign/de-equip/delete/hire-fire/rename/skin operations, Market buy/sell aircraft/item/UGV plus explicit autosell policy, recovered/stored-UFO authority, and alien-containment kill actions;
+6. extract canonical strategic owners from legacy callbacks — **47 strategic semantics qualified so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, facility build/destroy, Research assign/max/stop, Production create/amount/move/stop operations, the six Employee/Team assign/de-equip/delete/hire-fire/rename/skin operations, Market buy/sell aircraft/item/UGV plus explicit autosell policy, recovered/stored-UFO authority, alien-containment kill actions, and aircraft equipment/rename;
 7. publish Research + Production + Employee immutable state — **complete**, including `TechnologyId`, stable runtime `ProductionId`, persisted `EmployeeId`, and snapshot-local queue/order plus immutable employee state;
 8. complete the canonical identity audit — **complete contract pass**, with 18 strong 32-bit domains; stable Production, persisted StoredUfo/Employee identities plus runtime Facility/UfoRecovery/UfoSaleOffer identities are implemented/published while Transfer/Defence and other runtime mappings remain explicit debt;
 9. Research owner extraction, all existing-job Production owners, `CreateProduction`, and all seven Market owners are **complete**; ItemId / aircraft-definition / StoredUfo production subjects are qualified, Market item buy/sell preserves partial-fill semantics, autosell uses an explicit desired state, and legacy/remaster paths converge on campaign owners;
-10. migrate the remaining aircraft-configuration, transfer, defence, save/load and mission authority families behind typed IDs and canonical owners;
+10. migrate the remaining transfer, defence, save/load and mission authority families behind typed IDs and canonical owners;
 11. keep ambiguous or misclassified semantics fail-closed until their canonical contract is proven;
 12. once M1 boundary exit criteria are satisfied, bring up the SDL3/Vulkan production platform path;
 13. implement frame contexts, allocator and production descriptor-heap runtime;
@@ -137,7 +137,7 @@ The active execution order is:
 - [x] Vulkan headers/loader/tools and validation layer available.
 - [x] Intel Arc B580 / Mesa 26.2.2 exposes `VK_EXT_descriptor_heap`.
 - [x] SDL3 3.4.16 development environment available; the reference workstation tracks the latest installed dependency/tool versions unless an older version is explicitly technically pinned.
-- [x] OpenAL Soft 1.25.2 is installed on the Fedora 44 reference workstation and the deterministic M0.3 environment manifest has been recaptured/verified at `7adfa0c1e62c6ea2347b866fd36873e233b6c2f2bdc71f3336f0796fd9f3c57d`; M8 still requires the dedicated EFX/HRTF/device-runtime qualification before audio closure.
+- [x] OpenAL Soft 1.25.2 is installed on the Fedora 44 reference workstation and the deterministic M0.3 environment manifest has been recaptured/verified at `ea6cb9ded6289b809ab22ae8fe2fb19e3ed8fb0ff8e71ec180f3c9a2710f6c35`; M8 still requires the dedicated EFX/HRTF/device-runtime qualification before audio closure.
 - [x] FFmpeg 8.1.2 development modules available.
 - [x] Slang v2026.17 provisioned and hash-verified.
 - [x] Slang emits `SPV_EXT_descriptor_heap` and Fedora SPIR-V Tools validates it for Vulkan 1.4.
@@ -199,11 +199,12 @@ The active execution order is:
   - [x] Seal typed catalog coverage, split `CreateProduction` from legacy `prod_inc`, then correct the re-audit misclassification of internal `building_amdestroy`: **57 presentation-authoritative strategic semantics + 15 tactical semantics**.
   - [x] Preserve the presentation authority guard: no command/cvar fallback in strategic/tactical intent adapters.
   - [x] Forward **13/15 tactical semantics** through the existing server protocol; keep AbortMission and Reload fail-closed until request helpers prove protocol emission.
-  - [x] Qualify **44/57 strategic semantics** through campaign-owned canonical owners: campaign time lapse; hardened aircraft mission/return/start/stop/destination/pursuit/homebase; base build/rename; installation build/rename/destroy; facility build/destroy with runtime `FacilityId`; Research assign/max/stop; Production create/decrease/increase/set-amount/move/stop; Employee/Team assign/de-equip/delete/hire-fire/rename/skin; Market buy/sell aircraft/item/UGV and explicit autosell policy.
-  - [x] Keep the remaining **13 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted.
+  - [x] Qualify **47/57 strategic semantics** through campaign-owned canonical owners: campaign time lapse; hardened aircraft mission/return/start/stop/destination/pursuit/homebase; aircraft equipment/rename; base build/rename; installation build/rename/destroy; facility build/destroy with runtime `FacilityId`; Research assign/max/stop; Production create/decrease/increase/set-amount/move/stop; Employee/Team assign/de-equip/delete/hire-fire/rename/skin; Market buy/sell aircraft/item/UGV and explicit autosell policy.
+  - [x] Keep the remaining **10 strategic semantics fail-closed** until their campaign-owned validation/mutation contracts are extracted.
   - [x] Complete ItemId + aircraft + StoredUfo production-subject qualification and bridge `CreateProduction` through the canonical campaign owner; Market purchase/sale subjects reuse qualified IDs or static definition keys; runtime-only `FacilityId` is now implemented/published and re-resolved for destruction, while Transfer/Defence and other audited identity debt remains explicit.
   - [x] Extract recovered/stored-UFO authority: runtime-only process-monotonic `UfoRecoveryId` binds the one-shot won-mission recovery choice, `UfoSaleOfferId` binds canonical nation/price offers, and persisted `StoredUfoId` now drives destroy/transfer. Store/sell consume the recovery generation; save v4 remains unchanged.
   - [x] Extract alien-containment authority: `KillContainedAlien` and `KillContainedAliens` now re-resolve `BaseId`/`TechnologyId` and mutate canonical aggregate containment state without inventing per-alien identity; the inherited multi-team-per-technology behavior is preserved.
+  - [x] Extract aircraft-configuration authority: equipment uses the fixed `AircraftId + slotType/slotIndex/zone` structural coordinate with current `ItemId` eligibility rechecked at execution, while `RenameAircraft` preserves inherited default-name and name-validation semantics; no slot runtime ID is invented.
 - [ ] Keep legacy consumers behind temporary adapters until each owning presentation path migrates.
 
 ### Renderer and presentation

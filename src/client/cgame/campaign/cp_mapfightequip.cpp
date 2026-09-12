@@ -995,6 +995,171 @@ aircraftSlot_t* AII_GetAircraftSlotByIDX (aircraft_t* aircraft, aircraftItemType
 }
 
 
+static aircraftSlot_t* AII_ResolveAircraftEquipmentSlot (aircraft_t* aircraft, int slotType, int slotIndex, int zone)
+{
+	if (!aircraft || slotIndex < 0)
+		return nullptr;
+
+	aircraftItemType_t resolvedType;
+	switch (slotType) {
+	case AC_ITEM_AMMO:
+		if (zone != ZONE_AMMO)
+			return nullptr;
+		resolvedType = AC_ITEM_WEAPON;
+		break;
+	case AC_ITEM_WEAPON:
+	case AC_ITEM_SHIELD:
+	case AC_ITEM_ELECTRONICS:
+		if (zone != ZONE_MAIN)
+			return nullptr;
+		resolvedType = static_cast<aircraftItemType_t>(slotType);
+		break;
+	default:
+		return nullptr;
+	}
+
+	return AII_GetAircraftSlotByIDX(aircraft, resolvedType, slotIndex);
+}
+
+/**
+ * @brief Canonical presentation-facing aircraft equipment owner.
+ *
+ * The structural coordinate is re-resolved at execution. The inherited
+ * nextItem/nextAmmo installation state machine is preserved; presentation
+ * cannot supply storage counts, installation timing, or compatibility.
+ */
+aircraftEquipmentMutationResult_t AII_TryEquipAircraftItem (aircraft_t* aircraft, int slotType, int slotIndex, int zone, int itemIndex)
+{
+	if (!aircraft || AIR_IsUFO(aircraft) || !aircraft->homebase || !AIR_IsAircraftInBase(aircraft))
+		return AII_AIRCRAFT_EQUIPMENT_INVALID_AIRCRAFT;
+
+	aircraftSlot_t* slot = AII_ResolveAircraftEquipmentSlot(aircraft, slotType, slotIndex, zone);
+	if (!slot)
+		return AII_AIRCRAFT_EQUIPMENT_INVALID_SLOT;
+	if (itemIndex < 0 || itemIndex >= cgi->csi->numODs)
+		return AII_AIRCRAFT_EQUIPMENT_INVALID_ITEM;
+
+	const objDef_t* item = INVSH_GetItemByIDX(itemIndex);
+	if (!item || item->idx != itemIndex || item->isVirtual)
+		return AII_AIRCRAFT_EQUIPMENT_INVALID_ITEM;
+	const technology_t* tech = ccs.objDefTechs[item->idx];
+	if (!tech || !RS_IsResearched_ptr(tech))
+		return AII_AIRCRAFT_EQUIPMENT_NOT_ELIGIBLE;
+
+	if (slotType == AC_ITEM_AMMO) {
+		if (item->craftitem.type < AC_ITEM_AMMO)
+			return AII_AIRCRAFT_EQUIPMENT_INVALID_ITEM;
+		if (!AIM_SelectableCraftItem(slot, tech))
+			return AII_AIRCRAFT_EQUIPMENT_NOT_ELIGIBLE;
+	} else {
+		if (item->craftitem.type != slot->type)
+			return AII_AIRCRAFT_EQUIPMENT_INVALID_ITEM;
+		if (item->craftitem.installationTime == -1 || AII_GetItemWeightBySize(item) > slot->size)
+			return AII_AIRCRAFT_EQUIPMENT_NOT_ELIGIBLE;
+
+		/* Preserve inherited paths that reclaim this exact item before add. */
+		const bool currentItemWillBeReclaimed = slot->item == item && !slot->nextItem
+			&& (slot->installationTime == slot->item->craftitem.installationTime
+				|| slot->installationTime == -slot->item->craftitem.installationTime);
+		const bool queuedItemWillBeReclaimed = slot->nextItem == item;
+		if (!currentItemWillBeReclaimed && !queuedItemWillBeReclaimed && !B_BaseHasItem(aircraft->homebase, item))
+			return AII_AIRCRAFT_EQUIPMENT_NOT_ELIGIBLE;
+	}
+
+	base_t* base = aircraft->homebase;
+	if (zone == ZONE_AMMO) {
+		if (!AII_AddAmmoToSlot(base, tech, slot))
+			return AII_AIRCRAFT_EQUIPMENT_REJECTED;
+		AII_UpdateAircraftStats(aircraft);
+		return AII_AIRCRAFT_EQUIPMENT_APPLIED;
+	}
+
+	bool mainMutationComplete = false;
+	if (!slot->nextItem) {
+		if (!slot->item || slot->installationTime == slot->item->craftitem.installationTime) {
+			AII_RemoveItemFromSlot(base, slot, false);
+			if (!AII_AddItemToSlot(base, tech, slot, false))
+				return AII_AIRCRAFT_EQUIPMENT_REJECTED;
+			AII_AutoAddAmmo(slot);
+			mainMutationComplete = true;
+		} else if (slot->item == item) {
+			if (slot->installationTime == -slot->item->craftitem.installationTime) {
+				slot->installationTime = 0;
+				mainMutationComplete = true;
+			} else if (!slot->installationTime) {
+				return AII_AIRCRAFT_EQUIPMENT_NO_CHANGE;
+			}
+		} else {
+			slot->installationTime = -slot->item->craftitem.installationTime;
+		}
+	} else {
+		AII_RemoveNextItemFromSlot(base, slot, false);
+	}
+
+	if (!mainMutationComplete) {
+		if (!AII_AddItemToSlot(base, tech, slot, true))
+			return AII_AIRCRAFT_EQUIPMENT_REJECTED;
+		AII_AutoAddAmmo(slot);
+	}
+
+	AII_UpdateAircraftStats(aircraft);
+	return AII_AIRCRAFT_EQUIPMENT_APPLIED;
+}
+
+/**
+ * @brief Canonical presentation-facing aircraft equipment removal owner.
+ */
+aircraftEquipmentMutationResult_t AII_TryRemoveAircraftItem (aircraft_t* aircraft, int slotType, int slotIndex, int zone)
+{
+	if (!aircraft || AIR_IsUFO(aircraft) || !aircraft->homebase || !AIR_IsAircraftInBase(aircraft))
+		return AII_AIRCRAFT_EQUIPMENT_INVALID_AIRCRAFT;
+
+	aircraftSlot_t* slot = AII_ResolveAircraftEquipmentSlot(aircraft, slotType, slotIndex, zone);
+	if (!slot)
+		return AII_AIRCRAFT_EQUIPMENT_INVALID_SLOT;
+	if (!slot->item)
+		return AII_AIRCRAFT_EQUIPMENT_NO_CHANGE;
+
+	base_t* base = aircraft->homebase;
+	const objDef_t* beforeItem = slot->item;
+	const objDef_t* beforeAmmo = slot->ammo;
+	const objDef_t* beforeNextItem = slot->nextItem;
+	const objDef_t* beforeNextAmmo = slot->nextAmmo;
+	const int beforeInstallationTime = slot->installationTime;
+
+	if (zone == ZONE_MAIN) {
+		if (!slot->nextItem) {
+			if (slot->installationTime < slot->item->craftitem.installationTime) {
+				slot->installationTime = -slot->item->craftitem.installationTime;
+				AII_RemoveItemFromSlot(base, slot, true);
+			} else {
+				AII_RemoveItemFromSlot(base, slot, false);
+			}
+		} else {
+			AII_RemoveNextItemFromSlot(base, slot, false);
+			if (slot->installationTime == -slot->item->craftitem.installationTime)
+				slot->installationTime = 0;
+		}
+	} else if (zone == ZONE_AMMO) {
+		if (slot->nextAmmo)
+			AII_RemoveNextItemFromSlot(base, slot, true);
+		else
+			AII_RemoveItemFromSlot(base, slot, true);
+	} else {
+		return AII_AIRCRAFT_EQUIPMENT_INVALID_SLOT;
+	}
+
+	const bool changed =
+		slot->item != beforeItem || slot->ammo != beforeAmmo ||
+		slot->nextItem != beforeNextItem || slot->nextAmmo != beforeNextAmmo ||
+		slot->installationTime != beforeInstallationTime;
+	if (!changed)
+		return AII_AIRCRAFT_EQUIPMENT_NO_CHANGE;
+
+	AII_UpdateAircraftStats(aircraft);
+	return AII_AIRCRAFT_EQUIPMENT_APPLIED;
+}
+
 /**
  * @brief Get the maximum weapon range of aircraft.
  * @param[in] slot Pointer to the aircrafts weapon slot list.

@@ -14,6 +14,7 @@
 #include "../../src/client/cgame/campaign/cp_campaign.h"
 #include "../../src/client/cgame/campaign/cp_geoscape.h"
 #include "../../src/client/cgame/campaign/cp_missions.h"
+#include "../../src/client/cgame/campaign/cp_mapfightequip.h"
 #include "../../src/client/cgame/campaign/cp_uforecovery.h"
 #include "../../src/client/presentation/strategic_intent.h"
 #include "../../src/client/presentation/strategic_intent_legacy_adapter.h"
@@ -247,6 +248,98 @@ TEST_F(M1IntentCatalogTest, TacticalIntentNeverClaimsCanonicalApplicationAtClien
 }
 
 
+
+TEST_F(M1IntentCatalogTest, AircraftConfigurationOwnersPreserveStructuralSlotSemantics)
+{
+	/* Match the real campaign startup prerequisite for aircraft equipment.
+	 * CP_ReadCampaignData is followed by RS_InitTree before equipment-tech
+	 * lookups are legal. Entity construction remains deliberately absent. */
+	campaign_t* campaign = CatalogCampaign();
+	ASSERT_NE(nullptr, campaign);
+	RS_InitTree(campaign, false);
+
+	const aircraft_t* aircraftTemplate = nullptr;
+	for (int i = 0; i < ccs.numAircraftTemplates; ++i) {
+		const aircraft_t* candidate = &ccs.aircraftTemplates[i];
+		if (!AIR_IsUFO(candidate) && candidate->maxWeapons > 0) {
+			aircraftTemplate = candidate;
+			break;
+		}
+	}
+	ASSERT_NE(nullptr, aircraftTemplate);
+
+	base_t base = {};
+	base.idx = 0;
+	base.founded = true;
+	base.baseStatus = BASE_WORKING;
+
+	aircraft_t aircraft = {};
+	aircraft.idx = 0;
+	aircraft.tpl = const_cast<aircraft_t*>(aircraftTemplate);
+	aircraft.defaultName = aircraftTemplate->defaultName;
+	aircraft.ufotype = UFO_NONE;
+	aircraft.homebase = &base;
+	aircraft.status = AIR_HOME;
+	aircraft.maxWeapons = 1;
+	aircraft.maxElectronics = 0;
+
+	AII_InitialiseSlot(&aircraft.weapons[0], &aircraft, nullptr, nullptr, AC_ITEM_WEAPON);
+	AII_InitialiseSlot(&aircraft.shield, &aircraft, nullptr, nullptr, AC_ITEM_SHIELD);
+	aircraftSlot_t* slot = &aircraft.weapons[0];
+
+	const technology_t* originalTech = nullptr;
+	const objDef_t* originalItem = nullptr;
+	technology_t** weaponTechs = AII_GetCraftitemTechsByType(AC_ITEM_WEAPON);
+	for (technology_t** current = weaponTechs; current && *current; ++current) {
+		const technology_t* tech = *current;
+		if (!RS_IsResearched_ptr(tech))
+			continue;
+		const objDef_t* item = INVSH_GetItemByID(tech->provides);
+		if (!item || item->isVirtual)
+			continue;
+		if (item->craftitem.type != AC_ITEM_WEAPON || item->craftitem.installationTime <= 0)
+			continue;
+		if (AII_GetItemWeightBySize(item) > slot->size)
+			continue;
+		originalTech = tech;
+		originalItem = item;
+		break;
+	}
+	ASSERT_NE(nullptr, originalTech);
+	ASSERT_NE(nullptr, originalItem);
+	ASSERT_GE(originalItem->idx, 0);
+
+	/* One spare copy keeps the inherited eligibility predicate true. The
+	 * remove/re-add cancellation path below never mutates storage. */
+	base.storage.numItems[originalItem->idx] = 1;
+	slot->item = originalItem;
+	slot->installationTime = 0;
+	AII_UpdateAircraftStats(&aircraft);
+
+	ASSERT_TRUE(AIR_TrySetName(&aircraft, "M1 Configuration Craft"));
+	EXPECT_STREQ("M1 Configuration Craft", aircraft.name);
+
+	const aircraftEquipmentMutationResult_t remove =
+		AII_TryRemoveAircraftItem(&aircraft, AC_ITEM_WEAPON, 0, ZONE_MAIN);
+	ASSERT_EQ(AII_AIRCRAFT_EQUIPMENT_APPLIED, remove);
+	ASSERT_EQ(originalItem, slot->item);
+	ASSERT_EQ(-originalItem->craftitem.installationTime, slot->installationTime);
+	ASSERT_EQ(1, base.storage.numItems[originalItem->idx]);
+
+	const aircraftEquipmentMutationResult_t equip =
+		AII_TryEquipAircraftItem(&aircraft, AC_ITEM_WEAPON, 0, ZONE_MAIN, originalItem->idx);
+	ASSERT_EQ(AII_AIRCRAFT_EQUIPMENT_APPLIED, equip);
+	ASSERT_EQ(originalItem, slot->item);
+	ASSERT_EQ(0, slot->installationTime);
+	ASSERT_EQ(1, base.storage.numItems[originalItem->idx]);
+
+	EXPECT_EQ(
+		AII_AIRCRAFT_EQUIPMENT_INVALID_SLOT,
+		AII_TryRemoveAircraftItem(&aircraft, AC_ITEM_WEAPON, 99, ZONE_MAIN));
+	EXPECT_EQ(
+		AII_AIRCRAFT_EQUIPMENT_INVALID_SLOT,
+		AII_TryEquipAircraftItem(&aircraft, AC_ITEM_WEAPON, 0, ZONE_AMMO, originalItem->idx));
+}
 TEST_F(M1IntentCatalogTest, UfoRecoveryOwnersBindOneShotRecoveryAndRejectReplay)
 {
 	const aircraft_t* ufo = FirstCatalogUfoTemplate();

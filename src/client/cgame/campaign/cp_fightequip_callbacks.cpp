@@ -731,84 +731,21 @@ static void AIM_AircraftEquipZoneSelect_f (void)
  */
 static void AIM_AircraftEquipAddItem_f (void)
 {
-	int zone;
-	aircraftSlot_t* slot;
-	aircraft_t* aircraft = nullptr;
 	base_t* base = B_GetCurrentSelectedBase();
-
-	zone = (airequipID == AC_ITEM_AMMO) ? 2 : 1;
-
-	/* proceed only if an item has been selected */
-	if (!aimSelectedTechnology)
+	if (!base || !base->aircraftCurrent || !aimSelectedTechnology)
 		return;
 
-	assert(base);
-	aircraft = base->aircraftCurrent;
-	assert(aircraft);
-	base = aircraft->homebase;	/* we need to know where items will be removed */
-	slot = AII_SelectAircraftSlot(aircraft, airequipID);
-	if (slot == nullptr)
-		return;
-
-	/* the clicked button doesn't correspond to the selected zone */
+	aircraft_t* aircraft = base->aircraftCurrent;
+	AIM_CheckAirequipSelectedSlot(aircraft);
+	const int zone = (airequipID == AC_ITEM_AMMO) ? ZONE_AMMO : ZONE_MAIN;
 	if (zone != airequipSelectedZone)
 		return;
 
-	/* check if the zone exists */
-	if (zone >= ZONE_MAX)
+	const objDef_t* item = INVSH_GetItemByID(aimSelectedTechnology->provides);
+	if (!item)
 		return;
 
-	/* update the new item to slot */
-
-	switch (zone) {
-	case ZONE_MAIN:
-		if (!slot->nextItem) {
-			/* we add the weapon, shield, item if slot is free or the installation of current item just began */
-			if (!slot->item || (slot->item && slot->installationTime == slot->item->craftitem.installationTime)) {
-				AII_RemoveItemFromSlot(base, slot, false);
-				AII_AddItemToSlot(base, aimSelectedTechnology, slot, false); /* Aircraft stats are updated below */
-				AII_AutoAddAmmo(slot);
-				break;
-			} else if (slot->item == INVSH_GetItemByID(aimSelectedTechnology->provides)) {
-				/* the added item is the same than the one in current slot */
-				if (slot->installationTime == -slot->item->craftitem.installationTime) {
-					/* player changed his mind: he just want to re-add the item he just removed */
-					slot->installationTime = 0;
-					break;
-				} else if (!slot->installationTime) {
-					/* player try to add a weapon he already have: just skip */
-					return;
-				}
-			} else {
-				/* We start removing current item in slot, and the selected item will be installed afterwards */
-				slot->installationTime = -slot->item->craftitem.installationTime;
-				/* more below */
-			}
-		} else {
-			/* remove weapon and ammo of next item */
-			AII_RemoveNextItemFromSlot(base, slot, false);
-			/* more below */
-		}
-
-		/* we change the weapon, shield, item, or base defence that will be installed AFTER the removal
-		 * of the one in the slot atm */
-		AII_AddItemToSlot(base, aimSelectedTechnology, slot, true);
-		AII_AutoAddAmmo(slot);
-		break;
-	case ZONE_AMMO:
-		/* we can change ammo only if the selected item is an ammo (for weapon or base defence system) */
-		if (airequipID >= AC_ITEM_AMMO) {
-			AII_AddAmmoToSlot(base, aimSelectedTechnology, slot);
-		}
-		break;
-	default:
-		/* Zone higher than ZONE_AMMO shouldn't exist */
-		return;
-	}
-
-	/* Update the values of aircraft stats (just in case an item has an installationTime of 0) */
-	AII_UpdateAircraftStats(aircraft);
-
+	AII_TryEquipAircraftItem(aircraft, static_cast<int>(airequipID), airequipSelectedSlot, zone, item->idx);
 	AIM_AircraftEquipMenuUpdate();
 }
 
@@ -817,63 +754,14 @@ static void AIM_AircraftEquipAddItem_f (void)
  */
 static void AIM_AircraftEquipRemoveItem_f (void)
 {
-	int zone;
-	aircraftSlot_t* slot;
-	aircraft_t* aircraft = nullptr;
 	base_t* base = B_GetCurrentSelectedBase();
-
-	zone = (airequipID == AC_ITEM_AMMO) ? 2 : 1;
-
-	assert(base);
-	aircraft = base->aircraftCurrent;
-	assert(aircraft);
-	slot = AII_SelectAircraftSlot(aircraft, airequipID);
-
-	/* no item in slot: nothing to remove */
-	if (!slot->item)
+	if (!base || !base->aircraftCurrent)
 		return;
 
-	/* update the new item to slot */
-
-	switch (zone) {
-	case ZONE_MAIN:
-		if (!slot->nextItem) {
-			/* we change the weapon, shield, item, or base defence that is already in the slot */
-			/* if the item has been installed since less than 1 hour, you don't need time to remove it */
-			if (slot->installationTime < slot->item->craftitem.installationTime) {
-				slot->installationTime = -slot->item->craftitem.installationTime;
-				AII_RemoveItemFromSlot(base, slot, true); /* we remove only ammo, not item */
-			} else {
-				AII_RemoveItemFromSlot(base, slot, false); /* we remove weapon and ammo */
-			}
-			/* aircraft stats are updated below */
-		} else {
-			/* we change the weapon, shield, item, or base defence that will be installed AFTER the removal
-			 * of the one in the slot atm */
-			AII_RemoveNextItemFromSlot(base, slot, false); /* we remove weapon and ammo */
-			/* if you canceled next item for less than 1 hour, previous item is still functional */
-			if (slot->installationTime == -slot->item->craftitem.installationTime) {
-				slot->installationTime = 0;
-			}
-		}
-		break;
-	case ZONE_AMMO:
-		/* we can change ammo only if the selected item is an ammo (for weapon or base defence system) */
-		if (airequipID >= AC_ITEM_AMMO) {
-			if (slot->nextAmmo)
-				AII_RemoveNextItemFromSlot(base, slot, true);
-			else
-				AII_RemoveItemFromSlot(base, slot, true);
-		}
-		break;
-	default:
-		/* Zone higher than ZONE_AMMO shouldn't exist */
-		return;
-	}
-
-	/* Update the values of aircraft stats */
-	AII_UpdateAircraftStats(aircraft);
-
+	aircraft_t* aircraft = base->aircraftCurrent;
+	AIM_CheckAirequipSelectedSlot(aircraft);
+	const int zone = (airequipID == AC_ITEM_AMMO) ? ZONE_AMMO : ZONE_MAIN;
+	AII_TryRemoveAircraftItem(aircraft, static_cast<int>(airequipID), airequipSelectedSlot, zone);
 	AIM_AircraftEquipMenuUpdate();
 }
 
