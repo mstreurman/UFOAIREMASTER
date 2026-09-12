@@ -39,6 +39,38 @@ int main()
 	if (strategic.aircraft != ufo::canonical::AircraftId(12u))
 		return 13;
 
+	intent::legacy::resetStrategicIntentRuntime();
+	StrategicTransferManifest manifest = {};
+	manifest.source = ufo::canonical::BaseId(1u);
+	manifest.destination = ufo::canonical::BaseId(2u);
+	manifest.antimatter = 3;
+	manifest.itemCount = 1;
+	manifest.items[0].item = ufo::canonical::ItemId(9u);
+	manifest.items[0].amount = 2;
+	const StrategicIntentSubmission transfer = intent::submitStartTransfer(manifest);
+	if (!transfer.accepted)
+		return 14;
+	StrategicIntent transferIntent = {};
+	if (!intent::legacy::tryPopStrategicIntent(&transferIntent)
+			|| transferIntent.kind != StrategicIntentKind::StartTransfer
+			|| !transferIntent.transferManifest.isValid())
+		return 15;
+	StrategicTransferManifest consumed = {};
+	if (!intent::legacy::takeTransferManifest(transferIntent.transferManifest, &consumed)
+			|| consumed.source != manifest.source
+			|| consumed.destination != manifest.destination
+			|| consumed.itemCount != 1
+			|| consumed.items[0].item != manifest.items[0].item
+			|| consumed.items[0].amount != 2)
+		return 16;
+	if (intent::legacy::takeTransferManifest(transferIntent.transferManifest, &consumed))
+		return 17;
+
+	StrategicTransferManifest oversized = {};
+	oversized.itemCount = static_cast<uint32_t>(STRATEGIC_TRANSFER_MAX_ITEMS + 1);
+	if (intent::submitStartTransfer(oversized).accepted)
+		return 18;
+
 	tactical_intent::legacy::resetTacticalIntentRuntime();
 
 	const TacticalIntentSubmission t0 = tactical_intent::submitSetReactionFire(

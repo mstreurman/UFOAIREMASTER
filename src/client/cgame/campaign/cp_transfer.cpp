@@ -277,6 +277,209 @@ transfer_t* TR_TransferStart (base_t* srcBase, transfer_t& transData)
 	return &LIST_Add(&ccs.transfers, transfer);
 }
 
+
+static void TR_ClearRequestLists (transfer_t* transfer)
+{
+	if (!transfer)
+		return;
+	for (int i = EMPL_SOLDIER; i < MAX_EMPL; ++i)
+		cgi->LIST_Delete(&transfer->employees[i]);
+	cgi->LIST_Delete(&transfer->aircraft);
+}
+
+bool TR_BuildStartRequest (const base_t* srcBase, const transfer_t& transData,
+		transferStartRequest_t* request)
+{
+	if (!request || !srcBase || !transData.destBase)
+		return false;
+	OBJZERO(*request);
+	request->sourceBaseIndex = srcBase->idx;
+	request->destinationBaseIndex = transData.destBase->idx;
+	request->antimatter = transData.antimatter;
+
+	if (transData.itemCargo) {
+		linkedList_t* items = transData.itemCargo->list();
+		LIST_Foreach(items, itemCargo_t, item) {
+			if (item->amount <= 0)
+				continue;
+			if (request->itemCount >= TRANSFER_REQUEST_MAX_ITEMS) {
+				cgi->LIST_Delete(&items);
+				return false;
+			}
+			transferStartItem_t& out = request->items[request->itemCount++];
+			out.itemIndex = item->objDef ? item->objDef->idx : -1;
+			out.amount = item->amount;
+		}
+		cgi->LIST_Delete(&items);
+	}
+
+	for (int type = EMPL_SOLDIER; type < MAX_EMPL; ++type) {
+		LIST_Foreach(transData.employees[type], Employee, employee) {
+			if (request->employeeCount >= TRANSFER_REQUEST_MAX_EMPLOYEES)
+				return false;
+			request->employeeUcn[request->employeeCount++] = employee->chr.ucn;
+		}
+	}
+
+	if (transData.alienCargo) {
+		linkedList_t* aliens = transData.alienCargo->list();
+		LIST_Foreach(aliens, alienCargo_t, alien) {
+			if (alien->alive <= 0 && alien->dead <= 0)
+				continue;
+			if (request->alienCount >= TRANSFER_REQUEST_MAX_ALIEN_TYPES) {
+				cgi->LIST_Delete(&aliens);
+				return false;
+			}
+			transferStartAlien_t& out = request->aliens[request->alienCount++];
+			Q_strncpyz(out.teamDefinition, alien->teamDef ? alien->teamDef->id : "",
+				sizeof(out.teamDefinition));
+			out.alive = alien->alive;
+			out.dead = alien->dead;
+		}
+		cgi->LIST_Delete(&aliens);
+	}
+
+	LIST_Foreach(transData.aircraft, aircraft_t, aircraft) {
+		if (request->aircraftCount >= TRANSFER_REQUEST_MAX_AIRCRAFT)
+			return false;
+		request->aircraftIndex[request->aircraftCount++] = aircraft->idx;
+	}
+
+	return true;
+}
+
+transferStartResult_t TR_TryStartTransfer (const transferStartRequest_t& request,
+		transfer_t** startedTransfer)
+{
+	if (startedTransfer)
+		*startedTransfer = nullptr;
+	if (request.itemCount > TRANSFER_REQUEST_MAX_ITEMS
+			|| request.employeeCount > TRANSFER_REQUEST_MAX_EMPLOYEES
+			|| request.aircraftCount > TRANSFER_REQUEST_MAX_AIRCRAFT
+			|| request.alienCount > TRANSFER_REQUEST_MAX_ALIEN_TYPES
+			|| request.antimatter < 0)
+		return TR_START_INVALID_REQUEST;
+
+	base_t* source = B_GetFoundedBaseByIDX(request.sourceBaseIndex);
+	if (!source)
+		return TR_START_INVALID_SOURCE;
+	base_t* destination = B_GetFoundedBaseByIDX(request.destinationBaseIndex);
+	if (!destination || destination == source)
+		return TR_START_INVALID_DESTINATION;
+	if (request.antimatter > B_AntimatterInBase(source))
+		return TR_START_INSUFFICIENT_ITEM;
+
+	const objDef_t* resolvedItems[TRANSFER_REQUEST_MAX_ITEMS] = {};
+	Employee* resolvedEmployees[TRANSFER_REQUEST_MAX_EMPLOYEES] = {};
+	aircraft_t* resolvedAircraft[TRANSFER_REQUEST_MAX_AIRCRAFT] = {};
+	const teamDef_t* resolvedAliens[TRANSFER_REQUEST_MAX_ALIEN_TYPES] = {};
+	bool hasCargo = request.antimatter > 0;
+
+	for (uint32_t i = 0; i < request.itemCount; ++i) {
+		const transferStartItem_t& item = request.items[i];
+		if (item.itemIndex < 0 || item.itemIndex >= cgi->csi->numODs || item.amount <= 0)
+			return TR_START_INVALID_ITEM;
+		const objDef_t* od = INVSH_GetItemByIDX(item.itemIndex);
+		if (!od || od->idx != item.itemIndex || !B_ItemIsStoredInBaseStorage(od))
+			return TR_START_INVALID_ITEM;
+		for (uint32_t j = 0; j < i; ++j)
+			if (resolvedItems[j] == od)
+				return TR_START_INVALID_ITEM;
+		if (B_ItemInBase(od, source) < item.amount)
+			return TR_START_INSUFFICIENT_ITEM;
+		resolvedItems[i] = od;
+		hasCargo = true;
+	}
+
+	for (uint32_t i = 0; i < request.employeeCount; ++i) {
+		const int ucn = request.employeeUcn[i];
+		if (ucn < 0)
+			return TR_START_INVALID_EMPLOYEE;
+		Employee* employee = E_GetEmployeeFromChrUCN(ucn);
+		if (!employee || employee->getType() == EMPL_ROBOT || !employee->isHiredInBase(source))
+			return TR_START_INVALID_EMPLOYEE;
+		for (uint32_t j = 0; j < i; ++j)
+			if (resolvedEmployees[j] == employee)
+				return TR_START_INVALID_EMPLOYEE;
+		resolvedEmployees[i] = employee;
+		hasCargo = true;
+	}
+
+	for (uint32_t i = 0; i < request.aircraftCount; ++i) {
+		const int idx = request.aircraftIndex[i];
+		if (idx < 0)
+			return TR_START_INVALID_AIRCRAFT;
+		aircraft_t* aircraft = AIR_AircraftGetFromIDX(idx);
+		if (!aircraft || AIR_IsUFO(aircraft) || aircraft->homebase != source
+				|| !AIR_IsAircraftInBase(aircraft))
+			return TR_START_INVALID_AIRCRAFT;
+		for (uint32_t j = 0; j < i; ++j)
+			if (resolvedAircraft[j] == aircraft)
+				return TR_START_INVALID_AIRCRAFT;
+		resolvedAircraft[i] = aircraft;
+		hasCargo = true;
+	}
+
+	for (uint32_t i = 0; i < request.alienCount; ++i) {
+		const transferStartAlien_t& alien = request.aliens[i];
+		if (alien.teamDefinition[0] == '\0' || alien.alive < 0 || alien.dead < 0
+				|| (alien.alive == 0 && alien.dead == 0) || !source->alienContainment)
+			return TR_START_INVALID_ALIEN;
+		const teamDef_t* team = cgi->Com_GetTeamDefinitionByID(alien.teamDefinition);
+		if (!team)
+			return TR_START_INVALID_ALIEN;
+		for (uint32_t j = 0; j < i; ++j)
+			if (resolvedAliens[j] == team)
+				return TR_START_INVALID_ALIEN;
+		if (source->alienContainment->getAlive(team) < alien.alive
+				|| source->alienContainment->getDead(team) < alien.dead)
+			return TR_START_INVALID_ALIEN;
+		resolvedAliens[i] = team;
+		hasCargo = true;
+	}
+
+	if (!hasCargo)
+		return TR_START_EMPTY;
+
+	ItemCargo itemCargo;
+	AlienCargo alienCargo;
+	transfer_t transData = {};
+	transData.destBase = destination;
+	transData.antimatter = request.antimatter;
+
+	if (request.itemCount > 0) {
+		for (uint32_t i = 0; i < request.itemCount; ++i)
+			if (!itemCargo.add(resolvedItems[i], request.items[i].amount, 0))
+				return TR_START_REJECTED;
+		transData.itemCargo = &itemCargo;
+	}
+
+	for (uint32_t i = 0; i < request.employeeCount; ++i)
+		cgi->LIST_AddPointer(&transData.employees[resolvedEmployees[i]->getType()],
+			(void*)resolvedEmployees[i]);
+
+	if (request.alienCount > 0) {
+		for (uint32_t i = 0; i < request.alienCount; ++i)
+			if (!alienCargo.add(resolvedAliens[i], request.aliens[i].alive,
+					request.aliens[i].dead)) {
+				TR_ClearRequestLists(&transData);
+				return TR_START_REJECTED;
+			}
+		transData.alienCargo = &alienCargo;
+	}
+
+	for (uint32_t i = 0; i < request.aircraftCount; ++i)
+		cgi->LIST_AddPointer(&transData.aircraft, (void*)resolvedAircraft[i]);
+
+	transfer_t* started = TR_TransferStart(source, transData);
+	TR_ClearRequestLists(&transData);
+	if (!started)
+		return TR_START_REJECTED;
+	if (startedTransfer)
+		*startedTransfer = started;
+	return TR_START_APPLIED;
+}
+
 /**
  * @brief Notify that an aircraft has been removed.
  * @param[in] aircraft Aircraft that was removed from the game

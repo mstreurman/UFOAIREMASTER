@@ -15,6 +15,7 @@
 #include "../../src/client/cgame/campaign/cp_geoscape.h"
 #include "../../src/client/cgame/campaign/cp_missions.h"
 #include "../../src/client/cgame/campaign/cp_mapfightequip.h"
+#include "../../src/client/cgame/campaign/cp_transfer.h"
 #include "../../src/client/cgame/campaign/cp_uforecovery.h"
 #include "../../src/client/presentation/strategic_intent.h"
 #include "../../src/client/presentation/strategic_intent_legacy_adapter.h"
@@ -249,6 +250,31 @@ TEST_F(M1IntentCatalogTest, TacticalIntentNeverClaimsCanonicalApplicationAtClien
 
 
 
+
+TEST_F(M1IntentCatalogTest, TransferManifestIntentIsBoundedOneShotAndCanonicalRejectsStaleBases)
+{
+	ufo::presentation::StrategicTransferManifest manifest = {};
+	manifest.source = ufo::canonical::BaseId(0x7fffff00u);
+	manifest.destination = ufo::canonical::BaseId(0x7fffff01u);
+	manifest.antimatter = 1;
+
+	const ufo::presentation::StrategicIntentSubmission submission =
+		ufo::presentation::intent::submitStartTransfer(manifest);
+	ASSERT_TRUE(submission.accepted);
+
+	ufo::presentation::legacy::applyPendingStrategicIntents();
+
+	ufo::presentation::StrategicIntentResult result = {};
+	ASSERT_TRUE(ufo::presentation::intent::pollStrategicIntentResult(&result));
+	EXPECT_EQ(submission.sequence, result.sequence);
+	EXPECT_EQ(ufo::presentation::StrategicIntentKind::StartTransfer, result.kind);
+	EXPECT_EQ(ufo::presentation::StrategicIntentDisposition::RejectedByCanonical, result.disposition);
+	EXPECT_EQ(static_cast<int32_t>(TR_START_INVALID_SOURCE), result.canonicalValue);
+
+	ufo::presentation::StrategicTransferManifest oversized = {};
+	oversized.itemCount = static_cast<uint32_t>(ufo::presentation::STRATEGIC_TRANSFER_MAX_ITEMS + 1);
+	EXPECT_FALSE(ufo::presentation::intent::submitStartTransfer(oversized).accepted);
+}
 TEST_F(M1IntentCatalogTest, AircraftConfigurationOwnersPreserveStructuralSlotSemantics)
 {
 	/* Match the real campaign startup prerequisite for aircraft equipment.

@@ -23,7 +23,7 @@ REQUIRED_REGISTRY = {
     "StoredUfoId": ("runtime_direct", "direct_persisted_qualified"),
     "UfoRecoveryId": ("runtime_sidecar_current", "runtime_mapping_implemented"),
     "UfoSaleOfferId": ("runtime_sidecar_current", "runtime_mapping_implemented"),
-    "TransferManifestId": ("submission_context", "typed_token_declared"),
+    "TransferManifestId": ("submission_context", "bounded_submission_registry"),
     "AircraftEquipmentSlot": ("structural_reference", "structural_tuple"),
     "FacilityPlacementCell": ("structural_reference", "structural_tuple"),
     "ContainedAlienSpecies": ("aggregate_key", "technology_key"),
@@ -95,7 +95,7 @@ def main():
     out = run([str(binary)])
     require("PASS (18 distinct 32-bit domains)" in out, "expanded identity contract failed")
     print("PASS M1 canonical identity completeness: 18 strong 32-bit domains")
-    print("PASS FacilityId/DefenceSlotId runtime mappings published/qualified; TransferId remains reserved debt")
+    print("PASS FacilityId/DefenceSlotId mappings plus TransferManifestId submission mapping qualified; TransferId remains reserved debt")
     print("PASS identity taxonomy locked; UfoRecoveryId/UfoSaleOfferId runtime mappings published and qualified")
     print("PASS aggregate authority accounting is owned by test-m1-authoritative-intent-surface.py")
     return 0

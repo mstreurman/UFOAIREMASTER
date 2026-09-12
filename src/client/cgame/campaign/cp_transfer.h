@@ -26,8 +26,55 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "../../DateTime.h"
 
+#include <cstdint>
+
 /** @brief Default transfer time for cases with no source/dest base */
 #define DEFAULT_TRANSFER_TIME 2.0f
+
+#define TRANSFER_REQUEST_MAX_ITEMS 1024
+#define TRANSFER_REQUEST_MAX_EMPLOYEES 512
+#define TRANSFER_REQUEST_MAX_AIRCRAFT 64
+#define TRANSFER_REQUEST_MAX_ALIEN_TYPES 128
+#define TRANSFER_REQUEST_TEAM_KEY_BYTES 96
+
+typedef struct transferStartItem_s {
+	int itemIndex;
+	int amount;
+} transferStartItem_t;
+
+typedef struct transferStartAlien_s {
+	char teamDefinition[TRANSFER_REQUEST_TEAM_KEY_BYTES];
+	int alive;
+	int dead;
+} transferStartAlien_t;
+
+typedef struct transferStartRequest_s {
+	int sourceBaseIndex;
+	int destinationBaseIndex;
+	int antimatter;
+	uint32_t itemCount;
+	transferStartItem_t items[TRANSFER_REQUEST_MAX_ITEMS];
+	uint32_t employeeCount;
+	int employeeUcn[TRANSFER_REQUEST_MAX_EMPLOYEES];
+	uint32_t aircraftCount;
+	int aircraftIndex[TRANSFER_REQUEST_MAX_AIRCRAFT];
+	uint32_t alienCount;
+	transferStartAlien_t aliens[TRANSFER_REQUEST_MAX_ALIEN_TYPES];
+} transferStartRequest_t;
+
+typedef enum transferStartResult_s {
+	TR_START_APPLIED = 0,
+	TR_START_INVALID_REQUEST,
+	TR_START_INVALID_SOURCE,
+	TR_START_INVALID_DESTINATION,
+	TR_START_EMPTY,
+	TR_START_INVALID_ITEM,
+	TR_START_INSUFFICIENT_ITEM,
+	TR_START_INVALID_EMPLOYEE,
+	TR_START_INVALID_AIRCRAFT,
+	TR_START_INVALID_ALIEN,
+	TR_START_REJECTED
+} transferStartResult_t;
 
 /** @brief Transfer information (they are being stored in ccs.transfers). */
 typedef struct transfer_s {
@@ -53,6 +100,8 @@ void TR_TransferRun(void);
 void TR_NotifyAircraftRemoved(const aircraft_t* aircraft);
 
 transfer_t* TR_TransferStart(base_t* srcBase, transfer_t& transData);
+bool TR_BuildStartRequest(const base_t* srcBase, const transfer_t& transData, transferStartRequest_t* request);
+transferStartResult_t TR_TryStartTransfer(const transferStartRequest_t& request, transfer_t** startedTransfer);
 
 void TR_InitStartup(void);
 void TR_Shutdown(void);

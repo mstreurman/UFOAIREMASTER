@@ -5,6 +5,7 @@
 #pragma once
 #include "canonical_identity.h"
 #include "strategic_position.h"
+#include <cstddef>
 #include <cstdint>
 #include <type_traits>
 
@@ -72,6 +73,42 @@ enum class StrategicIntentKind : uint8_t {
     CreateProduction = 60,
 };
 enum class StrategicIntentDisposition : uint8_t { Applied = 1, RejectedByCanonical = 2 };
+
+constexpr std::size_t STRATEGIC_TRANSFER_MAX_ITEMS = 1024;
+constexpr std::size_t STRATEGIC_TRANSFER_MAX_EMPLOYEES = 512;
+constexpr std::size_t STRATEGIC_TRANSFER_MAX_AIRCRAFT = 64;
+constexpr std::size_t STRATEGIC_TRANSFER_MAX_ALIEN_TYPES = 128;
+constexpr std::size_t STRATEGIC_TRANSFER_TEAM_KEY_BYTES = 96;
+
+struct StrategicTransferItem {
+    canonical::ItemId item;
+    int32_t amount;
+};
+
+struct StrategicTransferAlien {
+    char teamDefinition[STRATEGIC_TRANSFER_TEAM_KEY_BYTES];
+    int32_t alive;
+    int32_t dead;
+};
+
+struct StrategicTransferManifest {
+    canonical::BaseId source;
+    canonical::BaseId destination;
+    int32_t antimatter;
+    uint32_t itemCount;
+    StrategicTransferItem items[STRATEGIC_TRANSFER_MAX_ITEMS];
+    uint32_t employeeCount;
+    canonical::EmployeeId employees[STRATEGIC_TRANSFER_MAX_EMPLOYEES];
+    uint32_t aircraftCount;
+    canonical::AircraftId aircraft[STRATEGIC_TRANSFER_MAX_AIRCRAFT];
+    uint32_t alienCount;
+    StrategicTransferAlien aliens[STRATEGIC_TRANSFER_MAX_ALIEN_TYPES];
+};
+
+static_assert(std::is_standard_layout<StrategicTransferManifest>::value,
+    "StrategicTransferManifest must remain standard-layout");
+static_assert(std::is_trivially_copyable<StrategicTransferManifest>::value,
+    "StrategicTransferManifest must remain trivially copyable");
 struct StrategicIntent {
     uint64_t sequence;
     StrategicIntentKind kind;
@@ -165,7 +202,7 @@ StrategicIntentSubmission submitSetEmployeeSkin(canonical::EmployeeId employee, 
 StrategicIntentSubmission submitSetProductionAmount(canonical::BaseId base, canonical::ProductionId production, int32_t amount);
 StrategicIntentSubmission submitStartAircraft(canonical::AircraftId aircraft);
 StrategicIntentSubmission submitStartMission(canonical::MissionId mission, canonical::AircraftId aircraft);
-StrategicIntentSubmission submitStartTransfer(canonical::TransferManifestId manifest);
+StrategicIntentSubmission submitStartTransfer(const StrategicTransferManifest& manifest);
 StrategicIntentSubmission submitStopAircraft(canonical::AircraftId aircraft);
 StrategicIntentSubmission submitStopProduction(canonical::BaseId base, canonical::ProductionId production);
 StrategicIntentSubmission submitStopResearch(canonical::BaseId base, canonical::TechnologyId technology);
@@ -173,6 +210,6 @@ StrategicIntentSubmission submitStoreRecoveredUfo(canonical::UfoRecoveryId recov
 StrategicIntentSubmission submitTransferStoredUfo(canonical::StoredUfoId storedUfo, canonical::InstallationId installation);
 
 bool pollStrategicIntentResult(StrategicIntentResult* result);
-namespace legacy { bool tryPopStrategicIntent(StrategicIntent* intent); void publishStrategicIntentResult(const StrategicIntentResult& result); void resetStrategicIntentRuntime(); }
+namespace legacy { bool tryPopStrategicIntent(StrategicIntent* intent); bool takeTransferManifest(canonical::TransferManifestId manifest, StrategicTransferManifest* value); void publishStrategicIntentResult(const StrategicIntentResult& result); void resetStrategicIntentRuntime(); }
 } // intent
 } } // ufo::presentation

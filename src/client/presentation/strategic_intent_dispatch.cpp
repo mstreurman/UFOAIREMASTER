@@ -9,10 +9,91 @@ namespace ufo { namespace presentation { namespace intent { namespace {
 constexpr std::size_t CAP=256, RCAP=256;
 template<typename T,std::size_t N> class Ring { public: bool push(const T& v){if(c==N)return false;a[w]=v;w=(w+1)%N;++c;return true;} bool pop(T& v){if(!c)return false;v=a[r];r=(r+1)%N;--c;return true;} bool full()const{return c==N;} void clear(){r=w=c=0;} private: std::array<T,N>a{};std::size_t r=0,w=0,c=0;};
 std::mutex m; Ring<StrategicIntent,CAP> q; Ring<StrategicIntentResult,RCAP> rq; uint64_t seq=1;
+constexpr std::size_t MANIFEST_CAP=64;
+struct TransferManifestSlot {
+    bool occupied=false;
+    canonical::TransferManifestId id;
+    StrategicTransferManifest value{};
+};
+std::array<TransferManifestSlot,MANIFEST_CAP> manifests{};
+uint32_t manifestSeq=1;
+
 uint64_t alloc(){const uint64_t s=seq++;if(seq==0)seq=1;return s;}
 StrategicIntent make(StrategicIntentKind k){StrategicIntent v={};v.kind=k;return v;}
 template<std::size_t N> void copyBounded(char (&dst)[N], const char* src){if(!src){dst[0]='\0';return;}std::strncpy(dst,src,N-1);dst[N-1]='\0';}
-StrategicIntentSubmission submit(StrategicIntent v){std::lock_guard<std::mutex>l(m);StrategicIntentSubmission s={0,false};if(q.full())return s;v.sequence=alloc();if(!q.push(v))return s;s.sequence=v.sequence;s.accepted=true;return s;}
+
+bool transferManifestShapeValid(const StrategicTransferManifest& v)
+{
+    if(v.itemCount>STRATEGIC_TRANSFER_MAX_ITEMS
+        || v.employeeCount>STRATEGIC_TRANSFER_MAX_EMPLOYEES
+        || v.aircraftCount>STRATEGIC_TRANSFER_MAX_AIRCRAFT
+        || v.alienCount>STRATEGIC_TRANSFER_MAX_ALIEN_TYPES)
+        return false;
+    for(uint32_t i=0;i<v.alienCount;++i)
+        if(std::memchr(v.aliens[i].teamDefinition,'\0',STRATEGIC_TRANSFER_TEAM_KEY_BYTES)==nullptr)
+            return false;
+    return true;
+}
+
+bool manifestIdInUse(uint32_t value)
+{
+    for(const TransferManifestSlot& slot:manifests)
+        if(slot.occupied&&slot.id.value==value)
+            return true;
+    return false;
+}
+
+canonical::TransferManifestId allocManifestIdLocked()
+{
+    for(std::size_t attempt=0;attempt<MANIFEST_CAP+2;++attempt){
+        uint32_t value=manifestSeq++;
+        if(manifestSeq==canonical::TransferManifestId::invalidValue()) manifestSeq=1;
+        if(value==0||value==canonical::TransferManifestId::invalidValue()) continue;
+        if(!manifestIdInUse(value)) return canonical::TransferManifestId(value);
+    }
+    return canonical::TransferManifestId();
+}
+
+canonical::TransferManifestId stageManifestLocked(const StrategicTransferManifest& value)
+{
+    if(!transferManifestShapeValid(value)) return canonical::TransferManifestId();
+    TransferManifestSlot* freeSlot=nullptr;
+    for(TransferManifestSlot& slot:manifests)
+        if(!slot.occupied){freeSlot=&slot;break;}
+    if(!freeSlot) return canonical::TransferManifestId();
+    const canonical::TransferManifestId id=allocManifestIdLocked();
+    if(!id.isValid()) return canonical::TransferManifestId();
+    freeSlot->occupied=true;
+    freeSlot->id=id;
+    freeSlot->value=value;
+    return id;
+}
+
+void releaseManifestLocked(canonical::TransferManifestId id)
+{
+    if(!id.isValid()) return;
+    for(TransferManifestSlot& slot:manifests){
+        if(slot.occupied&&slot.id==id){
+            slot=TransferManifestSlot{};
+            return;
+        }
+    }
+}
+
+StrategicIntentSubmission submitLocked(StrategicIntent v)
+{
+    StrategicIntentSubmission s={0,false};
+    if(q.full())return s;
+    v.sequence=alloc();
+    if(!q.push(v))return s;
+    s.sequence=v.sequence;s.accepted=true;return s;
+}
+
+StrategicIntentSubmission submit(StrategicIntent v)
+{
+    std::lock_guard<std::mutex>l(m);
+    return submitLocked(v);
+}
 } // anon
 StrategicIntentSubmission submitSetCampaignTimeLapse(int32_t gameLapse)
 {
@@ -385,11 +466,18 @@ StrategicIntentSubmission submitStartMission(canonical::MissionId mission, canon
     return submit(v);
 }
 
-StrategicIntentSubmission submitStartTransfer(canonical::TransferManifestId manifest)
+StrategicIntentSubmission submitStartTransfer(const StrategicTransferManifest& manifest)
 {
-    StrategicIntent v = make(StrategicIntentKind::StartTransfer);
-    v.transferManifest = manifest;
-    return submit(v);
+    std::lock_guard<std::mutex> l(m);
+    StrategicIntentSubmission rejected={0,false};
+    if(q.full()) return rejected;
+    const canonical::TransferManifestId manifestId=stageManifestLocked(manifest);
+    if(!manifestId.isValid()) return rejected;
+    StrategicIntent v=make(StrategicIntentKind::StartTransfer);
+    v.transferManifest=manifestId;
+    const StrategicIntentSubmission submitted=submitLocked(v);
+    if(!submitted.accepted) releaseManifestLocked(manifestId);
+    return submitted;
 }
 
 StrategicIntentSubmission submitStopAircraft(canonical::AircraftId aircraft)
@@ -430,6 +518,7 @@ StrategicIntentSubmission submitTransferStoredUfo(canonical::StoredUfoId storedU
 bool pollStrategicIntentResult(StrategicIntentResult* out){if(!out)return false;std::lock_guard<std::mutex>l(m);return rq.pop(*out);}
 namespace legacy {
 bool tryPopStrategicIntent(StrategicIntent* out){if(!out)return false;std::lock_guard<std::mutex>l(m);return q.pop(*out);}
+bool takeTransferManifest(canonical::TransferManifestId id, StrategicTransferManifest* out){if(!out||!id.isValid())return false;std::lock_guard<std::mutex>l(m);for(TransferManifestSlot& slot:manifests){if(slot.occupied&&slot.id==id){*out=slot.value;slot=TransferManifestSlot{};return true;}}return false;}
 void publishStrategicIntentResult(const StrategicIntentResult& v){std::lock_guard<std::mutex>l(m);if(rq.full()){StrategicIntentResult d={};rq.pop(d);}rq.push(v);}
-void resetStrategicIntentRuntime(){std::lock_guard<std::mutex>l(m);q.clear();rq.clear();}
+void resetStrategicIntentRuntime(){std::lock_guard<std::mutex>l(m);q.clear();rq.clear();for(TransferManifestSlot& slot:manifests)slot=TransferManifestSlot{};}
 } } } }

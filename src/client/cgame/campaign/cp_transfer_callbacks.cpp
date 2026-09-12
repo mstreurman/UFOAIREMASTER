@@ -96,11 +96,19 @@ static void TR_TransferStart_f (void)
 		return;
 	}
 
-	if (TR_TransferStart(base, tr) == nullptr)
+	transferStartRequest_t request = {};
+	if (!TR_BuildStartRequest(base, tr, &request))
 		return;
+
+	transfer_t* startedTransfer = nullptr;
+	if (TR_TryStartTransfer(request, &startedTransfer) != TR_START_APPLIED
+			|| !startedTransfer || !startedTransfer->destBase)
+		return;
+
 	TR_ClearTempCargo();
 
-	Com_sprintf(message, sizeof(message), _("Transport mission started, cargo is being transported to %s"), tr.destBase->name);
+	Com_sprintf(message, sizeof(message), _("Transport mission started, cargo is being transported to %s"),
+		startedTransfer->destBase->name);
 	MSO_CheckAddNewMessage(NT_TRANSFER_STARTED, _("Transport mission"), message, MSG_TRANSFERFINISHED);
 	cgi->UI_PopWindow(false);
 }

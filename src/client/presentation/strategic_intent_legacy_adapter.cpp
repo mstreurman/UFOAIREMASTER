@@ -20,6 +20,7 @@
 #include "../cgame/campaign/cp_produce.h"
 #include "../cgame/campaign/cp_research.h"
 #include "../cgame/campaign/cp_time.h"
+#include "../cgame/campaign/cp_transfer.h"
 #include "../cgame/campaign/cp_ufo.h"
 #include "../cgame/campaign/cp_uforecovery.h"
 #include "strategic_intent.h"
@@ -87,6 +88,56 @@ canonical::MissionId selectedMissionId() {
 }
 canonical::AircraftId selectedAircraftId() {
     const aircraft_t* p=GEO_GetSelectedAircraft(); return p&&p->idx>=0?canonical::AircraftId(static_cast<uint32_t>(p->idx)):canonical::AircraftId();
+}
+template<typename Id>
+bool transferIdToInt(Id id, int* value) {
+    if(!value||!id.isValid()||id.value>static_cast<uint32_t>(std::numeric_limits<int>::max())) return false;
+    *value=static_cast<int>(id.value); return true;
+}
+
+bool buildTransferStartRequest(const StrategicTransferManifest& manifest, transferStartRequest_t* request) {
+    if(!request
+        || manifest.itemCount>STRATEGIC_TRANSFER_MAX_ITEMS
+        || manifest.employeeCount>STRATEGIC_TRANSFER_MAX_EMPLOYEES
+        || manifest.aircraftCount>STRATEGIC_TRANSFER_MAX_AIRCRAFT
+        || manifest.alienCount>STRATEGIC_TRANSFER_MAX_ALIEN_TYPES)
+        return false;
+    static_assert(STRATEGIC_TRANSFER_MAX_ITEMS==TRANSFER_REQUEST_MAX_ITEMS, "transfer item manifest ABI mismatch");
+    static_assert(STRATEGIC_TRANSFER_MAX_EMPLOYEES==TRANSFER_REQUEST_MAX_EMPLOYEES, "transfer employee manifest ABI mismatch");
+    static_assert(STRATEGIC_TRANSFER_MAX_AIRCRAFT==TRANSFER_REQUEST_MAX_AIRCRAFT, "transfer aircraft manifest ABI mismatch");
+    static_assert(STRATEGIC_TRANSFER_MAX_ALIEN_TYPES==TRANSFER_REQUEST_MAX_ALIEN_TYPES, "transfer alien manifest ABI mismatch");
+    static_assert(STRATEGIC_TRANSFER_TEAM_KEY_BYTES==TRANSFER_REQUEST_TEAM_KEY_BYTES, "transfer alien key ABI mismatch");
+
+    OBJZERO(*request);
+    if(!transferIdToInt(manifest.source,&request->sourceBaseIndex)
+        || !transferIdToInt(manifest.destination,&request->destinationBaseIndex))
+        return false;
+    request->antimatter=manifest.antimatter;
+    request->itemCount=manifest.itemCount;
+    for(uint32_t i=0;i<manifest.itemCount;++i) {
+        if(!transferIdToInt(manifest.items[i].item,&request->items[i].itemIndex))
+            return false;
+        request->items[i].amount=manifest.items[i].amount;
+    }
+    request->employeeCount=manifest.employeeCount;
+    for(uint32_t i=0;i<manifest.employeeCount;++i)
+        if(!transferIdToInt(manifest.employees[i],&request->employeeUcn[i]))
+            return false;
+    request->aircraftCount=manifest.aircraftCount;
+    for(uint32_t i=0;i<manifest.aircraftCount;++i)
+        if(!transferIdToInt(manifest.aircraft[i],&request->aircraftIndex[i]))
+            return false;
+    request->alienCount=manifest.alienCount;
+    for(uint32_t i=0;i<manifest.alienCount;++i) {
+        const char* team=resolveBoundedText(manifest.aliens[i].teamDefinition);
+        if(!team) return false;
+        const std::size_t teamLength=std::strlen(team);
+        if(teamLength>=sizeof(request->aliens[i].teamDefinition)) return false;
+        std::memcpy(request->aliens[i].teamDefinition,team,teamLength+1);
+        request->aliens[i].alive=manifest.aliens[i].alive;
+        request->aliens[i].dead=manifest.aliens[i].dead;
+    }
+    return true;
 }
 } // anon
 
@@ -436,6 +487,18 @@ void applyPendingStrategicIntents() {
             if(result==BDEF_MUTATION_APPLIED) out.disposition=StrategicIntentDisposition::Applied;
             out.canonicalValue=static_cast<int32_t>(result); break; }
 
+        case StrategicIntentKind::StartTransfer: {
+            StrategicTransferManifest manifest={};
+            transferStartRequest_t request={};
+            transfer_t* started=nullptr;
+            transferStartResult_t result=TR_START_INVALID_REQUEST;
+            if(intent::legacy::takeTransferManifest(in.transferManifest,&manifest)
+                    && buildTransferStartRequest(manifest,&request))
+                result=TR_TryStartTransfer(request,&started);
+            if(result==TR_START_APPLIED) out.disposition=StrategicIntentDisposition::Applied;
+            out.canonicalValue=static_cast<int32_t>(result);
+            break; }
+
         /* Strict-authority catalog is transport-complete, but these actions stay
          * rejected until callback-owned validation/mutation is moved into its
          * canonical campaign subsystem. No command-string fallback is allowed. */
@@ -445,7 +508,6 @@ void applyPendingStrategicIntents() {
         case StrategicIntentKind::LoadLastSave:
         case StrategicIntentKind::SaveGame:
         case StrategicIntentKind::StartMission:
-        case StrategicIntentKind::StartTransfer:
             break;
         }
         intent::legacy::publishStrategicIntentResult(out);
