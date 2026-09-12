@@ -8,6 +8,7 @@
 #include "../cgame/campaign/cp_employee.h"
 #include "../cgame/campaign/cp_messages.h"
 #include "../cgame/campaign/cp_missions.h"
+#include "../cgame/campaign/cp_mapfightequip.h"
 #include "../cgame/campaign/cp_uforecovery.h"
 #include "strategic_snapshot_legacy_adapter.h"
 
@@ -154,6 +155,27 @@ StrategicInstallationView projectInstallation(const installation_t& installation
 	out.alienInterest = installation.alienInterest;
 	out.selected = installation.selected;
 	out.name = valueString(installation.name);
+	return out;
+}
+
+
+StrategicDefenceSlotView projectDefenceSlot(const baseWeapon_t& weapon, int slotIndex, bool active)
+{
+	StrategicDefenceSlotView out;
+	out.id = canonical::DefenceSlotId(BDEF_GetDefenceSlotRuntimeId(&weapon));
+	out.base = weapon.slot.base ? indexedId<canonical::BaseId>(weapon.slot.base->idx) : canonical::BaseId();
+	out.installation = weapon.slot.installation ? indexedId<canonical::InstallationId>(weapon.slot.installation->idx) : canonical::InstallationId();
+	out.target = aircraftId(weapon.target, true);
+	out.item = weapon.slot.item ? indexedId<canonical::ItemId>(weapon.slot.item->idx) : canonical::ItemId();
+	out.ammo = weapon.slot.ammo ? indexedId<canonical::ItemId>(weapon.slot.ammo->idx) : canonical::ItemId();
+	out.nextItem = weapon.slot.nextItem ? indexedId<canonical::ItemId>(weapon.slot.nextItem->idx) : canonical::ItemId();
+	out.nextAmmo = weapon.slot.nextAmmo ? indexedId<canonical::ItemId>(weapon.slot.nextAmmo->idx) : canonical::ItemId();
+	out.type = static_cast<int32_t>(weapon.slot.type);
+	out.slotIndex = slotIndex;
+	out.installationTime = weapon.slot.installationTime;
+	out.ammoLeft = weapon.slot.ammoLeft;
+	out.autofire = weapon.autofire;
+	out.active = active;
 	return out;
 }
 
@@ -353,6 +375,20 @@ StrategicSnapshot buildCurrentStrategicSnapshot(uint64_t publicationSerial)
 		installations.push_back(projectInstallation(*installation));
 	}
 
+	std::vector<StrategicDefenceSlotView> defenceSlots;
+	for (int i = 0; i < ccs.numBases; ++i) {
+		base_t& base = ccs.bases[i];
+		for (int slot = 0; slot < base.numBatteries; ++slot)
+			defenceSlots.push_back(projectDefenceSlot(base.batteries[slot], slot, slot < base.numActiveBatteries));
+		for (int slot = 0; slot < base.numLasers; ++slot)
+			defenceSlots.push_back(projectDefenceSlot(base.lasers[slot], slot, slot < base.numActiveLasers));
+	}
+	INS_Foreach(defenceInstallation) {
+		for (int slot = 0; slot < defenceInstallation->numBatteries; ++slot)
+			defenceSlots.push_back(projectDefenceSlot(defenceInstallation->batteries[slot], slot,
+				defenceInstallation->installationStatus == INSTALLATION_WORKING));
+	}
+
 	std::vector<StrategicNationView> nations;
 	NAT_Foreach(nation) {
 		nations.push_back(projectNation(*nation));
@@ -440,7 +476,8 @@ StrategicSnapshot buildCurrentStrategicSnapshot(uint64_t publicationSerial)
 		std::move(employees),
 		std::move(facilities),
 		ufoRecovery,
-		std::move(ufoSaleOffers));
+		std::move(ufoSaleOffers),
+		std::move(defenceSlots));
 }
 
 void resetStrategicSnapshotAdapter()

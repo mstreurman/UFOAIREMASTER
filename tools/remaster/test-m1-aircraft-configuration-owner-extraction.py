@@ -144,7 +144,7 @@ try:
         raise AssertionError("AircraftEquipmentSlot structural contract not qualified")
     if reg["AircraftEquipmentSlot"]["mapping_status"] != "structural_tuple":
         raise AssertionError("AircraftEquipmentSlot must remain structural, not a minted runtime ID")
-    if reg["ItemId"]["intent_status"] != "create_production_market_aircraft_equipment_owners_qualified":
+    if reg["ItemId"]["intent_status"] != "create_production_market_aircraft_equipment_defence_owners_qualified":
         raise AssertionError("ItemId aircraft-equipment owner status stale")
 
     integration = read("tools/remaster/m1-intent-catalog-integration.cpp")
@@ -172,7 +172,7 @@ try:
     equipment_lookup = integration.find("AII_GetCraftitemTechsByType(AC_ITEM_WEAPON)")
     if research_init < 0 or equipment_lookup < 0 or research_init >= equipment_lookup:
         raise AssertionError("aircraft configuration runtime integration: research tree must initialize before equipment technology lookup")
-    require(expansion, ['"[  PASSED  ] 5 tests."', '"  integration GoogleTests: 5/5"'], "aircraft runtime integration gate")
+    require(expansion, ['"[  PASSED  ] 6 tests."', '"  integration GoogleTests: 6/6"'], "aircraft runtime integration gate")
 
     save_h = read("src/client/cgame/campaign/cp_save.h")
     common_h = read("src/common/common.h")
@@ -186,7 +186,7 @@ try:
     print("  replacement/install/ammo/storage/stat semantics remain in canonical cp_mapfightequip owner")
     print("  RenameAircraft: canonical validation/default-name restoration in cp_aircraft owner")
     print("  no AircraftEquipmentSlot runtime ID minted")
-    print("  authority: strategic 47/57 applied, 10 fail-closed")
+    print("  authority: strategic 51/57 applied, 6 fail-closed")
     print("  save v4 / protocol 18 unchanged")
 except AssertionError as exc:
     print("FAIL M1 aircraft configuration owner extraction: " + str(exc), file=sys.stderr)

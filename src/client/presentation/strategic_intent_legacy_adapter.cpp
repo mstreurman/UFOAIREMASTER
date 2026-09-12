@@ -395,18 +395,55 @@ void applyPendingStrategicIntents() {
             }
             break; }
 
+        case StrategicIntentKind::EquipBaseDefenceItem: {
+            const bool wantsBase=in.base.isValid(), wantsInstallation=in.installation.isValid();
+            base_t* b=wantsBase?resolveBase(in.base):nullptr;
+            installation_t* installation=wantsInstallation?resolveInstallation(in.installation):nullptr;
+            int itemIndex=-1;
+            baseDefenceMutationResult_t result=BDEF_MUTATION_INVALID_CONTEXT;
+            if(wantsBase!=wantsInstallation && (!wantsBase||b) && (!wantsInstallation||installation)
+                    && in.defenceSlot.isValid() && resolveItemIndex(in.item,&itemIndex))
+                result=BDEF_TryEquipItem(b,installation,in.defenceSlot.value,itemIndex);
+            if(result==BDEF_MUTATION_APPLIED) out.disposition=StrategicIntentDisposition::Applied;
+            out.canonicalValue=static_cast<int32_t>(result); break; }
+        case StrategicIntentKind::RemoveBaseDefenceItem: {
+            const bool wantsBase=in.base.isValid(), wantsInstallation=in.installation.isValid();
+            base_t* b=wantsBase?resolveBase(in.base):nullptr;
+            installation_t* installation=wantsInstallation?resolveInstallation(in.installation):nullptr;
+            baseDefenceMutationResult_t result=BDEF_MUTATION_INVALID_CONTEXT;
+            if(wantsBase!=wantsInstallation && (!wantsBase||b) && (!wantsInstallation||installation)
+                    && in.defenceSlot.isValid())
+                result=BDEF_TryRemoveItem(b,installation,in.defenceSlot.value);
+            if(result==BDEF_MUTATION_APPLIED) out.disposition=StrategicIntentDisposition::Applied;
+            out.canonicalValue=static_cast<int32_t>(result); break; }
+        case StrategicIntentKind::SetAirDefenceAutoFire: {
+            const bool wantsBase=in.base.isValid(), wantsInstallation=in.installation.isValid();
+            base_t* b=wantsBase?resolveBase(in.base):nullptr;
+            installation_t* installation=wantsInstallation?resolveInstallation(in.installation):nullptr;
+            baseDefenceMutationResult_t result=BDEF_MUTATION_INVALID_CONTEXT;
+            if(wantsBase!=wantsInstallation && (!wantsBase||b) && (!wantsInstallation||installation))
+                result=BDEF_TrySetAutoFire(b,installation,in.value0!=0);
+            if(result==BDEF_MUTATION_APPLIED) out.disposition=StrategicIntentDisposition::Applied;
+            out.canonicalValue=static_cast<int32_t>(result); break; }
+        case StrategicIntentKind::SetAirDefenceTarget: {
+            const bool wantsBase=in.base.isValid(), wantsInstallation=in.installation.isValid();
+            base_t* b=wantsBase?resolveBase(in.base):nullptr;
+            installation_t* installation=wantsInstallation?resolveInstallation(in.installation):nullptr;
+            aircraft_t* u=resolveUfoAircraft(in.targetAircraft);
+            baseDefenceMutationResult_t result=BDEF_MUTATION_INVALID_CONTEXT;
+            if(wantsBase!=wantsInstallation && (!wantsBase||b) && (!wantsInstallation||installation) && u)
+                result=BDEF_TrySetTarget(b,installation,u);
+            if(result==BDEF_MUTATION_APPLIED) out.disposition=StrategicIntentDisposition::Applied;
+            out.canonicalValue=static_cast<int32_t>(result); break; }
+
         /* Strict-authority catalog is transport-complete, but these actions stay
          * rejected until callback-owned validation/mutation is moved into its
          * canonical campaign subsystem. No command-string fallback is allowed. */
         case StrategicIntentKind::AutoResolveMission:
         case StrategicIntentKind::DestroyAntimatterFacility:
-        case StrategicIntentKind::EquipBaseDefenceItem:
         case StrategicIntentKind::LoadGame:
         case StrategicIntentKind::LoadLastSave:
-        case StrategicIntentKind::RemoveBaseDefenceItem:
         case StrategicIntentKind::SaveGame:
-        case StrategicIntentKind::SetAirDefenceAutoFire:
-        case StrategicIntentKind::SetAirDefenceTarget:
         case StrategicIntentKind::StartMission:
         case StrategicIntentKind::StartTransfer:
             break;

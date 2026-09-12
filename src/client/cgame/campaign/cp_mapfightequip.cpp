@@ -31,6 +31,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cp_ufo.h"
 #include "save/save_fightequip.h"
 
+#include <limits>
+
 #define UFO_RELOAD_DELAY_MULTIPLIER 2
 #define AIRCRAFT_RELOAD_DELAY_MULTIPLIER 2
 #define BASE_RELOAD_DELAY_MULTIPLIER 2
@@ -177,6 +179,22 @@ bool AIM_PilotAssignedAircraft (const base_t* base, const Employee* pilot)
 	return found;
 }
 
+
+static uint32_t bdefNextRuntimeId = 0;
+
+static uint32_t BDEF_MintDefenceSlotRuntimeId ()
+{
+	const uint32_t invalid = std::numeric_limits<uint32_t>::max();
+	if (bdefNextRuntimeId == invalid)
+		return invalid;
+	return bdefNextRuntimeId++;
+}
+
+uint32_t BDEF_GetDefenceSlotRuntimeId (const baseWeapon_t* weapon)
+{
+	return weapon ? weapon->runtimeId : std::numeric_limits<uint32_t>::max();
+}
+
 /**
  * @brief Adds a defence system to base.
  * @param[in] basedefType Base defence type (see basedefenceType_t)
@@ -251,6 +269,7 @@ void BDEF_RemoveBattery (base_t* base, basedefenceType_t basedefType, int idx)
 		REMOVE_ELEM(base->batteries, idx, base->numBatteries);
 		/* just for security */
 		AII_InitialiseSlot(&base->batteries[base->numBatteries].slot, nullptr, base, nullptr, AC_ITEM_BASE_MISSILE);
+		base->batteries[base->numBatteries].runtimeId = BDEF_MintDefenceSlotRuntimeId();
 		break;
 	case BASEDEF_LASER: /* this is a laser battery */
 		/* we must have at least one laser battery to remove it */
@@ -270,6 +289,7 @@ void BDEF_RemoveBattery (base_t* base, basedefenceType_t basedefType, int idx)
 		REMOVE_ELEM(base->lasers, idx, base->numLasers);
 		/* just for security */
 		AII_InitialiseSlot(&base->lasers[base->numLasers].slot, nullptr, base, nullptr, AC_ITEM_BASE_LASER);
+		base->lasers[base->numLasers].runtimeId = BDEF_MintDefenceSlotRuntimeId();
 		break;
 	default:
 		cgi->Com_Printf("BDEF_RemoveBattery_f: unknown type of air defence system.\n");
@@ -285,6 +305,8 @@ void BDEF_InitialiseBaseSlots (base_t* base)
 	for (int i = 0; i < MAX_BASE_SLOT; i++) {
 		baseWeapon_t* battery = &base->batteries[i];
 		baseWeapon_t* laser = &base->lasers[i];
+		battery->runtimeId = BDEF_MintDefenceSlotRuntimeId();
+		laser->runtimeId = BDEF_MintDefenceSlotRuntimeId();
 		AII_InitialiseSlot(&battery->slot, nullptr, base, nullptr, AC_ITEM_BASE_MISSILE);
 		AII_InitialiseSlot(&laser->slot, nullptr, base, nullptr, AC_ITEM_BASE_LASER);
 		battery->autofire = true;
@@ -302,12 +324,253 @@ void BDEF_InitialiseInstallationSlots (installation_t* installation)
 {
 	for (int i = 0; i < installation->installationTemplate->maxBatteries; i++) {
 		baseWeapon_t* battery = &installation->batteries[i];
+		battery->runtimeId = BDEF_MintDefenceSlotRuntimeId();
 		AII_InitialiseSlot(&battery->slot, nullptr, nullptr, installation, AC_ITEM_BASE_MISSILE);
 		battery->target = nullptr;
 		battery->autofire = true;
 	}
 }
 
+
+
+baseWeapon_t* BDEF_GetBaseWeaponByIDX (base_t* base, aircraftItemType_t type, int idx)
+{
+	if (!base || idx < 0)
+		return nullptr;
+	switch (type) {
+	case AC_ITEM_BASE_MISSILE:
+		return idx < base->numBatteries ? &base->batteries[idx] : nullptr;
+	case AC_ITEM_BASE_LASER:
+		return idx < base->numLasers ? &base->lasers[idx] : nullptr;
+	default:
+		return nullptr;
+	}
+}
+
+baseWeapon_t* BDEF_GetInstallationWeaponByIDX (installation_t* installation, aircraftItemType_t type, int idx)
+{
+	if (!installation || idx < 0 || type != AC_ITEM_BASE_MISSILE)
+		return nullptr;
+	return idx < installation->numBatteries ? &installation->batteries[idx] : nullptr;
+}
+
+baseWeapon_t* BDEF_GetBaseWeaponByRuntimeId (base_t* base, uint32_t runtimeId)
+{
+	if (!base || runtimeId == std::numeric_limits<uint32_t>::max())
+		return nullptr;
+	for (int i = 0; i < base->numBatteries; ++i)
+		if (base->batteries[i].runtimeId == runtimeId)
+			return &base->batteries[i];
+	for (int i = 0; i < base->numLasers; ++i)
+		if (base->lasers[i].runtimeId == runtimeId)
+			return &base->lasers[i];
+	return nullptr;
+}
+
+baseWeapon_t* BDEF_GetInstallationWeaponByRuntimeId (installation_t* installation, uint32_t runtimeId)
+{
+	if (!installation || runtimeId == std::numeric_limits<uint32_t>::max())
+		return nullptr;
+	for (int i = 0; i < installation->numBatteries; ++i)
+		if (installation->batteries[i].runtimeId == runtimeId)
+			return &installation->batteries[i];
+	return nullptr;
+}
+
+static bool BDEF_IsActiveWeapon (const baseWeapon_t* weapon, const base_t* base,
+		const installation_t* installation)
+{
+	if (!weapon)
+		return false;
+	if (base) {
+		for (int i = 0; i < base->numActiveBatteries; ++i)
+			if (&base->batteries[i] == weapon)
+				return true;
+		for (int i = 0; i < base->numActiveLasers; ++i)
+			if (&base->lasers[i] == weapon)
+				return true;
+		return false;
+	}
+	if (installation) {
+		if (installation->installationStatus != INSTALLATION_WORKING)
+			return false;
+		for (int i = 0; i < installation->numBatteries; ++i)
+			if (&installation->batteries[i] == weapon)
+				return true;
+	}
+	return false;
+}
+
+static baseWeapon_t* BDEF_ResolveWeapon (base_t* base, installation_t* installation,
+		uint32_t runtimeId)
+{
+	if ((base == nullptr) == (installation == nullptr))
+		return nullptr;
+	return base ? BDEF_GetBaseWeaponByRuntimeId(base, runtimeId)
+		: BDEF_GetInstallationWeaponByRuntimeId(installation, runtimeId);
+}
+
+baseDefenceMutationResult_t BDEF_TryEquipItem (base_t* base, installation_t* installation,
+		uint32_t runtimeId, int itemIndex)
+{
+	if ((base == nullptr) == (installation == nullptr))
+		return BDEF_MUTATION_INVALID_CONTEXT;
+	baseWeapon_t* weapon = BDEF_ResolveWeapon(base, installation, runtimeId);
+	if (!weapon)
+		return BDEF_MUTATION_INVALID_SLOT;
+	if (!BDEF_IsActiveWeapon(weapon, base, installation))
+		return BDEF_MUTATION_NOT_ELIGIBLE;
+	if (itemIndex < 0 || itemIndex >= cgi->csi->numODs)
+		return BDEF_MUTATION_INVALID_ITEM;
+
+	aircraftSlot_t* slot = &weapon->slot;
+	const objDef_t* item = INVSH_GetItemByIDX(itemIndex);
+	if (!item || item->idx != itemIndex || item->craftitem.type != slot->type)
+		return BDEF_MUTATION_INVALID_ITEM;
+	const technology_t* tech = ccs.objDefTechs[item->idx];
+	if (!tech || !RS_IsResearched_ptr(tech) || !AIM_SelectableCraftItem(slot, tech))
+		return BDEF_MUTATION_NOT_ELIGIBLE;
+
+	const objDef_t* beforeItem = slot->item;
+	const objDef_t* beforeAmmo = slot->ammo;
+	const objDef_t* beforeNextItem = slot->nextItem;
+	const objDef_t* beforeNextAmmo = slot->nextAmmo;
+	const int beforeInstallationTime = slot->installationTime;
+	base_t* storageBase = base;
+
+	if (!slot->nextItem) {
+		if (!slot->item || slot->installationTime == slot->item->craftitem.installationTime) {
+			AII_RemoveItemFromSlot(storageBase, slot, false);
+			if (!AII_AddItemToSlot(storageBase, tech, slot, false))
+				return BDEF_MUTATION_REJECTED;
+			AII_AutoAddAmmo(slot);
+		} else if (slot->item == item) {
+			if (slot->installationTime == -slot->item->craftitem.installationTime)
+				slot->installationTime = 0;
+		} else {
+			slot->installationTime = -slot->item->craftitem.installationTime;
+			if (!AII_AddItemToSlot(storageBase, tech, slot, true))
+				return BDEF_MUTATION_REJECTED;
+			AII_AutoAddAmmo(slot);
+		}
+	} else {
+		/* Preserve inherited base-defence queue semantics exactly: removing
+		 * current promotes nextItem before the newly selected item is queued. */
+		AII_RemoveItemFromSlot(storageBase, slot, false);
+		if (!AII_AddItemToSlot(storageBase, tech, slot, true))
+			return BDEF_MUTATION_REJECTED;
+		AII_AutoAddAmmo(slot);
+	}
+
+	const bool changed = slot->item != beforeItem || slot->ammo != beforeAmmo
+		|| slot->nextItem != beforeNextItem || slot->nextAmmo != beforeNextAmmo
+		|| slot->installationTime != beforeInstallationTime;
+	return changed ? BDEF_MUTATION_APPLIED : BDEF_MUTATION_NO_CHANGE;
+}
+
+baseDefenceMutationResult_t BDEF_TryRemoveItem (base_t* base, installation_t* installation,
+		uint32_t runtimeId)
+{
+	if ((base == nullptr) == (installation == nullptr))
+		return BDEF_MUTATION_INVALID_CONTEXT;
+	baseWeapon_t* weapon = BDEF_ResolveWeapon(base, installation, runtimeId);
+	if (!weapon)
+		return BDEF_MUTATION_INVALID_SLOT;
+	if (!BDEF_IsActiveWeapon(weapon, base, installation))
+		return BDEF_MUTATION_NOT_ELIGIBLE;
+
+	aircraftSlot_t* slot = &weapon->slot;
+	if (!slot->item)
+		return BDEF_MUTATION_NO_CHANGE;
+	const objDef_t* beforeItem = slot->item;
+	const objDef_t* beforeAmmo = slot->ammo;
+	const objDef_t* beforeNextItem = slot->nextItem;
+	const objDef_t* beforeNextAmmo = slot->nextAmmo;
+	const int beforeInstallationTime = slot->installationTime;
+	base_t* storageBase = base;
+
+	if (!slot->nextItem) {
+		if (slot->installationTime < slot->item->craftitem.installationTime) {
+			slot->installationTime = -slot->item->craftitem.installationTime;
+			AII_RemoveItemFromSlot(storageBase, slot, true);
+		} else {
+			AII_RemoveItemFromSlot(storageBase, slot, false);
+		}
+	} else {
+		AII_RemoveItemFromSlot(storageBase, slot, false);
+		if (slot->item && slot->installationTime == -slot->item->craftitem.installationTime)
+			slot->installationTime = 0;
+	}
+
+	const bool changed = slot->item != beforeItem || slot->ammo != beforeAmmo
+		|| slot->nextItem != beforeNextItem || slot->nextAmmo != beforeNextAmmo
+		|| slot->installationTime != beforeInstallationTime;
+	return changed ? BDEF_MUTATION_APPLIED : BDEF_MUTATION_NO_CHANGE;
+}
+
+baseDefenceMutationResult_t BDEF_TrySetAutoFire (base_t* base,
+		installation_t* installation, bool enabled)
+{
+	if ((base == nullptr) == (installation == nullptr))
+		return BDEF_MUTATION_INVALID_CONTEXT;
+	bool changed = false;
+	if (base) {
+		for (int i = 0; i < base->numBatteries; ++i) {
+			baseWeapon_t* weapon = &base->batteries[i];
+			changed |= weapon->autofire != enabled || (!enabled && weapon->target != nullptr);
+			weapon->autofire = enabled;
+			if (!enabled)
+				weapon->target = nullptr;
+		}
+		for (int i = 0; i < base->numLasers; ++i) {
+			baseWeapon_t* weapon = &base->lasers[i];
+			changed |= weapon->autofire != enabled || (!enabled && weapon->target != nullptr);
+			weapon->autofire = enabled;
+			if (!enabled)
+				weapon->target = nullptr;
+		}
+	} else {
+		for (int i = 0; i < installation->numBatteries; ++i) {
+			baseWeapon_t* weapon = &installation->batteries[i];
+			changed |= weapon->autofire != enabled || (!enabled && weapon->target != nullptr);
+			weapon->autofire = enabled;
+			if (!enabled)
+				weapon->target = nullptr;
+		}
+	}
+	return changed ? BDEF_MUTATION_APPLIED : BDEF_MUTATION_NO_CHANGE;
+}
+
+baseDefenceMutationResult_t BDEF_TrySetTarget (base_t* base,
+		installation_t* installation, aircraft_t* ufo)
+{
+	if ((base == nullptr) == (installation == nullptr))
+		return BDEF_MUTATION_INVALID_CONTEXT;
+	if (!ufo || !AIR_IsUFO(ufo) || !UFO_IsUFOSeenOnGeoscape(ufo))
+		return BDEF_MUTATION_NOT_ELIGIBLE;
+	if (base && !AII_BaseCanShoot(base))
+		return BDEF_MUTATION_NOT_ELIGIBLE;
+	if (installation && !AII_InstallationCanShoot(installation))
+		return BDEF_MUTATION_NOT_ELIGIBLE;
+
+	bool changed = false;
+	if (installation) {
+		for (int i = 0; i < installation->installationTemplate->maxBatteries; ++i) {
+			changed |= installation->batteries[i].target != ufo;
+			installation->batteries[i].target = ufo;
+		}
+	} else {
+		for (int i = 0; i < base->numBatteries; ++i) {
+			changed |= base->batteries[i].target != ufo;
+			base->batteries[i].target = ufo;
+		}
+		for (int i = 0; i < base->numLasers; ++i) {
+			changed |= base->lasers[i].target != ufo;
+			base->lasers[i].target = ufo;
+		}
+	}
+	return changed ? BDEF_MUTATION_APPLIED : BDEF_MUTATION_NO_CHANGE;
+}
 
 /**
  * @brief Update the installation delay of one slot.

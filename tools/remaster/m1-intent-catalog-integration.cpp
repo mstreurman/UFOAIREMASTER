@@ -340,6 +340,74 @@ TEST_F(M1IntentCatalogTest, AircraftConfigurationOwnersPreserveStructuralSlotSem
 		AII_AIRCRAFT_EQUIPMENT_INVALID_SLOT,
 		AII_TryEquipAircraftItem(&aircraft, AC_ITEM_WEAPON, 0, ZONE_AMMO, originalItem->idx));
 }
+TEST_F(M1IntentCatalogTest, DefenceOwnersUseRuntimeIdentityAcrossCompaction)
+{
+	campaign_t* campaign = CatalogCampaign();
+	ASSERT_NE(nullptr, campaign);
+	RS_InitTree(campaign, false);
+
+	base_t base = {};
+	base.idx = 0;
+	base.founded = true;
+	base.baseStatus = BASE_WORKING;
+	BDEF_InitialiseBaseSlots(&base);
+	BDEF_AddBattery(BASEDEF_MISSILE, &base);
+	BDEF_AddBattery(BASEDEF_MISSILE, &base);
+	base.numActiveBatteries = 2;
+
+	baseWeapon_t* first = BDEF_GetBaseWeaponByIDX(&base, AC_ITEM_BASE_MISSILE, 0);
+	baseWeapon_t* second = BDEF_GetBaseWeaponByIDX(&base, AC_ITEM_BASE_MISSILE, 1);
+	ASSERT_NE(nullptr, first);
+	ASSERT_NE(nullptr, second);
+	const uint32_t firstId = BDEF_GetDefenceSlotRuntimeId(first);
+	const uint32_t secondId = BDEF_GetDefenceSlotRuntimeId(second);
+	ASSERT_NE(firstId, secondId);
+
+	const technology_t* selectedTech = nullptr;
+	const objDef_t* selectedItem = nullptr;
+	technology_t** techs = AII_GetCraftitemTechsByType(AC_ITEM_BASE_MISSILE);
+	for (technology_t** current = techs; current && *current; ++current) {
+		const technology_t* tech = *current;
+		if (!RS_IsResearched_ptr(tech))
+			continue;
+		const objDef_t* item = INVSH_GetItemByID(tech->provides);
+		if (!item || item->craftitem.type != AC_ITEM_BASE_MISSILE
+				|| item->craftitem.installationTime <= 0)
+			continue;
+		if (AII_GetItemWeightBySize(item) > second->slot.size)
+			continue;
+		selectedTech = tech;
+		selectedItem = item;
+		break;
+	}
+	ASSERT_NE(nullptr, selectedTech);
+	ASSERT_NE(nullptr, selectedItem);
+	base.storage.numItems[selectedItem->idx] = 2;
+
+	EXPECT_EQ(BDEF_MUTATION_APPLIED,
+		BDEF_TryEquipItem(&base, nullptr, secondId, selectedItem->idx));
+	ASSERT_EQ(selectedItem, second->slot.item);
+	ASSERT_EQ(1, base.storage.numItems[selectedItem->idx]);
+	second->slot.installationTime = 0;
+	EXPECT_EQ(BDEF_MUTATION_APPLIED, BDEF_TryRemoveItem(&base, nullptr, secondId));
+	ASSERT_EQ(-selectedItem->craftitem.installationTime, second->slot.installationTime);
+	EXPECT_EQ(BDEF_MUTATION_APPLIED,
+		BDEF_TryEquipItem(&base, nullptr, secondId, selectedItem->idx));
+	ASSERT_EQ(0, second->slot.installationTime);
+
+	EXPECT_EQ(BDEF_MUTATION_APPLIED, BDEF_TrySetAutoFire(&base, nullptr, false));
+	EXPECT_FALSE(base.batteries[0].autofire);
+	EXPECT_FALSE(base.batteries[1].autofire);
+	EXPECT_EQ(BDEF_MUTATION_APPLIED, BDEF_TrySetAutoFire(&base, nullptr, true));
+
+	BDEF_RemoveBattery(&base, BASEDEF_MISSILE, 0);
+	ASSERT_EQ(1, base.numBatteries);
+	EXPECT_EQ(secondId, BDEF_GetDefenceSlotRuntimeId(&base.batteries[0]));
+	EXPECT_EQ(nullptr, BDEF_GetBaseWeaponByRuntimeId(&base, firstId));
+	EXPECT_EQ(&base.batteries[0], BDEF_GetBaseWeaponByRuntimeId(&base, secondId));
+	EXPECT_EQ(BDEF_MUTATION_INVALID_SLOT, BDEF_TryRemoveItem(&base, nullptr, firstId));
+}
+
 TEST_F(M1IntentCatalogTest, UfoRecoveryOwnersBindOneShotRecoveryAndRejectReplay)
 {
 	const aircraft_t* ufo = FirstCatalogUfoTemplate();

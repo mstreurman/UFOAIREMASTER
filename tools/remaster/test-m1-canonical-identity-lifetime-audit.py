@@ -143,8 +143,8 @@ def main():
             "UfoSaleOfferId runtime mapping qualification regressed")
     require(by["TransferId"]["second_pass_status"] == "pending_mapping",
             "TransferId debt status changed")
-    require(by["DefenceSlotId"]["second_pass_status"] == "pending_mapping",
-            "DefenceSlotId debt status changed")
+    require(by["DefenceSlotId"]["second_pass_status"] == "qualified_runtime_mapping",
+            "DefenceSlotId runtime mapping qualification regressed")
 
     print("PASS M1 second-pass identity lifetime audit")
     print("  strong canonical ID domains: 18/18")
@@ -153,7 +153,7 @@ def main():
     print("  UCN generation/save/load/wire correlation: explicit")
     print("  UCN allocator restoration/non-reuse + signed-16-bit wire domain: qualified")
     print("  ItemId current-content ordinal + stable script key: qualified")
-    print("  Facility/UfoRecovery/UfoSaleOffer runtime mappings: qualified; Transfer/Defence/Message debt remains pending")
+    print("  Facility/Defence/UfoRecovery/UfoSaleOffer runtime mappings: qualified; Transfer/Message debt remains pending")
     return 0
 
 

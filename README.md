@@ -76,12 +76,12 @@ The accepted migration roadmap is [`docs/architecture/080-implementation-migrati
 
 ### Immediate execution order
 
-M0 is sealed. M1 is actively extracting presentation-facing authority without replacing canonical game rules. The current qualified implementation baseline is `3f301de322dc19018f5d9d905c836f014cd0ae54` (`feat: extract canonical alien containment authority`) plus the qualified aircraft-configuration owner extraction batch. The boundary state is mechanically inventoried and qualified:
+M0 is sealed. M1 is actively extracting presentation-facing authority without replacing canonical game rules. The current qualified implementation baseline is `f1b46c296ec01954175c4b29373b62c2a5cdc041` (`feat: extract canonical aircraft configuration authority`) plus the qualified defence owner extraction batch. The boundary state is mechanically inventoried and qualified:
 
 ```text
 strategic presentation-authoritative semantics: 57 total
-  canonical-applied:                            47
-  fail-closed pending owners:                   10
+  canonical-applied:                            51
+  fail-closed pending owners:                   6
 
 tactical authoritative semantics:               15 total
   forwarded to server authority:                13
@@ -100,9 +100,9 @@ The active execution order is:
 3. establish C++11-compatible strong presentation identities and C++26 remaster consumers — **complete foundation**;
 4. complete the source-derived presentation action inventory and five-way authority classification — **complete, with one later semantic split: 58 strategic + 15 tactical authoritative semantics**;
 5. introduce typed intent dispatch without changing canonical rules — **complete contract/catalog foundation**;
-6. extract canonical strategic owners from legacy callbacks — **47 strategic semantics qualified so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, facility build/destroy, Research assign/max/stop, Production create/amount/move/stop operations, the six Employee/Team assign/de-equip/delete/hire-fire/rename/skin operations, Market buy/sell aircraft/item/UGV plus explicit autosell policy, recovered/stored-UFO authority, alien-containment kill actions, and aircraft equipment/rename;
+6. extract canonical strategic owners from legacy callbacks — **51 strategic semantics qualified so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, facility build/destroy, Research assign/max/stop, Production create/amount/move/stop operations, the six Employee/Team assign/de-equip/delete/hire-fire/rename/skin operations, Market buy/sell aircraft/item/UGV plus explicit autosell policy, recovered/stored-UFO authority, alien-containment kill actions, and aircraft equipment/rename;
 7. publish Research + Production + Employee immutable state — **complete**, including `TechnologyId`, stable runtime `ProductionId`, persisted `EmployeeId`, and snapshot-local queue/order plus immutable employee state;
-8. complete the canonical identity audit — **complete contract pass**, with 18 strong 32-bit domains; stable Production, persisted StoredUfo/Employee identities plus runtime Facility/UfoRecovery/UfoSaleOffer identities are implemented/published while Transfer/Defence and other runtime mappings remain explicit debt;
+8. complete the canonical identity audit — **complete contract pass**, with 18 strong 32-bit domains; stable Production, persisted StoredUfo/Employee identities plus runtime Facility/DefenceSlot/UfoRecovery/UfoSaleOffer identities are implemented/published while Transfer and other runtime mappings remain explicit debt;
 9. Research owner extraction, all existing-job Production owners, `CreateProduction`, and all seven Market owners are **complete**; ItemId / aircraft-definition / StoredUfo production subjects are qualified, Market item buy/sell preserves partial-fill semantics, autosell uses an explicit desired state, and legacy/remaster paths converge on campaign owners;
 10. migrate the remaining transfer, defence, save/load and mission authority families behind typed IDs and canonical owners;
 11. keep ambiguous or misclassified semantics fail-closed until their canonical contract is proven;

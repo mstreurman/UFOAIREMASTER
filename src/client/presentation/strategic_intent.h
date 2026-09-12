@@ -89,6 +89,7 @@ struct StrategicIntent {
     canonical::EmployeeId employee;
     canonical::TechnologyId technology;
     canonical::ProductionId production;
+    canonical::DefenceSlotId defenceSlot;
     canonical::ItemId item;
     canonical::StoredUfoId storedUfo;
     canonical::UfoRecoveryId recovery;
@@ -134,7 +135,7 @@ StrategicIntentSubmission submitDestroyFacility(canonical::BaseId base, canonica
 StrategicIntentSubmission submitDestroyInstallation(canonical::InstallationId installation);
 StrategicIntentSubmission submitDestroyStoredUfo(canonical::StoredUfoId storedUfo);
 StrategicIntentSubmission submitEquipAircraftItem(canonical::AircraftId aircraft, int32_t slotType, int32_t slotIndex, int32_t zone, canonical::ItemId item);
-StrategicIntentSubmission submitEquipBaseDefenceItem(canonical::BaseId base, canonical::InstallationId installation, int32_t defenceType, int32_t slotIndex, canonical::ItemId item);
+StrategicIntentSubmission submitEquipBaseDefenceItem(canonical::BaseId base, canonical::InstallationId installation, canonical::DefenceSlotId defenceSlot, canonical::ItemId item);
 StrategicIntentSubmission submitHireOrFireEmployee(canonical::BaseId base, canonical::EmployeeId employee, bool hire);
 StrategicIntentSubmission submitIncreaseProduction(canonical::BaseId base, canonical::ProductionId production, int32_t amount);
 StrategicIntentSubmission submitCreateProduction(canonical::BaseId base, int32_t subjectKind, canonical::ItemId item, canonical::StoredUfoId storedUfo, const char* aircraftDefinition, int32_t amount);
@@ -147,7 +148,7 @@ StrategicIntentSubmission submitMoveProductionDown(canonical::BaseId base, canon
 StrategicIntentSubmission submitMoveProductionUp(canonical::BaseId base, canonical::ProductionId production);
 StrategicIntentSubmission submitPursueUfo(canonical::AircraftId aircraft, canonical::AircraftId ufo);
 StrategicIntentSubmission submitRemoveAircraftItem(canonical::AircraftId aircraft, int32_t slotType, int32_t slotIndex, int32_t zone);
-StrategicIntentSubmission submitRemoveBaseDefenceItem(canonical::BaseId base, canonical::InstallationId installation, int32_t defenceType, int32_t slotIndex);
+StrategicIntentSubmission submitRemoveBaseDefenceItem(canonical::BaseId base, canonical::InstallationId installation, canonical::DefenceSlotId defenceSlot);
 StrategicIntentSubmission submitRenameAircraft(canonical::AircraftId aircraft, const char* name);
 StrategicIntentSubmission submitRenameBase(canonical::BaseId base, const char* name);
 StrategicIntentSubmission submitRenameEmployee(canonical::EmployeeId employee, const char* name);

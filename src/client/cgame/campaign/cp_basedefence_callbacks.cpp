@@ -306,93 +306,48 @@ static void BDEF_BaseDefenceMenuUpdate_f (void)
  */
 static void BDEF_AddItem_f (void)
 {
-	aircraftSlot_t* slot;
 	installation_t* installation = INS_GetCurrentSelectedInstallation();
 	base_t* base = B_GetCurrentSelectedBase();
-	technology_t** list;
-	technology_t* itemTech = nullptr;
-	aircraftItemType_t bdefType;
-	int slotIDX;
-
-	if ((!base && !installation) || (base && installation)) {
-		cgi->Com_Printf("Exiting early base and installation both true or both false\n");
+	if ((!base && !installation) || (base && installation))
 		return;
-	}
-
-	if (cgi->Cmd_Argc() < 3) {
-		cgi->Com_Printf("Usage: %s <type> <slotIDX>\n", cgi->Cmd_Argv(0));
+	if (cgi->Cmd_Argc() < 3)
 		return;
-	}
 
-	bdefType = BDEF_GetItemTypeFromID(cgi->Cmd_Argv(1));
-	slotIDX = atoi(cgi->Cmd_Argv(2));
-
-	if (bdefType == MAX_ACITEMS) {
-		cgi->Com_Printf("BDEF_AddItem_f: Invalid defence type.\n");
+	const aircraftItemType_t bdefType = BDEF_GetItemTypeFromID(cgi->Cmd_Argv(1));
+	const int slotIDX = atoi(cgi->Cmd_Argv(2));
+	if (bdefType == MAX_ACITEMS || slotIDX < 0)
 		return;
-	}
-
-	if (slotIDX < 0) {
+	baseWeapon_t* weapon = installation
+		? BDEF_GetInstallationWeaponByIDX(installation, bdefType, slotIDX)
+		: BDEF_GetBaseWeaponByIDX(base, bdefType, slotIDX);
+	if (!weapon)
 		return;
-	} else {
-		int maxWeapon;
-		if (base)
-			maxWeapon = (bdefType == AC_ITEM_BASE_MISSILE) ? base->numActiveBatteries : base->numActiveLasers;
-		else
-			maxWeapon = installation->numBatteries;
+	if (base) {
+		const int maxWeapon = bdefType == AC_ITEM_BASE_MISSILE
+			? base->numActiveBatteries : base->numActiveLasers;
 		if (slotIDX >= maxWeapon)
 			return;
-	}
-
-	slot = (installation) ? BDEF_GetInstallationSlotByIDX(installation, bdefType, slotIDX) : BDEF_GetBaseSlotByIDX(base, bdefType, slotIDX);
-
-	if (!slot) {
-		cgi->Com_Printf("BDEF_AddItem_f: Invalid slot.\n");
+	} else if (slotIDX >= installation->numBatteries) {
 		return;
 	}
 
-	list = AII_GetCraftitemTechsByType(bdefType);
+	technology_t* itemTech = nullptr;
+	technology_t** list = AII_GetCraftitemTechsByType(bdefType);
 	while (*list) {
-		if (AIM_SelectableCraftItem(slot, *list)) {
+		if (AIM_SelectableCraftItem(&weapon->slot, *list)) {
 			itemTech = *list;
 			break;
 		}
-		list++;
+		++list;
 	}
-
 	if (!itemTech)
 		return;
+	const objDef_t* item = INVSH_GetItemByID(itemTech->provides);
+	if (!item)
+		return;
 
-	if (!slot->nextItem) {
-		/* we add the weapon, shield, item, or base defence if slot is free or the installation of
-		 * current item just began */
-		if (!slot->item || (slot->item && slot->installationTime == slot->item->craftitem.installationTime)) {
-			AII_RemoveItemFromSlot(base, slot, false);
-			AII_AddItemToSlot(base, itemTech, slot, false); /* Aircraft stats are updated below */
-			AII_AutoAddAmmo(slot);
-		} else if (slot->item == INVSH_GetItemByID(itemTech->provides)) {
-			/* the added item is the same than the one in current slot */
-			if (slot->installationTime == -slot->item->craftitem.installationTime) {
-				/* player changed his mind: he just want to re-add the item he just removed */
-				slot->installationTime = 0;
-			} else if (!slot->installationTime) {
-				/* player try to add a weapon he already have: just skip */
-			}
-		} else {
-			/* We start removing current item in slot, and the selected item will be installed afterwards */
-			slot->installationTime = -slot->item->craftitem.installationTime;
-			AII_AddItemToSlot(base, itemTech, slot, true);
-			AII_AutoAddAmmo(slot);
-		}
-	} else {
-		/* remove weapon and ammo of next item */
-		AII_RemoveItemFromSlot(base, slot, false);
-		AII_AddItemToSlot(base, itemTech, slot, true);
-		AII_AutoAddAmmo(slot);
-	}
-
-	/* Reinit menu */
-	cgi->Cmd_ExecuteString("basedef_updatemenu %s", BDEF_GetIDFromItemType(slot->type));
+	BDEF_TryEquipItem(base, installation, BDEF_GetDefenceSlotRuntimeId(weapon), item->idx);
+	cgi->Cmd_ExecuteString("basedef_updatemenu %s", BDEF_GetIDFromItemType(bdefType));
 }
 
 /**
@@ -400,71 +355,33 @@ static void BDEF_AddItem_f (void)
  */
 static void BDEF_RemoveItem_f (void)
 {
-	aircraftSlot_t* slot;
 	installation_t* installation = INS_GetCurrentSelectedInstallation();
 	base_t* base = B_GetCurrentSelectedBase();
-	aircraftItemType_t bdefType;
-	int slotIDX;
-
-	if ((!base && !installation) || (base && installation)) {
-		cgi->Com_Printf("Exiting early base and install both true or both false\n");
+	if ((!base && !installation) || (base && installation))
 		return;
-	}
-
-	if (cgi->Cmd_Argc() < 3) {
-		cgi->Com_Printf("Usage: %s <type> <slotIDX>\n", cgi->Cmd_Argv(0));
+	if (cgi->Cmd_Argc() < 3)
 		return;
-	}
 
-	bdefType = BDEF_GetItemTypeFromID(cgi->Cmd_Argv(1));
-	slotIDX = atoi(cgi->Cmd_Argv(2));
-
-	if (bdefType == MAX_ACITEMS) {
-		cgi->Com_Printf("BDEF_AddItem_f: Invalid defence type.\n");
+	const aircraftItemType_t bdefType = BDEF_GetItemTypeFromID(cgi->Cmd_Argv(1));
+	const int slotIDX = atoi(cgi->Cmd_Argv(2));
+	if (bdefType == MAX_ACITEMS || slotIDX < 0)
 		return;
-	}
-
-	if (slotIDX < 0) {
+	baseWeapon_t* weapon = installation
+		? BDEF_GetInstallationWeaponByIDX(installation, bdefType, slotIDX)
+		: BDEF_GetBaseWeaponByIDX(base, bdefType, slotIDX);
+	if (!weapon)
 		return;
-	} else {
-		int maxWeapon;
-		if (base)
-			maxWeapon = (bdefType == AC_ITEM_BASE_MISSILE) ? base->numActiveBatteries : base->numActiveLasers;
-		else
-			maxWeapon = installation->numBatteries;
+	if (base) {
+		const int maxWeapon = bdefType == AC_ITEM_BASE_MISSILE
+			? base->numActiveBatteries : base->numActiveLasers;
 		if (slotIDX >= maxWeapon)
 			return;
-	}
-
-	slot = (installation) ? BDEF_GetInstallationSlotByIDX(installation, bdefType, slotIDX) : BDEF_GetBaseSlotByIDX(base, bdefType, slotIDX);
-
-	if (!slot) {
-		cgi->Com_Printf("BDEF_AddItem_f: Invalid slot.\n");
+	} else if (slotIDX >= installation->numBatteries) {
 		return;
 	}
 
-	if (!slot->item)
-		return;
-
-	if (!slot->nextItem) {
-		/* we change the weapon, shield, item, or base defence that is already in the slot */
-		/* if the item has been installed since less than 1 hour, you don't need time to remove it */
-		if (slot->installationTime < slot->item->craftitem.installationTime) {
-			slot->installationTime = -slot->item->craftitem.installationTime;
-			AII_RemoveItemFromSlot(base, slot, true); /* we remove only ammo, not item */
-		} else {
-			AII_RemoveItemFromSlot(base, slot, false); /* we remove weapon and ammo */
-		}
-	} else {
-		/* we change the weapon, shield, item, or base defence that will be installed AFTER the removal
-		 * of the one in the slot atm */
-		AII_RemoveItemFromSlot(base, slot, false); /* we remove weapon and ammo */
-		/* if you canceled next item for less than 1 hour, previous item is still functional */
-		if (slot->installationTime == -slot->item->craftitem.installationTime) {
-			slot->installationTime = 0;
-		}
-	}
-	cgi->Cmd_ExecuteString("basedef_updatemenu %s", BDEF_GetIDFromItemType(slot->type));
+	BDEF_TryRemoveItem(base, installation, BDEF_GetDefenceSlotRuntimeId(weapon));
+	cgi->Cmd_ExecuteString("basedef_updatemenu %s", BDEF_GetIDFromItemType(bdefType));
 }
 
 /**
@@ -660,24 +577,12 @@ static void BDEF_ChangeAutoFire (void)
 {
 	installation_t* installation = INS_GetCurrentSelectedInstallation();
 	base_t* base = B_GetCurrentSelectedBase();
-	int i;
-
-	if (!base && !installation)
+	if ((!base && !installation) || (base && installation) || cgi->Cmd_Argc() < 2)
 		return;
-	if (base && installation)
-		return;
-	if (cgi->Cmd_Argc() < 2)
-		return;
-
-	if (base) {
-		for (i = 0; i < base->numBatteries; i++)
-			BDEF_SetAutoFire(&base->batteries[i], atoi(cgi->Cmd_Argv(1)));
-		for (i = 0; i < base->numLasers; i++)
-			BDEF_SetAutoFire(&base->lasers[i], atoi(cgi->Cmd_Argv(1)));
-	} else if (installation) {
-		for (i = 0; i < installation->numBatteries; i++)
-			BDEF_SetAutoFire(&installation->batteries[i], atoi(cgi->Cmd_Argv(1)));
-	}
+	const bool enabled = atoi(cgi->Cmd_Argv(1)) != 0;
+	BDEF_TrySetAutoFire(base, installation, enabled);
+	if (!enabled)
+		cgi->Cvar_Set("mn_target", _("None"));
 }
 
 static const cmdList_t baseDefenseCmds[] = {

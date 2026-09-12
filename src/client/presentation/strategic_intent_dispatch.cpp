@@ -175,10 +175,10 @@ StrategicIntentSubmission submitEquipAircraftItem(canonical::AircraftId aircraft
     return submit(v);
 }
 
-StrategicIntentSubmission submitEquipBaseDefenceItem(canonical::BaseId base, canonical::InstallationId installation, int32_t defenceType, int32_t slotIndex, canonical::ItemId item)
+StrategicIntentSubmission submitEquipBaseDefenceItem(canonical::BaseId base, canonical::InstallationId installation, canonical::DefenceSlotId defenceSlot, canonical::ItemId item)
 {
     StrategicIntent v = make(StrategicIntentKind::EquipBaseDefenceItem);
-    v.base = base; v.installation = installation; v.value0 = defenceType; v.value1 = slotIndex; v.item = item;
+    v.base = base; v.installation = installation; v.defenceSlot = defenceSlot; v.item = item;
     return submit(v);
 }
 
@@ -266,10 +266,10 @@ StrategicIntentSubmission submitRemoveAircraftItem(canonical::AircraftId aircraf
     return submit(v);
 }
 
-StrategicIntentSubmission submitRemoveBaseDefenceItem(canonical::BaseId base, canonical::InstallationId installation, int32_t defenceType, int32_t slotIndex)
+StrategicIntentSubmission submitRemoveBaseDefenceItem(canonical::BaseId base, canonical::InstallationId installation, canonical::DefenceSlotId defenceSlot)
 {
     StrategicIntent v = make(StrategicIntentKind::RemoveBaseDefenceItem);
-    v.base = base; v.installation = installation; v.value0 = defenceType; v.value1 = slotIndex;
+    v.base = base; v.installation = installation; v.defenceSlot = defenceSlot;
     return submit(v);
 }
 

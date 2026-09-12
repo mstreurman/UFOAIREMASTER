@@ -50,6 +50,17 @@ typedef enum aircraftEquipmentMutationResult_s {
 	AII_AIRCRAFT_EQUIPMENT_REJECTED
 } aircraftEquipmentMutationResult_t;
 
+/** @brief Result of presentation-facing canonical base/installation defence mutations. */
+typedef enum baseDefenceMutationResult_s {
+	BDEF_MUTATION_APPLIED,
+	BDEF_MUTATION_INVALID_CONTEXT,
+	BDEF_MUTATION_INVALID_SLOT,
+	BDEF_MUTATION_INVALID_ITEM,
+	BDEF_MUTATION_NOT_ELIGIBLE,
+	BDEF_MUTATION_NO_CHANGE,
+	BDEF_MUTATION_REJECTED
+} baseDefenceMutationResult_t;
+
 /**
  * @brief Different status for numAmmo.
  * @todo do we still need this?
@@ -80,6 +91,15 @@ void BDEF_InitialiseBaseSlots(base_t* base);
 void BDEF_InitialiseInstallationSlots(installation_t* installation);
 void BDEF_ReloadBattery(void);
 void BDEF_AutoSelectTarget(void);
+uint32_t BDEF_GetDefenceSlotRuntimeId(const baseWeapon_t* weapon);
+baseWeapon_t* BDEF_GetBaseWeaponByIDX(base_t* base, aircraftItemType_t type, int idx);
+baseWeapon_t* BDEF_GetInstallationWeaponByIDX(installation_t* installation, aircraftItemType_t type, int idx);
+baseWeapon_t* BDEF_GetBaseWeaponByRuntimeId(base_t* base, uint32_t runtimeId);
+baseWeapon_t* BDEF_GetInstallationWeaponByRuntimeId(installation_t* installation, uint32_t runtimeId);
+baseDefenceMutationResult_t BDEF_TryEquipItem(base_t* base, installation_t* installation, uint32_t runtimeId, int itemIndex);
+baseDefenceMutationResult_t BDEF_TryRemoveItem(base_t* base, installation_t* installation, uint32_t runtimeId);
+baseDefenceMutationResult_t BDEF_TrySetAutoFire(base_t* base, installation_t* installation, bool enabled);
+baseDefenceMutationResult_t BDEF_TrySetTarget(base_t* base, installation_t* installation, aircraft_t* ufo);
 
 technology_t** AII_GetCraftitemTechsByType(aircraftItemType_t type);
 aircraftEquipmentMutationResult_t AII_TryEquipAircraftItem(aircraft_t* aircraft, int slotType, int slotIndex, int zone, int itemIndex);

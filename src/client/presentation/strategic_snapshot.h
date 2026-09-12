@@ -125,6 +125,23 @@ struct StrategicProductionView {
 	int32_t totalFrames;
 };
 
+struct StrategicDefenceSlotView {
+	canonical::DefenceSlotId id;
+	canonical::BaseId base;
+	canonical::InstallationId installation;
+	canonical::AircraftId target;
+	canonical::ItemId item;
+	canonical::ItemId ammo;
+	canonical::ItemId nextItem;
+	canonical::ItemId nextAmmo;
+	int32_t type;
+	int32_t slotIndex;
+	int32_t installationTime;
+	int32_t ammoLeft;
+	bool autofire;
+	bool active;
+};
+
 struct StrategicStoredUfoView {
 	canonical::StoredUfoId id;
 	canonical::InstallationId installation;
@@ -200,7 +217,8 @@ public:
 		std::vector<StrategicEmployeeView> employees = std::vector<StrategicEmployeeView>(),
 		std::vector<StrategicFacilityView> facilities = std::vector<StrategicFacilityView>(),
 		StrategicUfoRecoveryView ufoRecovery = StrategicUfoRecoveryView(),
-		std::vector<StrategicUfoSaleOfferView> ufoSaleOffers = std::vector<StrategicUfoSaleOfferView>())
+		std::vector<StrategicUfoSaleOfferView> ufoSaleOffers = std::vector<StrategicUfoSaleOfferView>(),
+		std::vector<StrategicDefenceSlotView> defenceSlots = std::vector<StrategicDefenceSlotView>())
 		: publicationSerial_(publicationSerial),
 		  campaignTime_(campaignTime),
 		  credits_(credits),
@@ -220,7 +238,8 @@ public:
 		  employees_(std::move(employees)),
 		  facilities_(std::move(facilities)),
 		  ufoRecovery_(std::move(ufoRecovery)),
-		  ufoSaleOffers_(std::move(ufoSaleOffers))
+		  ufoSaleOffers_(std::move(ufoSaleOffers)),
+		  defenceSlots_(std::move(defenceSlots))
 	{
 	}
 
@@ -244,6 +263,7 @@ public:
 	const std::vector<StrategicFacilityView>& facilities() const noexcept { return facilities_; }
 	const StrategicUfoRecoveryView& ufoRecovery() const noexcept { return ufoRecovery_; }
 	const std::vector<StrategicUfoSaleOfferView>& ufoSaleOffers() const noexcept { return ufoSaleOffers_; }
+	const std::vector<StrategicDefenceSlotView>& defenceSlots() const noexcept { return defenceSlots_; }
 
 private:
 	uint64_t publicationSerial_;
@@ -266,6 +286,7 @@ private:
 	std::vector<StrategicFacilityView> facilities_;
 	StrategicUfoRecoveryView ufoRecovery_;
 	std::vector<StrategicUfoSaleOfferView> ufoSaleOffers_;
+	std::vector<StrategicDefenceSlotView> defenceSlots_;
 };
 
 } // namespace presentation

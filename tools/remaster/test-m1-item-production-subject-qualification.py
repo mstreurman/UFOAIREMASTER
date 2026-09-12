@@ -89,7 +89,7 @@ def main():
             "ItemId catalog not published")
     require(by["AircraftDefinitionKey"]["publication_status"] == "published_definition_catalog",
             "aircraft definition catalog not published")
-    require(by["ItemId"]["intent_status"] == "create_production_market_aircraft_equipment_owners_qualified",
+    require(by["ItemId"]["intent_status"] == "create_production_market_aircraft_equipment_defence_owners_qualified",
             "ItemId CreateProduction/Market/AircraftEquipment owner qualification missing")
 
     with (ROOT/"tools/remaster/m1-canonical-identity-lifetime-registry.tsv").open() as f:
@@ -118,7 +118,7 @@ def main():
     print("  aircraft subject: published script-definition key")
     print("  disassembly subject: StoredUfoId")
     print("  CreateProduction: canonical campaign owner qualified")
-    print("  ItemId owner status includes CreateProduction, Market buy/sell and aircraft equipment; aggregate accounting is centralized")
+    print("  ItemId owner status includes CreateProduction, Market buy/sell, aircraft equipment and defence equipment; aggregate accounting is centralized")
     return 0
 
 if __name__ == "__main__":

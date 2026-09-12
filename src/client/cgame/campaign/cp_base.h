@@ -108,6 +108,7 @@ typedef struct baseBuildingTile_s {
 
 typedef struct baseWeapon_s {
 	/* int idx; */
+	uint32_t runtimeId;		/**< Runtime-only logical battery identity; never serialized. */
 	aircraftSlot_t slot;	/**< Weapon. */
 	aircraft_t* target;		/**< Aimed target for the weapon. */
 	bool autofire;			/**< If it should automatically open fire on ufos */

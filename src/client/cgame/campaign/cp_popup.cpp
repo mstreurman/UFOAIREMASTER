@@ -440,17 +440,7 @@ static void CL_PopupInterceptBaseClick_f (void)
 	}
 
 	assert(base || installation);
-	int i;
-	if (installation) {
-		for (i = 0; i < installation->installationTemplate->maxBatteries; i++)
-			installation->batteries[i].target = GEO_GetSelectedUFO();
-	} else {
-		for (i = 0; i < base->numBatteries; i++)
-			base->batteries[i].target = GEO_GetSelectedUFO();
-		for (i = 0; i < base->numLasers; i++)
-			base->lasers[i].target = GEO_GetSelectedUFO();
-	}
-
+	BDEF_TrySetTarget(base, installation, GEO_GetSelectedUFO());
 	cgi->UI_PopWindow(false);
 }
 
