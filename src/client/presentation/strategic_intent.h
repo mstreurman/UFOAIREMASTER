@@ -179,7 +179,7 @@ StrategicIntentSubmission submitCreateProduction(canonical::BaseId base, int32_t
 StrategicIntentSubmission submitKillContainedAlien(canonical::BaseId base, canonical::TechnologyId technology);
 StrategicIntentSubmission submitKillContainedAliens(canonical::BaseId base);
 StrategicIntentSubmission submitLoadGame(const char* slot);
-StrategicIntentSubmission submitLoadLastSave();
+StrategicIntentSubmission submitLoadLastSave(const char* resolvedSlot);
 StrategicIntentSubmission submitMaxAssignResearch(canonical::BaseId base, canonical::TechnologyId technology);
 StrategicIntentSubmission submitMoveProductionDown(canonical::BaseId base, canonical::ProductionId production);
 StrategicIntentSubmission submitMoveProductionUp(canonical::BaseId base, canonical::ProductionId production);

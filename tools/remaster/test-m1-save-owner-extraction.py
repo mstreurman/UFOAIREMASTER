@@ -86,9 +86,11 @@ def main():
     fail = adapter[adapter.find("/* Strict-authority catalog is transport-complete"):]
     require("case StrategicIntentKind::SaveGame:" not in fail,
             "SaveGame still appears in fail-closed block")
-    for kind in ("LoadLastSave", "AutoResolveMission", "StartMission"):
+    require("case StrategicIntentKind::LoadLastSave:" not in fail,
+            "LoadLastSave regressed into fail-closed block")
+    for kind in ("AutoResolveMission", "StartMission"):
         require("case StrategicIntentKind::" + kind + ":" in fail,
-                kind + " must remain fail-closed after SaveGame qualification")
+                kind + " must remain fail-closed after persistence qualification")
 
     cont = function_body(callbacks, "static void SAV_GameContinue_f (")
     for token in (
@@ -118,15 +120,15 @@ def main():
     applied = {n for n, r in strategic.items() if r["authority_bridge"] == "canonical_applied"}
     pending = {n for n, r in strategic.items()
                if r["authority_bridge"] == "owner_extraction_pending_fail_closed"}
-    require(len(applied) == 54, "strategic applied count must be 54")
-    require(pending == {"AutoResolveMission", "LoadLastSave", "StartMission"},
+    require(len(applied) == 55, "strategic applied count must be 55")
+    require(pending == {"AutoResolveMission", "StartMission"},
             "strategic pending set mismatch: " + repr(sorted(pending)))
 
     print("PASS M1 SaveGame canonical owner qualification")
     print("  legacy + typed SaveGame converge on existing SAV_GameSave")
     print("  canonical save eligibility + v4 serializer remain unchanged")
-    print("  LoadGame is lifecycle-qualified independently; LoadLastSave remains fail-closed")
-    print("  authority: strategic 54/57 applied, 3 fail-closed")
+    print("  LoadGame + explicit-slot LoadLastSave are lifecycle-qualified independently")
+    print("  authority: strategic 55/57 applied, 2 fail-closed")
     print("  save v4 / savx / protocol 18 unchanged")
 
 if __name__ == "__main__":

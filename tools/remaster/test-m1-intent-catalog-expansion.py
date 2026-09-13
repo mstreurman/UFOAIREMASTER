@@ -215,8 +215,8 @@ def integration_lane(root: Path, build: Path) -> None:
         "--gtest_color=no",
         "--gtest_print_time=0",
     ], root, stream=True)
-    require("[  PASSED  ] 9 tests." in output,
-            "expanded intent catalog integration GoogleTests did not pass 9/9")
+    require("[  PASSED  ] 10 tests." in output,
+            "expanded intent catalog integration GoogleTests did not pass 10/10")
 
 
 def main() -> int:
@@ -239,7 +239,7 @@ def main() -> int:
     print("  FIFO/capacity/reset/sequence contracts: PASS")
     print("  strategic canonical-owner mappings: PASS")
     print("  tactical PA_STATE/PA_RESERVE_STATE server-authority mapping: PASS")
-    print("  integration GoogleTests: 9/9")
+    print("  integration GoogleTests: 10/10")
     print("  sealed src/tests/CMakeLists.txt: unchanged")
     return 0
 

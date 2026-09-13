@@ -305,10 +305,10 @@ StrategicIntentSubmission submitLoadGame(const char* slot)
     return submit(v);
 }
 
-StrategicIntentSubmission submitLoadLastSave()
+StrategicIntentSubmission submitLoadLastSave(const char* resolvedSlot)
 {
     StrategicIntent v = make(StrategicIntentKind::LoadLastSave);
-
+    copyBounded(v.key0, resolvedSlot);
     return submit(v);
 }
 

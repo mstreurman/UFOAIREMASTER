@@ -11,6 +11,10 @@ int main()
 	static_assert(std::is_trivially_copyable<StrategicIntent>::value, "");
 	static_assert(std::is_standard_layout<TacticalIntent>::value, "");
 	static_assert(std::is_trivially_copyable<TacticalIntent>::value, "");
+	using LoadLastSaveSubmit = decltype(&intent::submitLoadLastSave);
+	static_assert(std::is_same<LoadLastSaveSubmit,
+		StrategicIntentSubmission (*)(const char*)>::value,
+		"LoadLastSave must carry an explicit resolved slot");
 
 	StrategicIntent strategic = {};
 	strategic.kind = StrategicIntentKind::SendAircraftToMission;

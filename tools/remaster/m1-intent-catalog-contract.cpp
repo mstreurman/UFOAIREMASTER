@@ -2,6 +2,7 @@
 #include "../../src/client/presentation/tactical_intent.h"
 
 #include <cstdint>
+#include <cstring>
 #include <iostream>
 
 int main()
@@ -66,10 +67,20 @@ int main()
 	if (intent::legacy::takeTransferManifest(transferIntent.transferManifest, &consumed))
 		return 17;
 
+	intent::legacy::resetStrategicIntentRuntime();
+	const StrategicIntentSubmission loadLast = intent::submitLoadLastSave("slot-last");
+	if (!loadLast.accepted)
+		return 18;
+	StrategicIntent loadLastIntent = {};
+	if (!intent::legacy::tryPopStrategicIntent(&loadLastIntent)
+			|| loadLastIntent.kind != StrategicIntentKind::LoadLastSave
+			|| std::strcmp(loadLastIntent.key0, "slot-last") != 0)
+		return 19;
+
 	StrategicTransferManifest oversized = {};
 	oversized.itemCount = static_cast<uint32_t>(STRATEGIC_TRANSFER_MAX_ITEMS + 1);
 	if (intent::submitStartTransfer(oversized).accepted)
-		return 18;
+		return 26;
 
 	tactical_intent::legacy::resetTacticalIntentRuntime();
 

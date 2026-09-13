@@ -82,7 +82,9 @@ def main():
     fail = adapter[adapter.find("/* Strict-authority catalog is transport-complete"):]
     require("case StrategicIntentKind::LoadGame:" not in fail,
             "LoadGame still appears in fail-closed block")
-    for kind in ("LoadLastSave", "AutoResolveMission", "StartMission"):
+    require("case StrategicIntentKind::LoadLastSave:" not in fail,
+            "LoadLastSave regressed into fail-closed block")
+    for kind in ("AutoResolveMission", "StartMission"):
         require("case StrategicIntentKind::" + kind + ":" in fail,
                 kind + " must remain fail-closed")
 
@@ -110,8 +112,8 @@ def main():
         'EXPECT_NE(nullptr, CP_GetCampaign("main"));',
     ):
         require(token in integration, "LoadGame runtime integration coverage missing: " + token)
-    require('[  PASSED  ] 9 tests.' in expansion,
-            "intent-catalog integration gate must require 9/9 tests")
+    require('[  PASSED  ] 10 tests.' in expansion,
+            "intent-catalog integration gate must require 10/10 tests")
 
     require(re.search(r"#\s*define\s+SAVE_FILE_VERSION\s+4\b", save_h) is not None,
             "save version changed")
@@ -130,15 +132,15 @@ def main():
     applied = {n for n, r in strategic.items() if r["authority_bridge"] == "canonical_applied"}
     pending = {n for n, r in strategic.items()
                if r["authority_bridge"] == "owner_extraction_pending_fail_closed"}
-    require(len(applied) == 54, "strategic applied count must be 54")
-    require(pending == {"AutoResolveMission", "LoadLastSave", "StartMission"},
+    require(len(applied) == 55, "strategic applied count must be 55")
+    require(pending == {"AutoResolveMission", "StartMission"},
             "strategic pending set mismatch: " + repr(sorted(pending)))
 
     print("PASS M1 LoadGame lifecycle owner qualification")
     print("  legacy + typed LoadGame converge on SAV_GameLoad")
     print("  all post-GAME_ReloadMode failures restore a clean campaign mode")
     print("  runtime integration covers successful typed load + deterministic post-reload rejection")
-    print("  strategic authority: 54/57 applied, 3 fail-closed")
+    print("  strategic authority: 55/57 applied, 2 fail-closed")
     print("  save v4 / savx / protocol 18 unchanged")
 
 if __name__ == "__main__":

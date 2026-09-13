@@ -7,7 +7,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 
 EXPECTED_PENDING = {
-    "AutoResolveMission","LoadLastSave","StartMission",
+    "AutoResolveMission","StartMission",
 }
 FAMILY_TESTS = (
     "test-m1-research-owner-extraction.py",
@@ -27,6 +27,7 @@ FAMILY_TESTS = (
     "test-m1-transfer-owner-extraction.py",
     "test-m1-save-owner-extraction.py",
     "test-m1-load-owner-extraction.py",
+    "test-m1-load-last-save-owner-extraction.py",
 )
 
 class GateError(RuntimeError):
@@ -54,7 +55,7 @@ def main():
     require(set(strategic)==set(strict), "coverage ledger and strict strategic inventory differ")
     applied={n for n,r in strategic.items() if r["authority_bridge"]=="canonical_applied"}
     pending={n for n,r in strategic.items() if r["authority_bridge"]=="owner_extraction_pending_fail_closed"}
-    require(len(applied)==54, f"strategic applied count must be 54, got {len(applied)}")
+    require(len(applied)==55, f"strategic applied count must be 55, got {len(applied)}")
     require(pending==EXPECTED_PENDING, "strategic pending set mismatch: "+repr(sorted(pending)))
     require(len(tactical)==15, f"tactical total must remain 15, got {len(tactical)}")
     require(sum(r["authority_bridge"]=="server_request_forwarded" for r in tactical.values())==13,
@@ -146,7 +147,7 @@ def main():
     docs=text("docs/README.md")
     arch=text("docs/architecture/093-presentation-action-authority-and-intent-completeness-contract.md")
     for docname,doc in (("README.md",readme),("docs/README.md",docs),("architecture 093",arch)):
-        require("57" in doc and "54" in doc and "3" in doc and "a26c23fee39276716023d068d3c0a99b6ba31aa0" in doc,
+        require("57" in doc and "55" in doc and "2" in doc and "46c6c3ca9fb808f7c5bdb8c665b79ef378a3cabf" in doc,
                 docname+": current authority baseline/counts not synchronized")
     require("SDL3 3.4.16" in readme, "README does not reflect latest installed SDL3")
     require("8add4c8c8319111766d2ba9939e6fdcab8e08bd272fbadb068d198567bcaa218" in readme,
@@ -155,7 +156,7 @@ def main():
             "README M0.3 environment digest stale")
 
     print("PASS M1 authority bookkeeping synchronization")
-    print("PASS strategic authority: 57 total / 54 applied / 3 fail-closed")
+    print("PASS strategic authority: 57 total / 55 applied / 2 fail-closed")
     print("PASS tactical authority: 15 total / 13 forwarded / 2 fail-closed")
     print("PASS DestroyAntimatterFacility reclassified as scripted canonical event; enum 20 tombstone retained")
     print("PASS FacilityId + Market + UFO recovery + containment + aircraft-equipment + DefenceSlotId + TransferManifestId registries synchronized")

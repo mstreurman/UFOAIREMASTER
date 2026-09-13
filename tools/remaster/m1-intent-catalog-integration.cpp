@@ -656,4 +656,78 @@ TEST_F(M1IntentCatalogTest, LoadGamePostReloadFailureRestoresCleanCampaignMode)
 	EXPECT_NE(nullptr, CP_GetCampaign("main"));
 }
 
+TEST_F(M1IntentCatalogTest, LoadLastSaveExplicitSlotPreservesContinueSplit)
+{
+	campaign_t* campaign = CatalogCampaign();
+	ASSERT_NE(nullptr, campaign);
+
+	RS_InitTree(campaign, false);
+	E_InitialEmployees(campaign);
+
+	vec2_t pos = {0.0f, 0.0f};
+	bool foundLand = false;
+	for (int latitude = -60; latitude <= 60 && !foundLand; latitude += 10) {
+		for (int longitude = -170; longitude <= 170; longitude += 10) {
+			Vector2Set(pos, longitude, latitude);
+			if (GEO_IsValidLandPosition(pos)) {
+				foundLand = true;
+				break;
+			}
+		}
+	}
+	ASSERT_TRUE(foundLand);
+
+	base_t* base = nullptr;
+	ASSERT_EQ(B_BUILD_APPLIED,
+		B_TryBuildBase(pos, "M1 typed last-save base", &base));
+	ASSERT_NE(nullptr, base);
+
+	Cvar_Set("save_compressed", "0");
+	const char* const slot = "m1_typed_last_save";
+	char* saveError = nullptr;
+	ASSERT_TRUE(SAV_GameSave(slot, "M1 typed LoadLastSave fixture", &saveError))
+		<< (saveError ? saveError : "");
+
+	/* game_continue is split: while a campaign runs, continue is presentation-only.
+	 * The authoritative LoadLastSave semantic must reject rather than reload. */
+	const ufo::presentation::StrategicIntentSubmission runningSubmission =
+		ufo::presentation::intent::submitLoadLastSave(slot);
+	ASSERT_TRUE(runningSubmission.accepted);
+	ufo::presentation::legacy::applyPendingStrategicIntents();
+
+	ufo::presentation::StrategicIntentResult runningResult = {};
+	ASSERT_TRUE(ufo::presentation::intent::pollStrategicIntentResult(&runningResult));
+	EXPECT_EQ(runningSubmission.sequence, runningResult.sequence);
+	EXPECT_EQ(ufo::presentation::StrategicIntentKind::LoadLastSave, runningResult.kind);
+	EXPECT_EQ(ufo::presentation::StrategicIntentDisposition::RejectedByCanonical,
+		runningResult.disposition);
+	EXPECT_TRUE(CP_IsRunning());
+
+	/* Enter the exact authoritative branch state: campaign mode is initialized,
+	 * but no campaign is running. The application/presentation layer has already
+	 * resolved the archived slot and carries it explicitly in the typed intent. */
+	cgi->GAME_ReloadMode();
+	ASSERT_FALSE(CP_IsRunning());
+	ASSERT_NE(nullptr, CP_GetCampaign("main"));
+
+	const ufo::presentation::StrategicIntentSubmission loadSubmission =
+		ufo::presentation::intent::submitLoadLastSave(slot);
+	ASSERT_TRUE(loadSubmission.accepted);
+	ufo::presentation::legacy::applyPendingStrategicIntents();
+
+	char deletePath[MAX_OSPATH];
+	cgi->GetAbsoluteSavePath(deletePath, sizeof(deletePath));
+	Q_strcat(deletePath, sizeof(deletePath), "%s.%s", slot, SAVEGAME_EXTENSION);
+	cgi->FS_RemoveFile(deletePath);
+
+	ufo::presentation::StrategicIntentResult loadResult = {};
+	ASSERT_TRUE(ufo::presentation::intent::pollStrategicIntentResult(&loadResult));
+	EXPECT_EQ(loadSubmission.sequence, loadResult.sequence);
+	EXPECT_EQ(ufo::presentation::StrategicIntentKind::LoadLastSave, loadResult.kind);
+	EXPECT_EQ(ufo::presentation::StrategicIntentDisposition::Applied, loadResult.disposition);
+	EXPECT_EQ(1, loadResult.canonicalValue);
+	EXPECT_TRUE(CP_IsRunning());
+	EXPECT_GE(B_GetCount(), 1);
+}
+
 } // namespace
