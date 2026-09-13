@@ -84,9 +84,6 @@ def main():
             "LoadGame still appears in fail-closed block")
     require("case StrategicIntentKind::LoadLastSave:" not in fail,
             "LoadLastSave regressed into fail-closed block")
-    for kind in ("AutoResolveMission", "StartMission"):
-        require("case StrategicIntentKind::" + kind + ":" in fail,
-                kind + " must remain fail-closed")
 
     legacy = function_body(callbacks, "static void SAV_GameLoad_f (")
     for token in (
@@ -129,18 +126,12 @@ def main():
             "LoadGame is not canonical_applied in coverage ledger")
     require(strategic["LoadGame"]["owner_source"] == "src/client/cgame/campaign/cp_save.cpp",
             "LoadGame owner must be cp_save.cpp")
-    applied = {n for n, r in strategic.items() if r["authority_bridge"] == "canonical_applied"}
-    pending = {n for n, r in strategic.items()
-               if r["authority_bridge"] == "owner_extraction_pending_fail_closed"}
-    require(len(applied) == 55, "strategic applied count must be 55")
-    require(pending == {"AutoResolveMission", "StartMission"},
-            "strategic pending set mismatch: " + repr(sorted(pending)))
 
     print("PASS M1 LoadGame lifecycle owner qualification")
     print("  legacy + typed LoadGame converge on SAV_GameLoad")
     print("  all post-GAME_ReloadMode failures restore a clean campaign mode")
     print("  runtime integration covers successful typed load + deterministic post-reload rejection")
-    print("  strategic authority: 55/57 applied, 2 fail-closed")
+    print("  aggregate strategic authority accounting is centralized")
     print("  save v4 / savx / protocol 18 unchanged")
 
 if __name__ == "__main__":

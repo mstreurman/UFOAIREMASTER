@@ -196,7 +196,7 @@ try:
     print("  canonical owner resolves and validates complete cargo before inherited mutation begins")
     print("  legacy callback and typed adapter converge on TR_TryStartTransfer")
     print("  active TransferId remains explicit unmapped debt")
-    print("  authority: strategic 52/57 applied, 5 fail-closed")
+    print("  aggregate strategic authority accounting is centralized")
     print("  save v4 / protocol 18 unchanged")
 except AssertionError as exc:
     print("FAIL M1 StartTransfer owner extraction: " + str(exc), file=sys.stderr)

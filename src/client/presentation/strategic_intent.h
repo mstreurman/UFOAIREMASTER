@@ -201,6 +201,12 @@ StrategicIntentSubmission submitSetAutoSellPolicy(canonical::ItemId item, bool e
 StrategicIntentSubmission submitSetEmployeeSkin(canonical::EmployeeId employee, int32_t bodySkin);
 StrategicIntentSubmission submitSetProductionAmount(canonical::BaseId base, canonical::ProductionId production, int32_t amount);
 StrategicIntentSubmission submitStartAircraft(canonical::AircraftId aircraft);
+/**
+ * Start a tactical mission using explicit canonical context.  Base attacks are
+ * the sole exception to a valid AircraftId: their defender carrier is an
+ * ephemeral campaign-owned aircraft and is represented by an invalid ID.  The
+ * canonical owner rejects an invalid aircraft for every other mission stage.
+ */
 StrategicIntentSubmission submitStartMission(canonical::MissionId mission, canonical::AircraftId aircraft);
 StrategicIntentSubmission submitStartTransfer(const StrategicTransferManifest& manifest);
 StrategicIntentSubmission submitStopAircraft(canonical::AircraftId aircraft);

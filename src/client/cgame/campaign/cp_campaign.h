@@ -418,6 +418,14 @@ void CP_EndCampaign(bool won);
 void CP_Shutdown(void);
 void CP_ResetCampaignData(void);
 
+typedef enum campaignMissionStartResult_s {
+	CP_MISSION_START_INVALID_CONTEXT,
+	CP_MISSION_START_INACTIVE,
+	CP_MISSION_START_NO_TEAM,
+	CP_MISSION_START_APPLIED
+} campaignMissionStartResult_t;
+
+campaignMissionStartResult_t CP_TryStartMission(struct mission_s* mission, aircraft_t* aircraft);
 void CP_StartSelectedMission(void);
 
 /* Credits management */

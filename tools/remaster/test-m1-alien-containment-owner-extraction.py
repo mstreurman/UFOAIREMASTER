@@ -95,7 +95,7 @@ try:
     print("  KillContainedAlien: BaseId + TechnologyId aggregate owner; all matching team definitions preserved")
     print("  KillContainedAliens: canonical live-to-dead conversion through AlienContainment::add")
     print("  no AlienId invented; callbacks retain UI refresh only")
-    print("  authority: strategic 44/57 applied, 13 fail-closed")
+    print("  aggregate strategic authority accounting is centralized")
     print("  save v4 / protocol 18 unchanged")
 except AssertionError as exc:
     print("FAIL M1 alien containment owner extraction: " + str(exc), file=sys.stderr)

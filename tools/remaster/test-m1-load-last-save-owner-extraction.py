@@ -80,9 +80,6 @@ def main():
     fail = adapter[adapter.find("/* Strict-authority catalog is transport-complete"):]
     require("case StrategicIntentKind::LoadLastSave:" not in fail,
             "LoadLastSave still appears in fail-closed block")
-    for kind in ("AutoResolveMission", "StartMission"):
-        require("case StrategicIntentKind::" + kind + ":" in fail,
-                kind + " must remain fail-closed")
 
     legacy = function_body(callbacks, "static void SAV_GameContinue_f (")
     for token in (
@@ -128,19 +125,13 @@ def main():
     require("explicit bounded slot" in row["note"],
             "coverage note must record explicit presentation-resolved slot boundary")
 
-    applied = {n for n, r in strategic.items() if r["authority_bridge"] == "canonical_applied"}
-    pending = {n for n, r in strategic.items()
-               if r["authority_bridge"] == "owner_extraction_pending_fail_closed"}
-    require(len(applied) == 55, "strategic applied count must be 55")
-    require(pending == {"AutoResolveMission", "StartMission"},
-            "strategic pending set mismatch: " + repr(sorted(pending)))
 
     print("PASS M1 LoadLastSave boundary normalization")
     print("  archived cl_lastsave remains application/presentation context")
     print("  typed LoadLastSave carries an explicit bounded resolved slot")
     print("  running-campaign/Battlescape continue branches remain presentation-owned")
     print("  authoritative branch converges on existing SAV_GameLoad")
-    print("  strategic authority: 55/57 applied, 2 fail-closed")
+    print("  aggregate strategic authority accounting is centralized")
     print("  save v4 / savx / protocol 18 unchanged")
 
 if __name__ == "__main__":

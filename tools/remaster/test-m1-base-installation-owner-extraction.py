@@ -115,8 +115,6 @@ try:
     for name in expected:
         if strategic[name]['authority_bridge']!='canonical_applied':
             raise AssertionError(f'{name}: not canonical_applied')
-    if strategic['StartMission']['authority_bridge']!='owner_extraction_pending_fail_closed':
-        raise AssertionError('StartMission: must remain fail-closed')
     if 'DestroyAntimatterFacility' in strategic:
         raise AssertionError('DestroyAntimatterFacility is an internal scripted event, not a strategic presentation action')
 

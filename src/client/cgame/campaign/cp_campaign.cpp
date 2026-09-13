@@ -539,54 +539,89 @@ bool CP_SaveXML (xmlNode_t* parent)
  * it has a team on board
  * @sa BATTLE_SetVars
  */
-void CP_StartSelectedMission (void)
+campaignMissionStartResult_t CP_TryStartMission (mission_t* mission, aircraft_t* aircraft)
 {
-	mission_t* mis;
-	aircraft_t* aircraft = GEO_GetMissionAircraft();
-	base_t* base;
+	if (!mission)
+		return CP_MISSION_START_INVALID_CONTEXT;
+
+	/* Base attacks deliberately use a campaign-owned ephemeral aircraft that has
+	 * no stable AircraftId.  Only that mission stage may resolve the canonical
+	 * mission-aircraft association when presentation therefore supplies no ID. */
+	if (!aircraft) {
+		if (mission->stage != STAGE_BASE_ATTACK)
+			return CP_MISSION_START_INVALID_CONTEXT;
+		aircraft = GEO_GetMissionAircraft();
+	}
+
+	if (!aircraft || AIR_IsUFO(aircraft) || !aircraft->homebase || aircraft->mission != mission)
+		return CP_MISSION_START_INVALID_CONTEXT;
+
+	base_t* base = aircraft->homebase;
+	if (mission->stage == STAGE_BASE_ATTACK && mission->data.base != base)
+		return CP_MISSION_START_INVALID_CONTEXT;
+
 	battleParam_t* battleParam = &ccs.battleParameters;
 
+	/* Preserve the inherited retry/result scratch reset before mission
+	 * eligibility checks. */
+	OBJZERO(mission->missionResults);
+
+	if (!mission->active)
+		return CP_MISSION_START_INACTIVE;
+	if (AIR_GetTeamSize(aircraft) == 0)
+		return CP_MISSION_START_NO_TEAM;
+
+	/* If we retry a mission we have to drop from the current game before. */
+	cgi->SV_Shutdown("Server quit.", false);
+	cgi->CL_Disconnect();
+
+	CP_CreateBattleParameters(mission, battleParam, aircraft);
+	BATTLE_SetVars(battleParam);
+
+	/* Preserve inherited inventory preparation before map launch. */
+	ccs.eMission = base->storage; /* copied, including arrays inside! */
+	CP_CleanTempInventory(base);
+	CP_CleanupAircraftTeam(aircraft, &ccs.eMission);
+	BATTLE_Start(mission, battleParam);
+	return CP_MISSION_START_APPLIED;
+}
+
+/**
+ * @brief Starts a selected mission from the retained legacy presentation.
+ *
+ * Selection fallback and user-facing diagnostics stay here; canonical launch
+ * validation and lifecycle are owned by CP_TryStartMission.
+ */
+void CP_StartSelectedMission (void)
+{
+	aircraft_t* aircraft = GEO_GetMissionAircraft();
 	if (!aircraft) {
 		cgi->Com_Printf("CP_StartSelectedMission: No mission aircraft\n");
 		return;
 	}
 
-	base = aircraft->homebase;
-
 	if (GEO_GetSelectedMission() == nullptr)
 		GEO_SetSelectedMission(aircraft->mission);
 
-	mis = GEO_GetSelectedMission();
-	if (!mis) {
+	mission_t* mission = GEO_GetSelectedMission();
+	if (!mission) {
 		cgi->Com_Printf("CP_StartSelectedMission: No mission selected\n");
 		return;
 	}
 
-	/* Before we start, we should clear the missionResults array. */
-	OBJZERO(mis->missionResults);
-
-	/* Various sanity checks. */
-	if (!mis->active) {
-		cgi->Com_Printf("CP_StartSelectedMission: Dropship not near landing zone: mis->active: %i\n", mis->active);
-		return;
-	}
-	if (AIR_GetTeamSize(aircraft) == 0) {
+	switch (CP_TryStartMission(mission, aircraft)) {
+	case CP_MISSION_START_INVALID_CONTEXT:
+		cgi->Com_Printf("CP_StartSelectedMission: Mission/aircraft context mismatch.\n");
+		break;
+	case CP_MISSION_START_INACTIVE:
+		cgi->Com_Printf("CP_StartSelectedMission: Dropship not near landing zone: mission->active: %i\n", mission->active);
+		break;
+	case CP_MISSION_START_NO_TEAM:
 		cgi->Com_Printf("CP_StartSelectedMission: No team in dropship.\n");
-		return;
+		break;
+	case CP_MISSION_START_APPLIED:
+		break;
 	}
-
-	/* if we retry a mission we have to drop from the current game before */
-	cgi->SV_Shutdown("Server quit.", false);
-	cgi->CL_Disconnect();
-
-	CP_CreateBattleParameters(mis, battleParam, aircraft);
-	BATTLE_SetVars(battleParam);
-
-	/* manage inventory */
-	ccs.eMission = base->storage; /* copied, including arrays inside! */
-	CP_CleanTempInventory(base);
-	CP_CleanupAircraftTeam(aircraft, &ccs.eMission);
-	BATTLE_Start(mis, battleParam);
 }
 #ifdef DEBUG
 /**

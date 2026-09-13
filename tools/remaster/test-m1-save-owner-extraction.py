@@ -88,9 +88,6 @@ def main():
             "SaveGame still appears in fail-closed block")
     require("case StrategicIntentKind::LoadLastSave:" not in fail,
             "LoadLastSave regressed into fail-closed block")
-    for kind in ("AutoResolveMission", "StartMission"):
-        require("case StrategicIntentKind::" + kind + ":" in fail,
-                kind + " must remain fail-closed after persistence qualification")
 
     cont = function_body(callbacks, "static void SAV_GameContinue_f (")
     for token in (
@@ -117,18 +114,12 @@ def main():
             "SaveGame is not canonical_applied in coverage ledger")
     require(strategic["SaveGame"]["owner_source"] == "src/client/cgame/campaign/cp_save.cpp",
             "SaveGame owner must be the existing cp_save.cpp serializer")
-    applied = {n for n, r in strategic.items() if r["authority_bridge"] == "canonical_applied"}
-    pending = {n for n, r in strategic.items()
-               if r["authority_bridge"] == "owner_extraction_pending_fail_closed"}
-    require(len(applied) == 55, "strategic applied count must be 55")
-    require(pending == {"AutoResolveMission", "StartMission"},
-            "strategic pending set mismatch: " + repr(sorted(pending)))
 
     print("PASS M1 SaveGame canonical owner qualification")
     print("  legacy + typed SaveGame converge on existing SAV_GameSave")
     print("  canonical save eligibility + v4 serializer remain unchanged")
     print("  LoadGame + explicit-slot LoadLastSave are lifecycle-qualified independently")
-    print("  authority: strategic 55/57 applied, 2 fail-closed")
+    print("  aggregate strategic authority accounting is centralized")
     print("  save v4 / savx / protocol 18 unchanged")
 
 if __name__ == "__main__":

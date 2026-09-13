@@ -171,6 +171,22 @@ void applyPendingStrategicIntents() {
             aircraft_t* a=resolvePhalanxAircraft(in.aircraft); if(a&&AIR_IsAircraftOnGeoscape(a)){AIR_AircraftReturnToBase(a);if(a->status==AIR_RETURNING)out.disposition=StrategicIntentDisposition::Applied;}
             if(a){out.aircraft=canonical::AircraftId(static_cast<uint32_t>(a->idx));out.canonicalValue=static_cast<int32_t>(a->status);} break; }
 
+        case StrategicIntentKind::StartMission: {
+            mission_t* m=resolveMission(in.mission);
+            aircraft_t* a=in.aircraft.isValid()?resolvePhalanxAircraft(in.aircraft):nullptr;
+            campaignMissionStartResult_t result=CP_MISSION_START_INVALID_CONTEXT;
+            /* A missing AircraftId is meaningful only to the canonical owner,
+             * which accepts it solely for the campaign-owned base-attack
+             * participant. A valid-but-stale ID must remain rejected here. */
+            if(m&&(!in.aircraft.isValid()||a))
+                result=CP_TryStartMission(m,a);
+            if(result==CP_MISSION_START_APPLIED)
+                out.disposition=StrategicIntentDisposition::Applied;
+            if(m) out.mission=canonical::MissionId(static_cast<uint32_t>(m->idx));
+            if(a) out.aircraft=canonical::AircraftId(static_cast<uint32_t>(a->idx));
+            out.canonicalValue=static_cast<int32_t>(result);
+            break; }
+
         case StrategicIntentKind::AssignResearch: {
             base_t* b=resolveBase(in.base); technology_t* tech=resolveTechnology(in.technology);
             if(b&&tech&&RS_TryChangeScientists(tech,b,in.value0)==RS_CHANGE_APPLIED) out.disposition=StrategicIntentDisposition::Applied;
@@ -534,7 +550,6 @@ void applyPendingStrategicIntents() {
          * canonical campaign subsystem. No command-string fallback is allowed. */
         case StrategicIntentKind::AutoResolveMission:
         case StrategicIntentKind::DestroyAntimatterFacility:
-        case StrategicIntentKind::StartMission:
             break;
         }
         intent::legacy::publishStrategicIntentResult(out);

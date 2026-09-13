@@ -23,6 +23,7 @@ python3 tools/remaster/test-m1-transfer-owner-extraction.py
 python3 tools/remaster/test-m1-save-owner-extraction.py
 python3 tools/remaster/test-m1-load-owner-extraction.py
 python3 tools/remaster/test-m1-load-last-save-owner-extraction.py
+python3 tools/remaster/test-m1-start-mission-owner-extraction.py
 python3 tools/remaster/test-m1-item-production-subject-qualification.py
 python3 tools/remaster/test-m1-employee-team-owner-extraction.py
 python3 tools/remaster/test-m1-market-owner-extraction.py
@@ -31,6 +32,6 @@ python3 tools/remaster/test-m1-legacy-save-compatibility-contract.py
 python3 tools/remaster/test-m1-legacy-wire-compatibility-contract.py
 
 echo "M1 authority bookkeeping qualification: PASS"
-echo "  strategic: 57 total / 55 canonical-applied / 2 fail-closed"
+echo "  strategic: 57 total / 56 canonical-applied / 1 fail-closed"
 echo "  tactical:  15 total / 13 forwarded / 2 fail-closed"
 echo "  save/wire: save v4 / protocol 18"

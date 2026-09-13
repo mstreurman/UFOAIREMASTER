@@ -83,13 +83,13 @@ expected_applied={
     'KillContainedAlien','KillContainedAliens',
     'EquipAircraftItem','RemoveAircraftItem','RenameAircraft',
     'EquipBaseDefenceItem','RemoveBaseDefenceItem','SetAirDefenceAutoFire','SetAirDefenceTarget',
-    'StartTransfer','SaveGame','LoadGame','LoadLastSave',
+    'StartTransfer','SaveGame','LoadGame','LoadLastSave','StartMission',
 }
 applied={name for name,row in ledger_s.items() if row['authority_bridge']=='canonical_applied'}
 if applied != expected_applied:
     print('FAIL strategic applied-owner set mismatch: '+repr(sorted(applied))); sys.exit(1)
 expected_pending={
-    'AutoResolveMission','StartMission',
+    'AutoResolveMission',
 }
 pending={name for name,row in ledger_s.items() if row['authority_bridge']=='owner_extraction_pending_fail_closed'}
 if pending != expected_pending:
@@ -105,4 +105,4 @@ if 'CL_ActorReload(' in tactical_adapter:
     print('FAIL Reload must fail closed until request emission is observable'); sys.exit(1)
 if 'NET_WriteByte(&msg,clc_endround)' not in tactical_adapter:
     print('FAIL EndTurn must emit the existing clc_endround protocol directly'); sys.exit(1)
-print('PASS bridge accounting: strategic 55 applied / 2 fail-closed; tactical 13 forwarded / 2 fail-closed')
+print('PASS bridge accounting: strategic 56 applied / 1 fail-closed; tactical 13 forwarded / 2 fail-closed')

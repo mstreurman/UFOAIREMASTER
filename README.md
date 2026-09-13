@@ -76,12 +76,12 @@ The accepted migration roadmap is [`docs/architecture/080-implementation-migrati
 
 ### Immediate execution order
 
-M0 is sealed. M1 is actively extracting presentation-facing authority without replacing canonical game rules. The current qualified implementation baseline is `46c6c3ca9fb808f7c5bdb8c665b79ef378a3cabf` (`feat: qualify canonical load authority`) plus the qualified LoadLastSave explicit-context normalization. The boundary state is mechanically inventoried and qualified:
+M0 is sealed. M1 is actively extracting presentation-facing authority without replacing canonical game rules. The current implementation baseline is `f8eba33abc59180d5994fc70554a700cd1524a59` (`feat: qualify last-save load authority`) plus the StartMission canonical-owner extraction in this working tree. The boundary state is mechanically inventoried and qualified:
 
 ```text
 strategic presentation-authoritative semantics: 57 total
-  canonical-applied:                            55
-  fail-closed pending owners:                   2
+  canonical-applied:                            56
+  fail-closed pending owners:                   1
 
 tactical authoritative semantics:               15 total
   forwarded to server authority:                13
@@ -100,11 +100,11 @@ The active execution order is:
 3. establish C++11-compatible strong presentation identities and C++26 remaster consumers — **complete foundation**;
 4. complete the source-derived presentation action inventory and five-way authority classification — **complete, with one later semantic split: 58 strategic + 15 tactical authoritative semantics**;
 5. introduce typed intent dispatch without changing canonical rules — **complete contract/catalog foundation**;
-6. extract canonical strategic owners from legacy callbacks — **55 strategic semantics qualified so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, facility build/destroy, Research assign/max/stop, Production create/amount/move/stop operations, the six Employee/Team assign/de-equip/delete/hire-fire/rename/skin operations, Market buy/sell aircraft/item/UGV plus explicit autosell policy, recovered/stored-UFO authority, alien-containment kill actions, aircraft equipment/rename, defence, StartTransfer, SaveGame serialization, LoadGame lifecycle normalization, and explicit-context LoadLastSave lowering;
+6. extract canonical strategic owners from legacy callbacks — **56 strategic semantics implemented/qualified at source-contract level so far**, covering campaign time lapse, aircraft/geoscape operations, base/installation lifecycle, facility build/destroy, Research assign/max/stop, Production create/amount/move/stop operations, the six Employee/Team assign/de-equip/delete/hire-fire/rename/skin operations, Market buy/sell aircraft/item/UGV plus explicit autosell policy, recovered/stored-UFO authority, alien-containment kill actions, aircraft equipment/rename, defence, StartTransfer, SaveGame serialization, LoadGame lifecycle normalization, and explicit-context LoadLastSave lowering;
 7. publish Research + Production + Employee immutable state — **complete**, including `TechnologyId`, stable runtime `ProductionId`, persisted `EmployeeId`, and snapshot-local queue/order plus immutable employee state;
 8. complete the canonical identity audit — **complete contract pass**, with 18 strong 32-bit domains; stable Production, persisted StoredUfo/Employee identities plus runtime Facility/DefenceSlot/UfoRecovery/UfoSaleOffer identities are implemented/published while Transfer and other runtime mappings remain explicit debt;
 9. Research owner extraction, all existing-job Production owners, `CreateProduction`, and all seven Market owners are **complete**; ItemId / aircraft-definition / StoredUfo production subjects are qualified, Market item buy/sell preserves partial-fill semantics, autosell uses an explicit desired state, and legacy/remaster paths converge on campaign owners;
-10. migrate the remaining mission authority family behind typed IDs and canonical owners; SaveGame, LoadGame, and the authoritative LoadLastSave branch now converge on the unchanged canonical v4 persistence path, while archived last-save selection remains presentation/application context;
+10. finish the remaining mission authority family behind typed IDs and canonical owners; StartMission now uses explicit MissionId/AircraftId context with a base-attack-safe no-ID path for the existing ephemeral defender aircraft, while AutoResolveMission remains fail-closed; SaveGame, LoadGame, and LoadLastSave continue to converge on unchanged canonical v4 persistence;
 11. keep ambiguous or misclassified semantics fail-closed until their canonical contract is proven;
 12. once M1 boundary exit criteria are satisfied, bring up the SDL3/Vulkan production platform path;
 13. implement frame contexts, allocator and production descriptor-heap runtime;
